@@ -1,0 +1,9 @@
+{
+    "name": "discoverygarden/dgi_actions",
+    "type": "drupal-module",
+    "license": "GPL-3.0-only",
+    "require": {
+      "islandora/islandora": "^1",
+      "drupal/node": "^8"
+    }
+}
