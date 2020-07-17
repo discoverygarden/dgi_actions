@@ -2,7 +2,9 @@
 
 namespace Drupal\dgi_actions\Plugin\ArkIdentifier;
 
-use Drupal\dgi_actions\Plugin\AbstractIdentifier;
+use Drupal\dgi_actions\Plugin\Action\AbstractIdentifier;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Session\AccountInterface;
 
 /**
  * Creates an ARK Record on CDL EZID.
@@ -10,10 +12,27 @@ use Drupal\dgi_actions\Plugin\AbstractIdentifier;
  * @Action(
  *   id = "ark_identifier_mint_record",
  *   label = @Translation("ARK Identifier"),
- *   type = "ark identifier"
+ *   type = "entity"
  * )
  */
 class ArkIdentifier extends AbstractIdentifier {
+
+  /**
+   * {@inheritdoc}
+   */
+  public function access($object, AccountInterface $account = NULL, $return_as_object = FALSE) {
+    $result = $object->access('read', $account, $return_as_object);
+    return $result;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function mint() {
+    // Gather the applicable URL, login information, etc from configs
+    // Make a request via $client->request() call.
+    // Verify the request returns properly.
+  }
 
   /**
    * {@inheritdoc}
@@ -46,6 +65,16 @@ class ArkIdentifier extends AbstractIdentifier {
       '#default_value' => $this->configuration['mapped_field'],
       '#description' => t('Field Mapping for the ARK identifier.'),
     ];
+    /*
+    // Need to capture all available content types, and provide them as a dropdown or a multi-select?
+      // A Single policy may be applicable to 1 to N ContentTypes, but certain ones may need special configuration.
+    $form['mapped_field'] = [
+      '#type' => 'textfield',
+      '#title' => t('ARK Field Mapping'),
+      '#default_value' => $this->configuration['mapped_field'],
+      '#description' => t('Field Mapping for the ARK identifier.'),
+    ];
+    */
     return $form;
   }
 
