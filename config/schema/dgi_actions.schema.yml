@@ -1,0 +1,10 @@
+dgi_actions.identifiers.*:
+  type: config_object
+  label: 'Data Profile'
+  mapping:
+    content_type:
+      type: node
+      label: 'Content Type'
+    data_profile:
+      type: string
+      label: 'Data Profile ID'

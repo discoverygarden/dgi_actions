@@ -5,6 +5,7 @@ namespace Drupal\dgi_actions\Plugin\Action;
 use Drupal\Core\Action\ConfigurableActionBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Entity\EntityTypeManager;
+use Drupal\Core\Entity\EntityTypeBundleInfo;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use GuzzleHttp\Client;
@@ -35,6 +36,14 @@ abstract class AbstractIdentifier extends ConfigurableActionBase implements Cont
    */
   protected $entity_type_manager;
 
+
+  /**
+   * Entity Type Bundle Info.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeBundleInfo
+   */
+  protected $entity_type_bundle_info;
+
   /**
    * Constructor.
    *
@@ -54,11 +63,13 @@ abstract class AbstractIdentifier extends ConfigurableActionBase implements Cont
     $plugin_id,
     $plugin_definition,
     Client $client,
-    EntityTypeManager $entity_type_manager
+    EntityTypeManager $entity_type_manager,
+    EntityTypeBundleInfo $entity_type_bundle_info
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->client = $client;
-    $this->entity_type_manager = $entity_type_manager;
+    $this->entityTypeManager = $entity_type_manager;
+    $this->entityTypeBundleInfo = $entity_type_bundle_info;
   }
 
   /**
@@ -70,7 +81,8 @@ abstract class AbstractIdentifier extends ConfigurableActionBase implements Cont
       $plugin_id,
       $plugin_definition,
       $container->get('http_client'),
-      $container->get('entity_type.manager')
+      $container->get('entity_type.manager'),
+      $container->get('entity_type.bundle.info')
     );
   }
 
