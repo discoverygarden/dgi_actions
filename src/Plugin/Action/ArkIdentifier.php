@@ -29,22 +29,43 @@ class ArkIdentifier extends AbstractIdentifier {
    * {@inheritdoc}
    */
   public function mint() {
-    $host = 'https://ezid.cdlib.org/shoulder/';
-    $uri = $host . $this->configuration['namespace_shoulder'];
-    $response = $this->client->request('POST', $uri, array('auth' => array($this->configuration['username'], $this->configuration['password']), 'Accept' => 'text/plain'));
-    dsm($response->getStatusCode());
-    dsm($response->getBody()->getContents());
-    // Check response for "Success", else, throw an error
-      // Use try-catch here, because a bad request will throw an exception.
+    $body = $this->buildMetadataString();
+
+    try {
+      $response = $this->client->request('POST', $this->configuration['host'] . $this->confinguration['namespace_shoulder'], [
+        'auth' => [$this->configuration['username'], $this->configuration['password']],
+        'headers' => [
+          'Content-Type' => 'text/plain; charset=UTF-8',
+          'Content-Length' => strlen($body)
+        ],
+        'body' => $body
+      ]);
+    }
+    catch (Exception $e) {
+      dsm('Something went wrong: '. $response);
+      return $e;
+    }
+
+    return $this->responseArray($response->getBody()->getContents());
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function deleteRecord() {
+    // Pull current identifier attached to object
+    // Verify a match
+    // Delete from identifier CDL EZID
+    // Delete identifier from field
   }
 
   /**
    * {@inheritdoc}
    */
   public function execute() {
-    // Hit the ARK html endpoint using configured values for the applicable content/bundle type
-    // Verify the returned response is whats expected
-    // Write the ark identifier to the custom field
+    // run $this->mint();
+    // Verify the returned response is success
+    // Write the minted ARK Identifier to the applicable field
   }
 
   /**
@@ -52,6 +73,7 @@ class ArkIdentifier extends AbstractIdentifier {
    */
   public function defaultConfiguration() {
     return [
+      'host' => 'https://ezid.cdlib.org/shoulder/', // Test Host
       'content_type' => '',
       'username' => '',
       'password' => '',
@@ -60,18 +82,43 @@ class ArkIdentifier extends AbstractIdentifier {
     ];
   }
 
+  /**
+   * Reconstructs the data array into the body string for minting.
+   */
+  public function buildMetadataString() {
+    $testArray = [
+      'erc.who' => 'Test One',
+      'erc.what' => 'Test Two',
+      'erc.when' => '1900.01.20',
+    ];
+
+    // Expects an associative array of key values. With keys and values matching the ERC data profile standards.
+
+    $outputString = "";
+    foreach($testArray as $key => $val) {
+      $outputString .= $key . ": " . $val . "\r\n";
+    }
+
+    return $outputString;
+  }
+
   public function getRecord() {
     $uri = 'https://ezid.cdlib.org/id/ark:/99999/fk4j11cz31'; // ERC Type test object
 
     $res = $this->client->request('GET', $uri, array('Accept' => 'text/plain'));
     $contents = $res->getBody()->getContents();
+    dsm(responseArray($contents), 'AssocArray');
+  }
+
+  public function responseArray($contents) {
     $responseArray = preg_split('/\r\n|\r|\n/', trim($contents));
     $assocArray = [];
     foreach ($responseArray as $res_line) {
       $splitRes = explode(':', $res_line, 2);
       $assocArray[$splitRes[0]] = $splitRes[1];
     }
-    dsm($assocArray, 'AssocArray');
+
+    return $assocArray;
   }
 
   /**
@@ -81,7 +128,7 @@ class ArkIdentifier extends AbstractIdentifier {
     // Need to capture all available content types, and provide them as a dropdown or a multi-select?
       // A Single policy may be applicable to 1 to N ContentTypes, but certain ones may need special configuration.
     //$this->getRecord();
-    $this->mint();
+    //$this->mint();
     $bundles = $this->entityTypeBundleInfo->getAllBundleInfo()['node'];
     $list = [];
     foreach ($bundles as $bundle_key => $bundle) {
@@ -94,15 +141,21 @@ class ArkIdentifier extends AbstractIdentifier {
       '#options' => $list,
       '#description' => t('Content Types affected by this configuration.'),
     ];
+    $form['host'] = [
+      '#type' => 'textfield',
+      '#title' => t('Host'),
+      '#default_value' => $this->configuration['host'],
+      '#description' => t('Host address. ex. \'https://ezid.cdlib.org/shoulder/\''),
+    ];
     $form['username'] = [
       '#type' => 'textfield',
-      '#title' => t('username'),
+      '#title' => t('Username'),
       '#default_value' => $this->configuration['username'],
       '#description' => t('Username for the ARK.'),
     ];
     $form['password'] = [
       '#type' => 'textfield',
-      '#title' => t('password'),
+      '#title' => t('Password'),
       '#default_value' => $this->configuration['password'],
       '#description' => t('Password for the ARK.'),
     ];
