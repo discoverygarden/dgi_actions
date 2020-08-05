@@ -6,8 +6,13 @@ dgi_actions.identifier.*:
       type: string
       label: 'Identifier ID'
     data_profile:
-      type: dgi_actions.data_profile.[%parent.id]
-      label: 'Data Profile ID'
+      type: mapping
+      label: 'Data Profile'
+      mapping:
+        id:
+          type: string
+        data:
+          type: dgi_actions.data_profile.[%parent.id]
 
 dgi_actions.data_profile.*:
   type: mapping
