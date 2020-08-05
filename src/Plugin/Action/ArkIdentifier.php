@@ -42,7 +42,7 @@ class ArkIdentifier extends AbstractIdentifier {
       ]);
     }
     catch (Exception $e) {
-      $this->logger->warning('Issue occurred minting identifier: @response', [
+      $this->logger->warning('Issue occurred while minting an identifier: @response', [
         '@response' => $response,
       ]);
       return $e;

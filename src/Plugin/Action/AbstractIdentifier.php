@@ -95,7 +95,7 @@ abstract class AbstractIdentifier extends ConfigurableActionBase implements Cont
       $container->get('http_client'),
       $container->get('entity_type.manager'),
       $container->get('entity_type.bundle.info'),
-      $container->get('logger.channel.dgi_actions'),
+      $container->get('logger.factory')->get('dgi_actions')
     );
   }
 
