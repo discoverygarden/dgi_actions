@@ -1,10 +1,34 @@
 dgi_actions.identifiers.*:
   type: config_object
-  label: 'Data Profile'
+  label: 'Identifier'
   mapping:
-    content_type:
-      type: node
-      label: 'Content Type'
+    identifier_id:
+      type: string
+      label: 'Identifier ID'
     data_profile:
       type: string
       label: 'Data Profile ID'
+
+dgi_actions.identifiers.*.data_profile:
+  type: mapping
+  label: 'Data Profiles'
+  erc:
+    type: mapping
+    label: 'Erc Data Profile Mapping'
+    mapping:
+      who_field:
+        type: string
+        label: 'Who Field'
+      what_field:
+        type: string
+        label: 'What Field'
+      when_field:
+        type: string
+        label: 'When Field'
+
+#node type
+#bundle
+#identifier type - ark/doi/etc
+ # by default I need to create the ARK one, we can expand the rest
+#data profile - erc/datacite/dc
+ # by default I need to make the erc data profile, we can expand the rest

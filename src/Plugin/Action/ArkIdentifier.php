@@ -32,7 +32,7 @@ class ArkIdentifier extends AbstractIdentifier {
     $body = $this->buildMetadataString();
 
     try {
-      $response = $this->client->request('POST', $this->configuration['host'] . $this->confinguration['namespace_shoulder'], [
+      $response = $this->client->request('POST', $this->configuration['host'] . '/shoulder/' . $this->confinguration['namespace_shoulder'], [
         'auth' => [$this->configuration['username'], $this->configuration['password']],
         'headers' => [
           'Content-Type' => 'text/plain; charset=UTF-8',
@@ -42,7 +42,9 @@ class ArkIdentifier extends AbstractIdentifier {
       ]);
     }
     catch (Exception $e) {
-      dsm('Something went wrong: '. $response);
+      $this->logger->warning('Issue occurred minting identifier: @response', [
+        '@response' => $response,
+      ]);
       return $e;
     }
 
@@ -73,7 +75,7 @@ class ArkIdentifier extends AbstractIdentifier {
    */
   public function defaultConfiguration() {
     return [
-      'host' => 'https://ezid.cdlib.org/shoulder/', // Test Host
+      'host' => 'https://ezid.cdlib.org', // Test Host
       'content_type' => '',
       'username' => '',
       'password' => '',

@@ -9,6 +9,7 @@ use Drupal\Core\Entity\EntityTypeBundleInfo;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use GuzzleHttp\Client;
+use Psr\Log\LoggerInterface;
 
 abstract class AbstractIdentifier extends ConfigurableActionBase implements ContainerFactoryPluginInterface {
 
@@ -21,6 +22,13 @@ abstract class AbstractIdentifier extends ConfigurableActionBase implements Cont
         // This should include both login information as well as the service address it belongs.
       // Mapped Field - Set from the config
         // What mapped field the returned persistant identifier will be inserted into.
+
+  /**
+   * Logger.
+   *
+   * @var Psr\Log\LoggerInterface
+   */
+  protected $logger;
 
   /**
    * Http Client connection.
@@ -57,6 +65,8 @@ abstract class AbstractIdentifier extends ConfigurableActionBase implements Cont
    *   Http Client connection.
    * @param \Drupal\Core\Entity\EntityTypeManager $entity_type_manager
    *   Entity type manager.
+   * @param Psr\Log\LoggerInterface $logger
+   *   Logger.
    */
   public function __construct(
     array $configuration,
@@ -64,12 +74,14 @@ abstract class AbstractIdentifier extends ConfigurableActionBase implements Cont
     $plugin_definition,
     Client $client,
     EntityTypeManager $entity_type_manager,
-    EntityTypeBundleInfo $entity_type_bundle_info
+    EntityTypeBundleInfo $entity_type_bundle_info,
+    LoggerInterface $logger
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->client = $client;
     $this->entityTypeManager = $entity_type_manager;
     $this->entityTypeBundleInfo = $entity_type_bundle_info;
+    $this->logger = $logger;
   }
 
   /**
@@ -82,7 +94,8 @@ abstract class AbstractIdentifier extends ConfigurableActionBase implements Cont
       $plugin_definition,
       $container->get('http_client'),
       $container->get('entity_type.manager'),
-      $container->get('entity_type.bundle.info')
+      $container->get('entity_type.bundle.info'),
+      $container->get('logger.channel.dgi_actions'),
     );
   }
 
