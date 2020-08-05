@@ -1,0 +1,13 @@
+dgi_actions.data_profile.erc:
+  type: mapping
+  label: 'Erc Data Profile'
+  mapping:
+    who:
+      type: string
+      label: 'Who Field'
+    when:
+      type: string
+      label: 'When Field'
+    what:
+      type: string
+      label: 'What Field'
