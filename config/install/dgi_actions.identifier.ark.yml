@@ -1,0 +1,8 @@
+langcode: en
+status: true
+dependencies: { }
+name: ark
+label: 'ARK Identifier'
+identifier_id: 'ark'
+data_profile:
+  id: 'erc'
