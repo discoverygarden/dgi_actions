@@ -5,6 +5,8 @@ dgi_actions.identifier.*:
     identifier_id:
       type: string
       label: 'Identifier ID'
+    credentials:
+      type: dgi_actions.credentials.[%parent.identifier_id]
     data_profile:
       type: mapping
       label: 'Data Profile'
@@ -17,6 +19,10 @@ dgi_actions.identifier.*:
 dgi_actions.data_profile.*:
   type: mapping
   label: 'Data Profile'
+
+dgi_actions.credentials.*:
+  type: mapping
+  label: 'Identifier Credentials'
 
 #node type
 #bundle

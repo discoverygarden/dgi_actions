@@ -10,6 +10,8 @@ use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use GuzzleHttp\Client;
 use Psr\Log\LoggerInterface;
+use Drupal\Core\Entity\EntityFieldManager;
+use Drupal\Core\Config\ConfigFactory;
 
 abstract class AbstractIdentifier extends ConfigurableActionBase implements ContainerFactoryPluginInterface {
 
@@ -53,6 +55,20 @@ abstract class AbstractIdentifier extends ConfigurableActionBase implements Cont
   protected $entity_type_bundle_info;
 
   /**
+   * Entity Field Manager.
+   *
+   * @var \Drupal\Core\Entity\EntityFieldManager
+   */
+  protected $entity_field_manager;
+
+  /**
+   * Config Factory.
+   *
+   * @var \Drupal\Core\Config\ConfigFactory
+   */
+  protected $config_factory;
+
+  /**
    * Constructor.
    *
    * @param array $configuration
@@ -67,6 +83,10 @@ abstract class AbstractIdentifier extends ConfigurableActionBase implements Cont
    *   Entity type manager.
    * @param Psr\Log\LoggerInterface $logger
    *   Logger.
+   * @param Drupal\Core\Entity\EntityFieldManager $entity_field_manager
+   *   Entity field manager.
+   * @param Drupal\Core\Config\ConfigFactory
+   *   Config factory.
    */
   public function __construct(
     array $configuration,
@@ -75,13 +95,17 @@ abstract class AbstractIdentifier extends ConfigurableActionBase implements Cont
     Client $client,
     EntityTypeManager $entity_type_manager,
     EntityTypeBundleInfo $entity_type_bundle_info,
-    LoggerInterface $logger
+    LoggerInterface $logger,
+    EntityFieldManager $entity_field_manager,
+    ConfigFactory $config_factory
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->client = $client;
     $this->entityTypeManager = $entity_type_manager;
     $this->entityTypeBundleInfo = $entity_type_bundle_info;
     $this->logger = $logger;
+    $this->entityFieldManager = $entity_field_manager;
+    $this->configFactory = $config_factory;
   }
 
   /**
@@ -95,7 +119,9 @@ abstract class AbstractIdentifier extends ConfigurableActionBase implements Cont
       $container->get('http_client'),
       $container->get('entity_type.manager'),
       $container->get('entity_type.bundle.info'),
-      $container->get('logger.factory')->get('dgi_actions')
+      $container->get('logger.factory')->get('dgi_actions'),
+      $container->get('entity_field.manager'),
+      $container->get('config.factory')
     );
   }
 

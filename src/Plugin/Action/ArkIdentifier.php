@@ -64,7 +64,7 @@ class ArkIdentifier extends AbstractIdentifier {
   /**
    * {@inheritdoc}
    */
-  public function execute() {
+  public function execute($entity = null) {
     // run $this->mint();
     // Verify the returned response is success
     // Write the minted ARK Identifier to the applicable field
@@ -77,6 +77,7 @@ class ArkIdentifier extends AbstractIdentifier {
     return [
       'host' => 'https://ezid.cdlib.org', // Test Host
       'content_type' => '',
+      'bundle' => '',
       'username' => '',
       'password' => '',
       'namespace_shoulder' => 'ark:/99999/fk4', // Test Shoulder
@@ -131,17 +132,43 @@ class ArkIdentifier extends AbstractIdentifier {
       // A Single policy may be applicable to 1 to N ContentTypes, but certain ones may need special configuration.
     //$this->getRecord();
     //$this->mint();
+    /*
     $bundles = $this->entityTypeBundleInfo->getAllBundleInfo()['node'];
     $list = [];
     foreach ($bundles as $bundle_key => $bundle) {
       $list[$bundle_key] = $bundle['label'];
+    }*/
+
+
+    $content_types = $this->entityTypeBundleInfo->getAllBundleInfo();
+    $contentTypes = [];
+    $bundleList = [];
+    foreach($content_types as $content_type_key => $content_type_value) {
+      $contentTypes[] = $content_type_key;
+      foreach($content_type_value as $bundle_key => $bundle_value) {
+        $bundleList[$content_type_key][] = $bundle_key;
+      }
     }
+    dsm($contentTypes);
+    dsm($bundleList);
+
+/*
+    $entityFieldMap = $this->entityFieldManager->getFieldMap();
+    foreach ($entityFieldMap as $key => $value) {
+      if ($key == 'node') {
+        dsm($value, 'node');
+      }
+      else {
+        dsm($key);
+      }
+    }
+*/
     $form['content_type'] = [
       '#type' => 'select',
       '#title' => t('Content Type'),
       '#default_value' => $this->configuration['content_type'],
-      '#options' => $list,
-      '#description' => t('Content Types affected by this configuration.'),
+      '#options' => $contentTypes,
+      '#description' => t('Content Type and bundle affected by this configuration.'),
     ];
     $form['host'] = [
       '#type' => 'textfield',
