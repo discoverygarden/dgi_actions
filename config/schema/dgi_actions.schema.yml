@@ -1,5 +1,5 @@
 dgi_actions.identifier.*:
-  type: config_entity
+  type: config_object
   label: 'Identifier'
   mapping:
     identifier_id:
@@ -19,14 +19,26 @@ dgi_actions.identifier.*:
 dgi_actions.data_profile.*:
   type: mapping
   label: 'Data Profile'
+  data:
+    type: sequence
+    label: 'Data Profile Fields'
 
 dgi_actions.credentials.*:
   type: mapping
   label: 'Identifier Credentials'
-
-#node type
-#bundle
-#identifier type - ark/doi/etc
- # by default I need to create the ARK one, we can expand the rest
-#data profile - erc/datacite/dc
- # by default I need to make the erc data profile, we can expand the rest
+  mapping:
+    host:
+      type: string
+      label: 'Host URI'
+    username:
+      type: string
+      label: 'Username'
+    password:
+      type: string
+      label: 'Password'
+    shoulder:
+      type: string
+      label: 'Namespace/Shoulder'
+    field:
+      type: string
+      label: 'Field mapping for the Identifier'

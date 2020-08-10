@@ -149,8 +149,10 @@ class ArkIdentifier extends AbstractIdentifier {
         $bundleList[$content_type_key][] = $bundle_key;
       }
     }
-    dsm($contentTypes);
-    dsm($bundleList);
+    $configs = $this->configFactory->listAll();
+    dsm($configs);
+    //dsm($contentTypes);
+    //dsm($bundleList);
 
 /*
     $entityFieldMap = $this->entityFieldManager->getFieldMap();
