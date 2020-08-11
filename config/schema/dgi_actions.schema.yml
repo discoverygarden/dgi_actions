@@ -29,12 +29,15 @@ dgi_actions.data_profile.*:
   type: mapping
   label: 'Data Profile'
   mapping:
-    id:
-      type: string
-      label: 'Data Profile ID'
     data:
       type: sequence
-      label: 'Data Profile Fields'
+      sequence:
+        type: mapping
+        mapping:
+          key:
+            type: string
+          source_field:
+            type: string
 
 dgi_actions.credentials.*:
   type: mapping
