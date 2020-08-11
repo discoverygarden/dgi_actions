@@ -2,9 +2,18 @@ dgi_actions.identifier.*:
   type: config_object
   label: 'Identifier'
   mapping:
+    status:
+      type: boolean
+      label: 'Status'
+    dependencies:
+      type: sequence
+      label: 'Dependencies'
     identifier_id:
       type: string
       label: 'Identifier ID'
+    label:
+      type: string
+      label: 'Identifier Label'
     credentials:
       type: dgi_actions.credentials.[%parent.identifier_id]
     data_profile:
@@ -19,17 +28,27 @@ dgi_actions.identifier.*:
 dgi_actions.data_profile.*:
   type: mapping
   label: 'Data Profile'
-  data:
-    type: sequence
-    label: 'Data Profile Fields'
+  mapping:
+    id:
+      type: string
+      label: 'Data Profile ID'
+    data:
+      type: sequence
+      label: 'Data Profile Fields'
 
 dgi_actions.credentials.*:
   type: mapping
   label: 'Identifier Credentials'
   mapping:
+    label:
+      type: string
+      label: "Credentials Label"
     host:
       type: string
       label: 'Host URI'
+    langcode:
+      type: string
+      label: 'Language Code'
     username:
       type: string
       label: 'Username'

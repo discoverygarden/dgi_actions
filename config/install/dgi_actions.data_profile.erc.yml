@@ -1,0 +1,11 @@
+id: erc
+data:
+  -
+    key: 'erc.who'
+    source_field: 'field_erc_who'
+  -
+    key: 'erc.when'
+    source_field: 'field_erc_when'
+  -
+    key: 'erc.what'
+    source_field: 'field_erc_what'
