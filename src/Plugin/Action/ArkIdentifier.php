@@ -9,6 +9,8 @@ use Drupal\Core\Session\AccountInterface;
 /**
  * Creates an ARK Record on CDL EZID.
  *
+ * Initial Test Object, will be deleted before module submission.
+ *
  * @Action(
  *   id = "ark_identifier_mint_record",
  *   label = @Translation("ARK Identifier"),

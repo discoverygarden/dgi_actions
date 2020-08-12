@@ -14,6 +14,9 @@ use Drupal\Core\Entity\EntityFieldManager;
 use Drupal\Core\Config\ConfigFactory;
 use Drupal\Core\Session\AccountInterface;
 
+/**
+ * Initial Test Object, will be deleted before module submission.
+ */
 abstract class AbstractIdentifier extends ConfigurableActionBase implements ContainerFactoryPluginInterface {
 
   /**
