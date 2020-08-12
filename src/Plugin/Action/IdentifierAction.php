@@ -14,7 +14,7 @@ use Drupal\Core\Entity\EntityFieldManager;
 use Drupal\Core\Config\ConfigFactory;
 use Drupal\Core\Session\AccountInterface;
 
-abstract class AbstractIdentifier extends ConfigurableActionBase implements ContainerFactoryPluginInterface {
+abstract class IdentifierAction extends ConfigurableActionBase implements ContainerFactoryPluginInterface {
 
   /**
    * Logger.
@@ -133,4 +133,11 @@ abstract class AbstractIdentifier extends ConfigurableActionBase implements Cont
    * {@inheritdoc}
    */
   abstract public function buildConfigurationForm(array $form, FormStateInterface $form_state);
+
+  /**
+   * {@inheritdoc}
+   */
+  public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
+    $this->configuration = $form_state->getValues();
+  }
 }

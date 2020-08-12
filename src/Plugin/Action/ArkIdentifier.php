@@ -20,14 +20,6 @@ class ArkIdentifier extends AbstractIdentifier {
   /**
    * {@inheritdoc}
    */
-  public function access($object, AccountInterface $account = NULL, $return_as_object = FALSE) {
-    $result = $object->access('read', $account, $return_as_object);
-    return $result;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function mint() {
     $body = $this->buildMetadataString();
 
@@ -51,9 +43,6 @@ class ArkIdentifier extends AbstractIdentifier {
     return $this->responseArray($response->getBody()->getContents());
   }
 
-  /**
-   * {@inheritdoc}
-   */
   public function deleteRecord() {
     // Pull current identifier attached to object
     // Verify a match
@@ -149,8 +138,15 @@ class ArkIdentifier extends AbstractIdentifier {
         $bundleList[$content_type_key][] = $bundle_key;
       }
     }
-    $configs = $this->configFactory->listAll();
-    dsm($configs);
+
+    $identifier_config = $this->configFactory->get('dgi_actions.identifier.ark')->get();
+    dsm($identifier_config);
+    $credentials_config = $this->configFactory->get('dgi_actions.credentials.ark')->get();
+    dsm($credentials_config);
+    $dataprofile_config = $this->configFactory->get('dgi_actions.data_profile.erc')->get('data');
+    dsm($dataprofile_config);
+
+
     //dsm($contentTypes);
     //dsm($bundleList);
 
