@@ -26,18 +26,15 @@ dgi_actions.identifier.*:
           type: dgi_actions.data_profile.[%parent.id]
 
 dgi_actions.data_profile.*:
-  type: mapping
+  type: sequence
   label: 'Data Profile'
-  mapping:
-    data:
-      type: sequence
-      sequence:
-        type: mapping
-        mapping:
-          key:
-            type: string
-          source_field:
-            type: string
+  sequence:
+    type: mapping
+    mapping:
+      key:
+        type: string
+      source_field:
+        type: string
 
 dgi_actions.credentials.*:
   type: mapping
