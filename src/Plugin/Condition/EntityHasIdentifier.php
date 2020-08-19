@@ -62,36 +62,26 @@ class EntityHasIndentifier extends ConditionPluginBase implements ContainerFacto
     );
   }
 
-/**
+  /**
    * {@inheritdoc}
    */
   public function defaultConfiguration() {
-    return array_merge(
-      [
-        'negate' => 'TRUE',
-      ],
-      parent::defaultConfiguration()
-    );
+    parent::defaultConfiguration();
   }
 
   /**
    * {@inheritdoc}
    */
   public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
-    $form['negate'] = [
-      '#type' => 'checkbox',
-      '#title' => $this->t('Negate'),
-      '#description' => $this->t('Returns TRUE if field does NOT contain a value.'),
-      '#checked' => $this->configuration['negate'],
-    ];
-    return $form;
+    parent::buildConfigurationForm($form, $form_state);
   }
 
   /**
    * {@inheritdoc}
    */
   public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
-    $this->configuration = $form_state->getValues();
+    // $this->configuration = $form_state->getValues(); Do specific values instead of trying to capture all
+    parent::submitConfigurationForm($form, $form_state);
   }
 
   /**
