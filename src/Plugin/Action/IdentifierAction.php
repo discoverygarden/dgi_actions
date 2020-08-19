@@ -130,6 +130,22 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
   abstract public function execute();
 
   /**
+   * Returns list of Identifier Configs.
+   */
+  public static function getIdentifiers() {
+    $configs = $this->configFactory->listAll('dgi_actions.identifier');
+    if (!empty($configs)) {
+      $config_options = [];
+      foreach ($configs as $config_id) {
+        $config_options[$config_id] = $this->configFactory->get($config_id)->get('label');
+      }
+      return $config_options;
+    }
+
+    return 'No Identifiers Configured';
+  }
+
+  /**
    * {@inheritdoc}
    */
   abstract public function buildConfigurationForm(array $form, FormStateInterface $form_state);

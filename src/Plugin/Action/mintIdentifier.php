@@ -148,22 +148,6 @@ class MintIdentifier extends IdentifierAction {
   }
 
   /**
-   * Returns list of Identifier Configs.
-   */
-  protected function getConfigOptions() {
-    $configs = $this->configFactory->listAll('dgi_actions.identifier');
-    if (!empty($configs)) {
-      $config_options = [];
-      foreach ($configs as $config_id) {
-        $config_options[$config_id] = $this->configFactory->get($config_id)->get('label');
-      }
-      return $config_options;
-    }
-
-    return 'No Identifiers Configured';
-  }
-
-  /**
    * {@inheritdoc}
    */
   public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
@@ -174,7 +158,7 @@ class MintIdentifier extends IdentifierAction {
       '#type' => 'select',
       '#title' => t('Identifier Type'),
       '#default_value' => $this->configuration['identifier_type'],
-      '#options' => $this->getConfigOptions(),
+      '#options' => $this->getIdentifiers(),
       '#description' => t('The persistent identifier configuration to be used.'),
     ];
     return $form;

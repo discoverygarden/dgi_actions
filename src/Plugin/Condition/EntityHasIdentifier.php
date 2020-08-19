@@ -3,10 +3,12 @@
 namespace Drupal\dgi_actions\Plugin\Condition;
 
 use Drupal\Core\Condition\ConditionPluginBase;
-use Drupal\Core\Entity\EntityTypeManager;
-use Drupal\Core\Form\FormStateInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\Core\Entity\EntityFieldManager;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\Core\Config\ConfigFactory;
+use Drupal\Core\Form\FormStateInterface;
 
 /**
  * Provides a condition to check an Entity for an existing persistent identifier.
@@ -15,18 +17,34 @@ use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
  *   id = "dgi_actions_entity_has_persistent_identifier",
  *   label = @Translation("Entity has a persistent identifier"),
  *   context_definitions = {
- *     "entity" = @ContextDefinition("entity", required = TRUE, label = @Translation("Entity")),
+ *     "node" = @ContextDefinition("entity:node", required = FALSE, label = @Translation("Node")),
+ *     "media" = @ContextDefinition("entity:media", required = FALSE, label = @Translation("Media")),
+ *     "taxonomy_term" = @ContextDefinition("entity:taxonomy_term", required = FALSE, label = @Translation("Term"))
  *   }
  * )
  */
-class EntityHasIndentifier extends ConditionPluginBase implements ContainerFactoryPluginInterface {
+class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactoryPluginInterface {
 
   /**
-   * Entity Type Manager
+   * Term storage.
    *
-   * @var \Drupal\Core\Entity\EntityTypeManager
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
   protected $entity_type_manager;
+
+  /**
+   * Entity Field Manager.
+   *
+   * @var \Drupal\Core\Entity\EntityFieldManager
+   */
+  protected $entity_field_manager;
+
+  /**
+   * Config Factory.
+   *
+   * @var \Drupal\Core\Config\ConfigFactory
+   */
+  protected $config_factory;
 
   /**
    * Constructor.
@@ -40,14 +58,25 @@ class EntityHasIndentifier extends ConditionPluginBase implements ContainerFacto
    *   The plugin_id for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
-   * @param \Drupal\Core\Entity\EntityStorageInterface $node_type_storage
-   *   The entity storage.
-   * @param \Drupal\Core\Entity\EntityTypeManager $entity_type_manager
-   *   The entity type manager.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   Entity type manager.
+   * @param Drupal\Core\Config\ConfigFactory
+   *   Config factory.
+   * @param Drupal\Core\Entity\EntityFieldManager
+   *   Entity field manager.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManager $entity_type_manager) {
+  public function __construct(
+    array $configuration,
+    $plugin_id,
+    $plugin_definition,
+    EntityTypeManagerInterface $entity_type_manager,
+    ConfigFactory $config_factory,
+    EntityFieldManager $entity_field_manager
+  ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->entityTypeManager = $entity_type_manager;
+    $this->configFactory = $config_factory;
+    $this->entityFieldManager = $entity_field_manager;
   }
 
   /**
@@ -58,49 +87,107 @@ class EntityHasIndentifier extends ConditionPluginBase implements ContainerFacto
       $configuration,
       $plugin_id,
       $plugin_definition,
-      $container->get('entity_type.manager')
+      $container->get('entity_type.manager'),
+      $container->get('config.factory'),
+      $container->get('entity_field.manager')
     );
   }
 
   /**
-   * {@inheritdoc}
+   * Returns list of Identifier Configs.
    */
-  public function defaultConfiguration() {
-    return parent::defaultConfiguration();
-  }
+  public static function getIdentifiers() {
+    $configs = $this->configFactory->listAll('dgi_actions.identifier');
+    if (!empty($configs)) {
+      $config_options = [];
+      foreach ($configs as $config_id) {
+        $config_options[$config_id] = $this->configFactory->get($config_id)->get('label');
+      }
+      return $config_options;
+    }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
-    return parent::buildConfigurationForm($form, $form_state);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
-    // $this->configuration = $form_state->getValues(); Do specific values instead of trying to capture all
-    return parent::submitConfigurationForm($form, $form_state);
+    return 'No Identifiers Configured';
   }
 
   /**
    * {@inheritdoc}
    */
   public function evaluate() {
-    // Get the entity from the context
-    // check the field
-      // Field differs depending on the identifier - can I get that from a config here?
-    // If field is not populated, return TRUE, else FALSE
-    //dsm($this->getContextValue());
-    /*$node = $this->getContextValue('node');
-    if ($node) {
-      $entity_identifier = $node->get('field_ark_identifier')->getValue();
-      if ($entity_identifier) {
+    $node = $this->getContextValue('node');
+    if (!$node && !$this->isNegated()) {
+      return FALSE;
+    }
+    elseif (!$node) {
+      return FALSE;
+    }
+    else {
+      // hasField will reference the configured Field $this->configuration['field']
+        // That field value will be pulled from the specified config, or ALL dgi_actions.identifier.* configs (former is probably safer).
+      if ($node->hasField('field_ark_identifier')) {
+        // Check if the field is populated
+        // If it is, return FALSE, ELSE return TRUE
         return TRUE;
       }
-    }*/
-    return FALSE;
+      return TRUE;
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function summary() {
+    if (!empty($this->configuration['negate'])) {
+      return $this->t('The node is not.');
+    }
+    else {
+      return $this->t('The node is.');
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
+    $options = [];
+    foreach (['node', 'media', 'taxonomy_term'] as $content_entity) {
+      $bundles = \Drupal::service('entity_type.bundle.info')->getBundleInfo($content_entity);
+      foreach ($bundles as $bundle => $bundle_properties) {
+        $bundle_fields = $this->entityFieldManager->getFieldDefinitions($content_entity, $bundle);
+        if (isset($bundle_fields['field_ark_identifier'])) { // Need to reference the config value for the field name, instead of this hardcoded one.
+          $options[$bundle] = $this->t('@bundle (@type)', [
+            '@bundle' => $bundle_properties['label'],
+            '@type' => $content_entity,
+          ]);
+        }
+      }
+    }
+
+    $form['bundles'] = [
+      '#title' => $this->t('Bundles'),
+      '#type' => 'checkboxes',
+      '#options' => $options,
+      '#default_value' => $this->configuration['bundles'],
+    ];
+
+    return parent::buildConfigurationForm($form, $form_state);;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
+    $this->configuration['bundles'] = array_filter($form_state->getValue('bundles'));
+    parent::submitConfigurationForm($form, $form_state);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function defaultConfiguration() {
+    return array_merge(
+      ['bundles' => []],
+      parent::defaultConfiguration()
+    );
   }
 
 }
