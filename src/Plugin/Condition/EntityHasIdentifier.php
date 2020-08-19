@@ -2,30 +2,31 @@
 
 namespace Drupal\dgi_actions\Plugin\Condition;
 
-use Drupal\node\Plugin\Condition\NodeType;
-use Drupal\Core\Entity\EntityStorageInterface;
-use Drupal\islandora\IslandoraUtils;
+use Drupal\Core\Condition\ConditionPluginBase;
+use Drupal\Core\Entity\EntityTypeManager;
+use Drupal\Core\Form\FormStateInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 
 /**
  * Provides a condition to check an Entity for an existing persistent identifier.
  *
  * @Condition(
  *   id = "dgi_actions_entity_has_persistent_identifier",
- *   label = @Translation("Entity persistent identifier heck"),
+ *   label = @Translation("Entity has a persistent identifier"),
  *   context_definitions = {
  *     "entity" = @ContextDefinition("entity", required = TRUE, label = @Translation("Entity")),
  *   }
  * )
  */
-class MediaParentNodeHasBundle extends NodeType {
+class EntityHasIndentifier extends ConditionPluginBase implements ContainerFactoryPluginInterface {
 
   /**
-   * Islandora utils.
+   * Entity Type Manager
    *
-   * @var Drupal\islandora\IslandoraUtils
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
-  protected $utils;
+  protected $entity_type_manager;
 
   /**
    * Constructor.
@@ -39,14 +40,14 @@ class MediaParentNodeHasBundle extends NodeType {
    *   The plugin_id for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
-   * @param \Drupal\islandora\IslandoraUtils $utils
-   *   An instance of the IslandoraUtils service.
    * @param \Drupal\Core\Entity\EntityStorageInterface $node_type_storage
    *   The entity storage.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, IslandoraUtils $utils, EntityStorageInterface $node_type_storage) {
-    parent::__construct($node_type_storage, $configuration, $plugin_id, $plugin_definition);
-    $this->utils = $utils;
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInferface $entity_type_manager) {
+    parent::__construct($configuration, $plugin_id, $plugin_definition);
+    $this->entityTypeManager = $entity_type_manager;
   }
 
   /**
@@ -57,37 +58,59 @@ class MediaParentNodeHasBundle extends NodeType {
       $configuration,
       $plugin_id,
       $plugin_definition,
-      $container->get('islandora.utils'),
-      $container->get('entity.manager')->getStorage('node_type')
+      $container->get('entity_type.manager')
+    );
+  }
+
+/**
+   * {@inheritdoc}
+   */
+  public function defaultConfiguration() {
+    return array_merge(
+      [
+        'negate' => 'TRUE',
+      ],
+      parent::defaultConfiguration()
     );
   }
 
   /**
    * {@inheritdoc}
    */
+  public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
+    $form['negate'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Negate'),
+      '#description' => $this->t('Returns TRUE if field does NOT contain a value.'),
+      '#checked' => $this->configuration['negate'],
+    ];
+    return $form;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
+    $this->configuration = $form_state->getValues();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function evaluate() {
-    // Is 'this' the entity, context, or thing activiating the condition?
-      // Have to get the expected identifier field somehow.
-    /* What I tried to write.
-    $entity_identifier = $this->get('field_ark_identifier')->getValue();
-    if ($entity_identifier) {
-      return parent::evaluate();
-    }*/
-
-    // Original Implementation.
-    /*
-    $media = $this->getContextValue('media');
-    if (!$media) {
-      return FALSE;
+    // Get the entity from the context
+    // check the field
+      // Field differs depending on the identifier - can I get that from a config here?
+    // If field is not populated, return TRUE, else FALSE
+    dsm($this->getContextValue());
+    $node = $this->getContextValue('node');
+    if ($node) {
+      $entity_identifier = $node->get('field_ark_identifier')->getValue();
+      if ($entity_identifier) {
+        return TRUE;
+      }
     }
-
-    $node = $this->utils->getParentNode($media);
-    if (!$node) {
-      return FALSE;
-    }
-    $this->setContextValue('node', $node);
-
-    return parent::evaluate();*/
+    return FALSE;
   }
 
 }

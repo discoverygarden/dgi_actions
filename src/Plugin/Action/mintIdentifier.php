@@ -135,6 +135,7 @@ class MintIdentifier extends IdentifierAction {
   public function execute($entity = null) {
     //$response = $this->mint($entity);
     //$this->setIdentifierField($entity, $response);
+    dsm('Mint Identifier Action Fired');
   }
 
   /**
