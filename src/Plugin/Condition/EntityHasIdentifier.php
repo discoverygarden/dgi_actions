@@ -24,7 +24,7 @@ class EntityHasIndentifier extends ConditionPluginBase implements ContainerFacto
   /**
    * Entity Type Manager
    *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   * @var \Drupal\Core\Entity\EntityTypeManager
    */
   protected $entity_type_manager;
 
@@ -42,10 +42,10 @@ class EntityHasIndentifier extends ConditionPluginBase implements ContainerFacto
    *   The plugin implementation definition.
    * @param \Drupal\Core\Entity\EntityStorageInterface $node_type_storage
    *   The entity storage.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManager $entity_type_manager
    *   The entity type manager.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInferface $entity_type_manager) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManager $entity_type_manager) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->entityTypeManager = $entity_type_manager;
   }
@@ -66,14 +66,14 @@ class EntityHasIndentifier extends ConditionPluginBase implements ContainerFacto
    * {@inheritdoc}
    */
   public function defaultConfiguration() {
-    parent::defaultConfiguration();
+    return parent::defaultConfiguration();
   }
 
   /**
    * {@inheritdoc}
    */
   public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
-    parent::buildConfigurationForm($form, $form_state);
+    return parent::buildConfigurationForm($form, $form_state);
   }
 
   /**
@@ -81,7 +81,7 @@ class EntityHasIndentifier extends ConditionPluginBase implements ContainerFacto
    */
   public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
     // $this->configuration = $form_state->getValues(); Do specific values instead of trying to capture all
-    parent::submitConfigurationForm($form, $form_state);
+    return parent::submitConfigurationForm($form, $form_state);
   }
 
   /**
@@ -92,14 +92,14 @@ class EntityHasIndentifier extends ConditionPluginBase implements ContainerFacto
     // check the field
       // Field differs depending on the identifier - can I get that from a config here?
     // If field is not populated, return TRUE, else FALSE
-    dsm($this->getContextValue());
-    $node = $this->getContextValue('node');
+    //dsm($this->getContextValue());
+    /*$node = $this->getContextValue('node');
     if ($node) {
       $entity_identifier = $node->get('field_ark_identifier')->getValue();
       if ($entity_identifier) {
         return TRUE;
       }
-    }
+    }*/
     return FALSE;
   }
 
