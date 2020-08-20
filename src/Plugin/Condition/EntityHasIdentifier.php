@@ -18,11 +18,8 @@ use Psr\Log\LoggerInterface;
  *
  * @Condition(
  *   id = "dgi_actions_entity_has_persistent_identifier",
- *   label = @Translation("Entity has a persistent identifier"),
+ *   label = @Translation("Identifier field is empty"),
  *   context_definitions = {
- *     "node" = @ContextDefinition("entity:node", required = FALSE, label = @Translation("Node")),
- *     "media" = @ContextDefinition("entity:media", required = FALSE, label = @Translation("Media")),
- *     "taxonomy_term" = @ContextDefinition("entity:taxonomy_term", required = FALSE, label = @Translation("Term"))
  *   }
  * )
  */
@@ -140,14 +137,16 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
       return FALSE;
     }
     else {
-      // hasField will reference the configured Field $this->configuration['field']
-        // That field value will be pulled from the specified config, or ALL dgi_actions.identifier.* configs (former is probably safer).
-      if ($node->hasField('field_ark_identifier')) {
-        // Check if the field is populated
-        // If it is, return FALSE, ELSE return TRUE
+      $configs = $this->utils->getAssociatedConfigs($this->configuration['identifier']);
+
+      // Check if the Bundle type has the configured identifier's field and that it's empty
+        // placeholder - not considered functional
+      if ($node->hasField($configs['credentials']->get('field')) && empty($node->getField($configs['credentials']->get('field')))) {
         return TRUE;
       }
-      return TRUE;
+      else {
+        return FALSE;
+      }
     }
   }
 
@@ -156,10 +155,10 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
    */
   public function summary() {
     if (!empty($this->configuration['negate'])) {
-      return $this->t('The node is not.');
+      return $this->t('The identifier field is not empty.');
     }
     else {
-      return $this->t('The node is.');
+      return $this->t('The identifier field is empty.');
     }
   }
 
@@ -167,19 +166,6 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
    * {@inheritdoc}
    */
   public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
-    $options = [];
-    foreach (['node', 'media', 'taxonomy_term'] as $content_entity) {
-      $bundles = $this->entityTypeBundleInfo->getBundleInfo($content_entity);
-      foreach ($bundles as $bundle => $bundle_properties) {
-        $bundle_fields = $this->entityFieldManager->getFieldDefinitions($content_entity, $bundle);
-        if (isset($bundle_fields['field_ark_identifier'])) { // Need to reference the config value for the field name, instead of this hardcoded one.
-          $options[$bundle] = $this->t('@bundle (@type)', [
-            '@bundle' => $bundle_properties['label'],
-            '@type' => $content_entity,
-          ]);
-        }
-      }
-    }
     $form['identifier'] = [
       '#type' => 'select',
       '#title' => t('Identifier Type'),
@@ -187,14 +173,6 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
       '#options' => $this->utils->getIdentifiers(),
       '#description' => t('The persistent identifier configuration to be used.'),
     ];
-    if (!empty($options)) {
-      $form['bundles'] = [
-        '#title' => $this->t('Bundles'),
-        '#type' => 'checkboxes',
-        '#options' => $options,
-        '#default_value' => $this->configuration['bundles'],
-      ];
-    }
 
     return parent::buildConfigurationForm($form, $form_state);;
   }
@@ -204,9 +182,6 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
    */
   public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
     $this->configuration['identifier'] = $form_state->getValue('identifier');
-    if (isset($form['bundles'])) {
-      $this->configuration['bundles'] = array_filter($form_state->getValue('bundles'));
-    }
     parent::submitConfigurationForm($form, $form_state);
   }
 
@@ -215,10 +190,7 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
    */
   public function defaultConfiguration() {
     return array_merge(
-      [
-        'bundles' => [],
-        'identifier' => ''
-      ],
+      ['identifier' => ''],
       parent::defaultConfiguration()
     );
   }
