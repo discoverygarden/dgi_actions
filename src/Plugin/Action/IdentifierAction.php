@@ -2,6 +2,7 @@
 
 namespace Drupal\dgi_actions\Plugin\Action;
 
+use Drupal\dgi_actions\Utility\IdentifierUtils;
 use Drupal\Core\Action\ConfigurableActionBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Entity\EntityTypeManager;
@@ -60,6 +61,13 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
   protected $config_factory;
 
   /**
+   * Identifier Utils.
+   *
+   * @var \Drupal\dgi_actions\Utilities\IdentifierUtils
+   */
+  protected $utils;
+
+  /**
    * Constructor.
    *
    * @param array $configuration
@@ -78,6 +86,8 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
    *   Entity field manager.
    * @param Drupal\Core\Config\ConfigFactory
    *   Config factory.
+   * @param Drupal\dgi_actions\Utilities\IdentifierUtils
+   *   Identifier utils.
    */
   public function __construct(
     array $configuration,
@@ -88,7 +98,8 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
     EntityTypeBundleInfo $entity_type_bundle_info,
     LoggerInterface $logger,
     EntityFieldManager $entity_field_manager,
-    ConfigFactory $config_factory
+    ConfigFactory $config_factory,
+    IdentifierUtils $utils
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->client = $client;
@@ -97,6 +108,7 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
     $this->logger = $logger;
     $this->entityFieldManager = $entity_field_manager;
     $this->configFactory = $config_factory;
+    $this->utils = $utils;
   }
 
   /**
@@ -112,7 +124,8 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
       $container->get('entity_type.bundle.info'),
       $container->get('logger.factory')->get('dgi_actions'),
       $container->get('entity_field.manager'),
-      $container->get('config.factory')
+      $container->get('config.factory'),
+      $container->get('dgi_actions.utils')
     );
   }
 
@@ -128,22 +141,6 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
    * {@inheritdoc}
    */
   abstract public function execute();
-
-  /**
-   * Returns list of Identifier Configs.
-   */
-  public static function getIdentifiers() {
-    $configs = $this->configFactory->listAll('dgi_actions.identifier');
-    if (!empty($configs)) {
-      $config_options = [];
-      foreach ($configs as $config_id) {
-        $config_options[$config_id] = $this->configFactory->get($config_id)->get('label');
-      }
-      return $config_options;
-    }
-
-    return 'No Identifiers Configured';
-  }
 
   /**
    * {@inheritdoc}

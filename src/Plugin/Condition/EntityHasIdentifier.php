@@ -5,10 +5,13 @@ namespace Drupal\dgi_actions\Plugin\Condition;
 use Drupal\Core\Condition\ConditionPluginBase;
 use Drupal\Core\Entity\EntityFieldManager;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Entity\EntityTypeBundleInfo;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Config\ConfigFactory;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\dgi_actions\Utility\IdentifierUtils;
+use Psr\Log\LoggerInterface;
 
 /**
  * Provides a condition to check an Entity for an existing persistent identifier.
@@ -47,6 +50,27 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
   protected $config_factory;
 
   /**
+   * Entity Type Bundle Info.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeBundleInfo
+   */
+  protected $entity_type_bundle_info;
+
+  /**
+   * Logger.
+   *
+   * @var Psr\Log\LoggerInterface
+   */
+  protected $logger;
+
+  /**
+   * Utils.
+   *
+   * @var Drupal\dgi_actions\Utility\IdentifierUtils
+   */
+  protected $utils;
+
+  /**
    * Constructor.
    *
    * @param array $configuration
@@ -64,6 +88,8 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
    *   Config factory.
    * @param Drupal\Core\Entity\EntityFieldManager
    *   Entity field manager.
+   * @param Psr\Log\LoggerInterface $logger
+   *   Logger.
    */
   public function __construct(
     array $configuration,
@@ -71,12 +97,18 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
     $plugin_definition,
     EntityTypeManagerInterface $entity_type_manager,
     ConfigFactory $config_factory,
-    EntityFieldManager $entity_field_manager
+    EntityFieldManager $entity_field_manager,
+    EntityTypeBundleInfo $entity_type_bundle_info,
+    LoggerInterface $logger,
+    IdentifierUtils $utils
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->entityTypeManager = $entity_type_manager;
     $this->configFactory = $config_factory;
     $this->entityFieldManager = $entity_field_manager;
+    $this->entityTypeBundleInfo = $entity_type_bundle_info;
+    $this->logger = $logger;
+    $this->utils = $utils;
   }
 
   /**
@@ -89,24 +121,11 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
       $plugin_definition,
       $container->get('entity_type.manager'),
       $container->get('config.factory'),
-      $container->get('entity_field.manager')
+      $container->get('entity_field.manager'),
+      $container->get('entity_type.bundle.info'),
+      $container->get('logger.channel.dgi_actions'),
+      $container->get('dgi_actions.utils')
     );
-  }
-
-  /**
-   * Returns list of Identifier Configs.
-   */
-  public static function getIdentifiers() {
-    $configs = $this->configFactory->listAll('dgi_actions.identifier');
-    if (!empty($configs)) {
-      $config_options = [];
-      foreach ($configs as $config_id) {
-        $config_options[$config_id] = $this->configFactory->get($config_id)->get('label');
-      }
-      return $config_options;
-    }
-
-    return 'No Identifiers Configured';
   }
 
   /**
@@ -150,7 +169,7 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
   public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
     $options = [];
     foreach (['node', 'media', 'taxonomy_term'] as $content_entity) {
-      $bundles = \Drupal::service('entity_type.bundle.info')->getBundleInfo($content_entity);
+      $bundles = $this->entityTypeBundleInfo->getBundleInfo($content_entity);
       foreach ($bundles as $bundle => $bundle_properties) {
         $bundle_fields = $this->entityFieldManager->getFieldDefinitions($content_entity, $bundle);
         if (isset($bundle_fields['field_ark_identifier'])) { // Need to reference the config value for the field name, instead of this hardcoded one.
@@ -161,13 +180,21 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
         }
       }
     }
-
-    $form['bundles'] = [
-      '#title' => $this->t('Bundles'),
-      '#type' => 'checkboxes',
-      '#options' => $options,
-      '#default_value' => $this->configuration['bundles'],
+    $form['identifier'] = [
+      '#type' => 'select',
+      '#title' => t('Identifier Type'),
+      '#default_value' => $this->configuration['identifier'],
+      '#options' => $this->utils->getIdentifiers(),
+      '#description' => t('The persistent identifier configuration to be used.'),
     ];
+    if (!empty($options)) {
+      $form['bundles'] = [
+        '#title' => $this->t('Bundles'),
+        '#type' => 'checkboxes',
+        '#options' => $options,
+        '#default_value' => $this->configuration['bundles'],
+      ];
+    }
 
     return parent::buildConfigurationForm($form, $form_state);;
   }
@@ -176,7 +203,10 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
    * {@inheritdoc}
    */
   public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
-    $this->configuration['bundles'] = array_filter($form_state->getValue('bundles'));
+    $this->configuration['identifier'] = $form_state->getValue('identifier');
+    if (isset($form['bundles'])) {
+      $this->configuration['bundles'] = array_filter($form_state->getValue('bundles'));
+    }
     parent::submitConfigurationForm($form, $form_state);
   }
 
@@ -185,7 +215,10 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
    */
   public function defaultConfiguration() {
     return array_merge(
-      ['bundles' => []],
+      [
+        'bundles' => [],
+        'identifier' => ''
+      ],
       parent::defaultConfiguration()
     );
   }

@@ -50,23 +50,6 @@ class MintIdentifier extends IdentifierAction {
     return $assocArray;
   }
 
-  public function getAssociatedConfigs() {
-    $configs = [];
-    $identifier = $this->configFactory->get($this->configuration['identifier_type']);
-    if (!empty($identifier->get())) {
-      $creds = $this->configFactory->get('dgi_actions.credentials.'.$identifier->get('identifier_id'));
-      $data_profile = $this->configFactory->get('dgi_actions.data_profile.'.$identifier->get('data_profile.id'));
-
-      $configs['identifier'] = $identifier;
-      $configs['credentials'] = $creds;
-      $configs['data_profile'] = $data_profile;
-
-      return $configs;
-    }
-
-    return FALSE;
-  }
-
   protected function getFieldData($entity = null, $configs) {
     // Test Entity Condition - Replace with Error.
     if (!$entity) {
@@ -75,7 +58,7 @@ class MintIdentifier extends IdentifierAction {
 
     // Test Config Condition - Replace with Error.
     if (!$configs) {
-      $configs = $this->getAssociatedConfigs();
+      $configs = $this->utils->getAssociatedConfigs($this->configuration['identifier_type']);
     }
 
     $data = [];
@@ -102,7 +85,7 @@ class MintIdentifier extends IdentifierAction {
    * {@inheritdoc}
    */
   public function mint($entity = null) {
-    $configs = $this->getAssociatedConfigs();
+    $configs = $this->utils->getAssociatedConfigs($this->configuration['identifier_type']);
     $body = $this->buildMetadata($this->getFieldData($entity, $configs));
 
     if (!empty($configs['credentials'])) {
@@ -158,7 +141,7 @@ class MintIdentifier extends IdentifierAction {
       '#type' => 'select',
       '#title' => t('Identifier Type'),
       '#default_value' => $this->configuration['identifier_type'],
-      '#options' => $this->getIdentifiers(),
+      '#options' => $this->utils->getIdentifiers(),
       '#description' => t('The persistent identifier configuration to be used.'),
     ];
     return $form;
