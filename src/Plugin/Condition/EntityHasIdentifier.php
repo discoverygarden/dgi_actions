@@ -3,9 +3,6 @@
 namespace Drupal\dgi_actions\Plugin\Condition;
 
 use Drupal\Core\Condition\ConditionPluginBase;
-use Drupal\Core\Entity\EntityFieldManager;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Entity\EntityTypeBundleInfo;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Config\ConfigFactory;
@@ -20,24 +17,11 @@ use Psr\Log\LoggerInterface;
  *   id = "dgi_actions_entity_has_persistent_identifier",
  *   label = @Translation("Identifier field is empty"),
  *   context_definitions = {
+ *     "entity" = @ContextDefinition("entity", required = FALSE, label = @Translation("Entity"))
  *   }
  * )
  */
 class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactoryPluginInterface {
-
-  /**
-   * Term storage.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entity_type_manager;
-
-  /**
-   * Entity Field Manager.
-   *
-   * @var \Drupal\Core\Entity\EntityFieldManager
-   */
-  protected $entity_field_manager;
 
   /**
    * Config Factory.
@@ -45,13 +29,6 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
    * @var \Drupal\Core\Config\ConfigFactory
    */
   protected $config_factory;
-
-  /**
-   * Entity Type Bundle Info.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeBundleInfo
-   */
-  protected $entity_type_bundle_info;
 
   /**
    * Logger.
@@ -79,31 +56,23 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
    *   The plugin_id for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   *   Entity type manager.
    * @param Drupal\Core\Config\ConfigFactory
    *   Config factory.
-   * @param Drupal\Core\Entity\EntityFieldManager
-   *   Entity field manager.
    * @param Psr\Log\LoggerInterface $logger
    *   Logger.
+   * @param Drupal\dgi_actions\Utility\IdentifierUtils $utils
+   *   Identifier utils.
    */
   public function __construct(
     array $configuration,
     $plugin_id,
     $plugin_definition,
-    EntityTypeManagerInterface $entity_type_manager,
     ConfigFactory $config_factory,
-    EntityFieldManager $entity_field_manager,
-    EntityTypeBundleInfo $entity_type_bundle_info,
     LoggerInterface $logger,
     IdentifierUtils $utils
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->entityTypeManager = $entity_type_manager;
     $this->configFactory = $config_factory;
-    $this->entityFieldManager = $entity_field_manager;
-    $this->entityTypeBundleInfo = $entity_type_bundle_info;
     $this->logger = $logger;
     $this->utils = $utils;
   }
@@ -116,10 +85,7 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
       $configuration,
       $plugin_id,
       $plugin_definition,
-      $container->get('entity_type.manager'),
       $container->get('config.factory'),
-      $container->get('entity_field.manager'),
-      $container->get('entity_type.bundle.info'),
       $container->get('logger.channel.dgi_actions'),
       $container->get('dgi_actions.utils')
     );
@@ -129,20 +95,20 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
    * {@inheritdoc}
    */
   public function evaluate() {
-    $node = $this->getContextValue('node');
-    if (!$node && !$this->isNegated()) {
+    $entity = $this->getContextValue('entity');
+    if (!$entity && !$this->isNegated()) {
       return FALSE;
     }
-    elseif (!$node) {
+    elseif (!$entity) {
       return FALSE;
     }
     else {
       $configs = $this->utils->getAssociatedConfigs($this->configuration['identifier']);
-
-      // Check if the Bundle type has the configured identifier's field and that it's empty
-        // placeholder - not considered functional
-      if ($node->hasField($configs['credentials']->get('field')) && empty($node->getField($configs['credentials']->get('field')))) {
-        return TRUE;
+      $field = $configs['credentials']->get('field');
+      if ($entity instanceof FieldableEntityInterface && !empty($field)) {
+        if ($entity->hasField($field) && $entity->getFields($field)->isEmpty()) {
+          return TRUE;
+        }
       }
       else {
         return FALSE;
