@@ -96,17 +96,17 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
    */
   public function evaluate() {
     $entity = $this->getContextValue('entity');
-    if (!$entity && !$this->isNegated()) {
-      return FALSE;
-    }
-    elseif (!$entity) {
+    if (!$entity) {
       return FALSE;
     }
     else {
       $configs = $this->utils->getAssociatedConfigs($this->configuration['identifier']);
       $field = $configs['credentials']->get('field');
-      if ($entity instanceof FieldableEntityInterface && !empty($field)) {
-        if ($entity->hasField($field) && $entity->getFields($field)->isEmpty()) {
+      //if ($entity instanceof FieldableEntityInterface && !empty($field)) {
+      if ((method_exists($entity, 'hasField') && method_exists($entity, 'get')) && !empty($field)) { // Bandaid solution because instanceof doesn't seem to work
+        $this->logger->info('Entity is instanceof and field is not empty');
+        if ($entity->hasField($field) && $entity->get($field)->isEmpty()) {
+          $this->logger->info('Has Field and Field is Empty - Executing Reaction');
           return TRUE;
         }
       }

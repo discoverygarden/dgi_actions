@@ -53,6 +53,7 @@ class MintIdentifier extends IdentifierAction {
   protected function getFieldData($entity = null, $configs) {
     // Test Entity Condition - Replace with Error.
     if (!$entity) {
+      $this->logger->info('mint identifier - getFieldData - entity is empty');
       $entity = $this->entityTypeManager->getStorage('node')->load(3);
     }
 
@@ -75,7 +76,7 @@ class MintIdentifier extends IdentifierAction {
 
   protected function setIdentifierField($entity, $response) {
     if (array_key_exists('success', $response)) {
-      $configs = $this->getAssociatedConfigs();
+      $configs = $this->utils->getAssociatedConfigs($this->configuration['identifier_type']);
       $entity->set($configs['credentials']->get('field'), $configs['credentials']->get('host').'/id/'.$response['success']);
       $entity->save();
     }
@@ -109,16 +110,19 @@ class MintIdentifier extends IdentifierAction {
       return $this->responseArray($response->getBody()->getContents());
     }
 
-    return $this->logger-warning('DGI_Action - Mint Action - Credentials Config not found.');
+    return $this->logger->warning('DGI_Action - Mint Action - Credentials Config not found.');
   }
 
   /**
    * {@inheritdoc}
    */
   public function execute($entity = null) {
-    //$response = $this->mint($entity);
-    //$this->setIdentifierField($entity, $response);
-    dsm('Mint Identifier Action Fired');
+    $this->logger->info('mint identifier - execute');
+    if ($entity) {
+      $this->logger->info('mint identifier - entity not null');
+      $response = $this->mint($entity);
+      $this->setIdentifierField($entity, $response);
+    }
   }
 
   /**
