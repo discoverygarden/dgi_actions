@@ -3,6 +3,8 @@
 namespace Drupal\dgi_actions\Plugin\Condition;
 
 use Drupal\Core\Condition\ConditionPluginBase;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Config\ConfigFactory;
@@ -45,6 +47,13 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
   protected $utils;
 
   /**
+   * Term storage.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+  */
+  protected $entityTypeManager;
+
+  /**
    * Constructor.
    *
    * @param array $configuration
@@ -69,12 +78,14 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
     $plugin_definition,
     ConfigFactory $config_factory,
     LoggerInterface $logger,
-    IdentifierUtils $utils
+    IdentifierUtils $utils,
+    EntityTypeManagerInterface $entity_type_manager
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->configFactory = $config_factory;
     $this->logger = $logger;
     $this->utils = $utils;
+    $this->entityTypeManager = $entity_type_manager;
   }
 
   /**
@@ -87,7 +98,8 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
       $plugin_definition,
       $container->get('config.factory'),
       $container->get('logger.channel.dgi_actions'),
-      $container->get('dgi_actions.utils')
+      $container->get('dgi_actions.utils'),
+      $container->get('entity_type.manager')
     );
   }
 
@@ -100,13 +112,19 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
       return FALSE;
     }
     else {
+      //$this->logger->info('Context Counts: @counts', ['@counts' => count($this->getContexts())]);
+      //$this->logger->info('Context Bundle: @bundle', ['@bundle' => $entity->bundle()]);
       $configs = $this->utils->getAssociatedConfigs($this->configuration['identifier']);
       $field = $configs['credentials']->get('field');
-      //if ($entity instanceof FieldableEntityInterface && !empty($field)) {
-      if ((method_exists($entity, 'hasField') && method_exists($entity, 'get')) && !empty($field)) { // Bandaid solution because instanceof doesn't seem to work
-        $this->logger->info('Entity is instanceof and field is not empty');
+      if ($entity instanceof FieldableEntityInterface && !empty($field)) {
+        //$this->logger->info('@title : @type', ['@title' => $entity->getTitle(), '@type' => $entity->getType()]);
+        //$this->logger->info('Field: @field', ['@field' => $field]);
+        //$this->logger->info('instanceof FieldableEntityInterface: @instance', ['@instance' => ($entity instanceof FieldableEntityInterface) ? 'TRUE' : 'FALSE']);
+        //$this->logger->info('Method hasField exists: @method_exists', ['@method_exists' => method_exists($entity, 'hasField')]);
+        //$this->logger->info('Entity is instanceof and field is not empty');
+        //$this->logger->info('Entity field isEmpty: @isempty', ['@isempty' => ($entity->get($field)->isEmpty()) ? 'TRUE' : 'FALSE']);
         if ($entity->hasField($field) && $entity->get($field)->isEmpty()) {
-          $this->logger->info('Has Field and Field is Empty - Executing Reaction');
+          //$this->logger->info('EHI - Evaluate TRUE');
           return TRUE;
         }
       }
