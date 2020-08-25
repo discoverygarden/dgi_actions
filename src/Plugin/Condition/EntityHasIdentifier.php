@@ -112,19 +112,10 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
       return FALSE;
     }
     else {
-      //$this->logger->info('Context Counts: @counts', ['@counts' => count($this->getContexts())]);
-      //$this->logger->info('Context Bundle: @bundle', ['@bundle' => $entity->bundle()]);
       $configs = $this->utils->getAssociatedConfigs($this->configuration['identifier']);
       $field = $configs['credentials']->get('field');
       if ($entity instanceof FieldableEntityInterface && !empty($field)) {
-        //$this->logger->info('@title : @type', ['@title' => $entity->getTitle(), '@type' => $entity->getType()]);
-        //$this->logger->info('Field: @field', ['@field' => $field]);
-        //$this->logger->info('instanceof FieldableEntityInterface: @instance', ['@instance' => ($entity instanceof FieldableEntityInterface) ? 'TRUE' : 'FALSE']);
-        //$this->logger->info('Method hasField exists: @method_exists', ['@method_exists' => method_exists($entity, 'hasField')]);
-        //$this->logger->info('Entity is instanceof and field is not empty');
-        //$this->logger->info('Entity field isEmpty: @isempty', ['@isempty' => ($entity->get($field)->isEmpty()) ? 'TRUE' : 'FALSE']);
         if ($entity->hasField($field) && $entity->get($field)->isEmpty()) {
-          //$this->logger->info('EHI - Evaluate TRUE');
           return TRUE;
         }
       }

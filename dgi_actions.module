@@ -1,0 +1,19 @@
+<?php
+
+/**
+ * @file
+ * Contains dgi_actions.module.
+ */
+
+use Drupal\Component\Plugin\Exception\PluginNotFoundException;
+use Drupal\node\NodeInterface;
+
+/**
+ * Implements hook_node_insert().
+ */
+function dgi_actions_node_insert(NodeInterface $node) {
+  $utils = \Drupal::service('islandora.utils');
+
+  // Execute index reactions.
+  $utils->executeNodeReactions('\Drupal\dgi_actions\Plugin\ContextReaction\MintReaction', $node);
+}

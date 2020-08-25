@@ -117,15 +117,10 @@ class MintIdentifier extends IdentifierAction {
    * {@inheritdoc}
    */
   public function execute($entity = NULL) {
-    //$this->logger->info('Mint Identifier - Execute');
     if ($entity) {
-      //$this->logger->info('Mint Identifier - Minting');
       $response = $this->mint($entity);
       $this->setIdentifierField($entity, $response);
     }
-    /*else {
-      $this->logger->info('Mint Identifier - Entity is Null');
-    }*/
   }
 
   /**
