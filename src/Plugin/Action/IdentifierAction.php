@@ -14,6 +14,7 @@ use Psr\Log\LoggerInterface;
 use Drupal\Core\Entity\EntityFieldManager;
 use Drupal\Core\Config\ConfigFactory;
 use Drupal\Core\Session\AccountInterface;
+use Exception;
 
 abstract class IdentifierAction extends ConfigurableActionBase implements ContainerFactoryPluginInterface {
 
@@ -145,7 +146,26 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
   /**
    * {@inheritdoc}
    */
-  abstract public function buildConfigurationForm(array $form, FormStateInterface $form_state);
+  public function defaultConfiguration() {
+    return [
+      'identifier_type' => '',
+    ];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
+    $form['identifier_type'] = [
+      '#type' => 'select',
+      '#title' => t('Identifier Type'),
+      '#default_value' => $this->configuration['identifier_type'],
+      '#options' => $this->utils->getIdentifiers(),
+      '#description' => t('The persistent identifier configuration to be used.'),
+    ];
+
+    return $form;
+  }
 
   /**
    * {@inheritdoc}
