@@ -17,3 +17,25 @@ function dgi_actions_node_insert(NodeInterface $node) {
   // Execute index reactions.
   $utils->executeNodeReactions('\Drupal\dgi_actions\Plugin\ContextReaction\MintReaction', $node);
 }
+
+/**
+ * Implements hook_node_predelete().
+ */
+function dgi_actions_node_predelete(NodeInterface $node) {
+  $utils = \Drupal::service('islandora.utils');
+  \Drupal::logger('dgi_actions')->info('In the PreDelete');
+
+  // Execute index reactions.
+  $utils->executeNodeReactions('\Drupal\dgi_actions\Plugin\ContextReaction\DeleteReaction', $node);
+}
+
+/**
+ * Implements hook_node_delete().
+ */
+function dgi_actions_node_delete(NodeInterface $node) {
+  $utils = \Drupal::service('islandora.utils');
+  \Drupal::logger('dgi_actions')->info('In the Delete');
+
+  // Execute index reactions.
+  $utils->executeNodeReactions('\Drupal\dgi_actions\Plugin\ContextReaction\DeleteReaction', $node);
+}

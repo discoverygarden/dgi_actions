@@ -8,7 +8,7 @@ use GuzzleHttp\Psr7\Request;
 use Exception;
 
 /**
- * Creates an ARK Record on CDL EZID.
+ * Mints an ARK Identifier Record on CDL EZID.
  *
  * @Action(
  *   id = "mint_ark_identifier_record",
@@ -30,9 +30,9 @@ class MintArkIdentifier extends MintIdentifier {
    */
   protected function buildRequestBody($entity, $data = null, $configs) {
     if ($data) {
-      // Adding the External URL to the Data Array using the
-      // CDL EZID _target key.
-      $data = array_merge(['_target' => $this->getExternalURL($entity)], $data);
+      /// Adding the External URL to the Data Array using the CDL EZID _target key.
+      // Also setting _status as reserved. Else identifier cannot be deleted.
+      $data = array_merge(['_target' => $this->getExternalURL($entity), '_status' => 'reserved'], $data);
       $outputString = "";
       foreach($data as $key => $val) {
         $outputString .= $key . ": " . $val . "\r\n";
@@ -48,12 +48,11 @@ class MintArkIdentifier extends MintIdentifier {
   }
 
   /**
-   * Returns the mint request response formatted as a key value pair array.
+   * Formats the CDL EZID response as a key-value pair array.
    *
-   * CDL EZID sends back a response as a single string,
-   * with response values separated by colons.
-   * This function is to separate that out into an associative array
-   * breaking the response on colons.
+   * CDL EZID sends back a response body as a single string,
+   * with response values separated by colons, this method
+   * separates that into a key-value pair array.
    */
   protected function responseArray($contents) {
     $responseArray = preg_split('/\r\n|\r|\n/', trim($contents));
@@ -76,18 +75,6 @@ class MintArkIdentifier extends MintIdentifier {
     }
     else {
       return FALSE;
-    }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function setIdentifierField($entity, $identifier, $configs) {
-    if ($identifier) {
-      parent::setIdentifierField($entity, $identifier, $configs);
-    }
-    else {
-      throw new Exception('Identifier was not successfully set.');
     }
   }
 

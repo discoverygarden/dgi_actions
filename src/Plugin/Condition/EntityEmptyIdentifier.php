@@ -16,14 +16,14 @@ use Psr\Log\LoggerInterface;
  * Provides a condition to check an Entity for an existing persistent identifier.
  *
  * @Condition(
- *   id = "dgi_actions_entity_persistent_identifier_populated",
- *   label = @Translation("Identifier field has persistent identifier"),
+ *   id = "dgi_actions_entity_persistent_identifier_empty",
+ *   label = @Translation("Identifier field is empty"),
  *   context_definitions = {
  *     "entity" = @ContextDefinition("entity", required = FALSE, label = @Translation("Entity"))
  *   }
  * )
  */
-class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactoryPluginInterface {
+class EntityEmptyIdentifier extends ConditionPluginBase implements ContainerFactoryPluginInterface {
 
   /**
    * Config Factory.
@@ -112,7 +112,7 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
       $configs = $this->utils->getAssociatedConfigs($this->configuration['identifier']);
       $field = $configs['credentials']->get('field');
       if ($entity instanceof FieldableEntityInterface && !empty($field)) {
-        if ($entity->hasField($field) && !$entity->get($field)->isEmpty()) {
+        if ($entity->hasField($field) && $entity->get($field)->isEmpty()) {
           return TRUE;
         }
       }

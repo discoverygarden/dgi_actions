@@ -49,7 +49,8 @@ abstract class MintIdentifier extends IdentifierAction {
       $data = [];
       foreach ($configs['data_profile']->get() as $key => $value) {
         if(is_numeric($key)) {
-          $data[$value['key']] = $entity->get($value['source_field'])->getString(); //getvalue() and deal with array
+          // getValue might be better, and give more control over multivalued fields.
+          $data[$value['key']] = $entity->get($value['source_field'])->getString();
         }
       }
 
@@ -73,8 +74,26 @@ abstract class MintIdentifier extends IdentifierAction {
    */
   abstract protected function buildRequestBody($entity, $data = null, $configs);
 
+  /**
+   * Builds the Guzzle HTTP Request.
+   *
+   * @param Array $configs
+   *  The array of the configs.
+   * @return Request $request
+   *  The Guzzle HTTP Request Object.
+   */
   abstract public function buildRequest($configs);
 
+  /**
+   * Sends the Request and Request Body.
+   *
+   * @param Request $request
+   *  The Guzzle HTTP Request Object.
+   * @param mixed $requestBody
+   *  The request body structured how the API service expects.
+   * @return Response $response
+   *  The Guzzle HTTP Response Object.
+   */
   abstract public function sendRequest($request, $requestBody, $configs);
 
   /**
@@ -89,7 +108,9 @@ abstract class MintIdentifier extends IdentifierAction {
    * @return mixed $response
    *  The request response returned by the service.
    */
-  public function mint($requestBody, $configs) {
+  public function mint($entity, $configs) {
+    $fieldData = $this->getFieldData($entity, $configs);
+    $requestBody = $this->buildRequestBody($entity, $fieldData, $configs);
     $request = $this->buildRequest($configs);
     $response = $this->sendRequest($request, $requestBody, $configs);
     return $response;
@@ -115,8 +136,13 @@ abstract class MintIdentifier extends IdentifierAction {
    *  The Array of Configs.
    */
   protected function setIdentifierField($entity, $identifier, $configs) {
-    $entity->set($configs['credentials']->get('field'), $identifier);
-    $entity->save();
+    if ($identifier) {
+      $entity->set($configs['credentials']->get('field'), $identifier);
+      $entity->save();
+    }
+    else {
+      throw new Exception('Identifier is not set.');
+    }
   }
 
   /**
@@ -126,14 +152,12 @@ abstract class MintIdentifier extends IdentifierAction {
     if ($entity) {
       try {
         $configs = $this->utils->getAssociatedConfigs($this->configuration['identifier_type']);
-        $fieldData = $this->getFieldData($entity, $configs);
-        $requestBody = $this->buildRequestBody($entity, $fieldData, $configs);
-        $response = $this->mint($requestBody, $configs);
+        $response = $this->mint($entity, $configs);
         $identifier = $this->getIdentifier($response, $configs);
         $this->setIdentifierField($entity, $identifier, $configs);
       }
       catch (Exception $e) {
-        $this->logger->error('Issue while executing Mint Identifier action: @e', ['@e' => $e->getMessage()]);
+        $this->logger->error('Exception: Mint Identifier Action: @e', ['@e' => $e->getMessage()]);
       }
     }
   }
