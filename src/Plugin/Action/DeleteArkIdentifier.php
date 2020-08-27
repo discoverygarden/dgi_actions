@@ -49,18 +49,23 @@ class DeleteArkIdentifier extends DeleteIdentifier {
    * {@inheritdoc}
    */
   public function sendRequest($request, $configs) {
-    $response = $this->client->send($request, [
-      'auth' => [$configs['credentials']->get('username'), $configs['credentials']->get('password')],
-    ]);
+    try {
+      $response = $this->client->send($request, [
+        'auth' => [$configs['credentials']->get('username'), $configs['credentials']->get('password')],
+      ]);
 
-    $bodyContents = $response->getBody()->getContents();
-    $filteredResponse = $this->responseArray($response->getBody()->getContents());
+      $bodyContents = $response->getBody()->getContents();
+      $filteredResponse = $this->responseArray($bodyContents);
 
-    if(array_key_exists('success', $responseArray)) {
-      return $this->logger->info('ARK Identifier Deleted: @contents', ['@contents' => $bodyContents]);
+      if(array_key_exists('success', $filteredResponse)) {
+        return $this->logger->info('ARK Identifier Deleted: @contents', ['@contents' => $bodyContents]);
+      }
+      else {
+        throw new Exception($bodyContents);
+      }
     }
-    else {
-      throw new Exception('@contents', ['@contents' => $bodyContents]);
+    catch (Exception $e) {
+      throw $e;
     }
   }
 

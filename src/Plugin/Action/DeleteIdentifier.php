@@ -27,7 +27,7 @@ abstract class DeleteIdentifier extends IdentifierAction {
    * @return String $entity
    *  Returns the value stored in the identifier field as a string.
    */
-  public function getIdentifer($entity = NULL, $configs) {
+  public function getIdentifier($entity = NULL, $configs) {
     if ($entity) {
       $identifier = $entity->get($configs['credentials']->get('field'))->getString();
       if (!empty($identifier)) {
@@ -73,8 +73,8 @@ abstract class DeleteIdentifier extends IdentifierAction {
   public function delete($entity = NULL) {
     try {
       $configs = $this->utils->getAssociatedConfigs($this->configuration['identifier_type']);
-      $this->getIdentifier($entity, $configs);
-      $this->buildRequest($identifier);
+      $identifier = $this->getIdentifier($entity, $configs);
+      $request = $this->buildRequest($identifier);
       $this->sendRequest($request, $configs);
     }
     catch (Exception $e) {
@@ -86,7 +86,6 @@ abstract class DeleteIdentifier extends IdentifierAction {
    * {@inheritdoc}
    */
   public function execute($entity = NULL) {
-    $this->logger->info('Deleting Identifier');
     if ($entity) {
       try {
         $this->delete($entity);
