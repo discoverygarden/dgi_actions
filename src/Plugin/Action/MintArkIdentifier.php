@@ -69,8 +69,10 @@ class MintArkIdentifier extends MintIdentifier {
    * {@inheritdoc}
    */
   protected function getIdentifier($response, $configs) {
-    $responseArray = $this->responseArray($response->getBody()->getContents());
+    $contents = $response->getBody()->getContents();
+    $responseArray = $this->responseArray($contents);
     if (array_key_exists('success', $responseArray)) {
+      $this->logger->info('ARK Identifier Minted: @contents', ['@contents' => $contents]);
       return $configs['credentials']->get('host') . '/id/' . $responseArray['success'];
     }
     else {
