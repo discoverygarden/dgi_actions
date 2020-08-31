@@ -123,8 +123,10 @@ abstract class MintIdentifier extends IdentifierAction {
    *  Response from the service API.
    * @param Array $configs
    *  The array of identifier configs.
+   * @return String $response
+   *  The identifier returned in the API response.
    */
-  abstract protected function getIdentifier($response, $configs);
+  abstract protected function getIdentifierFromResponse($response, $configs);
 
   /**
    * Sets the Entity field with the Identifier.
@@ -153,7 +155,7 @@ abstract class MintIdentifier extends IdentifierAction {
       try {
         $configs = $this->utils->getAssociatedConfigs($this->configuration['identifier_type']);
         $response = $this->mint($entity, $configs);
-        $identifier = $this->getIdentifier($response, $configs);
+        $identifier = $this->getIdentifierFromResponse($response, $configs);
         $this->setIdentifierField($entity, $identifier, $configs);
       }
       catch (Exception $e) {

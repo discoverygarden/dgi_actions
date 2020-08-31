@@ -68,7 +68,7 @@ class MintArkIdentifier extends MintIdentifier {
   /**
    * {@inheritdoc}
    */
-  protected function getIdentifier($response, $configs) {
+  protected function getIdentifierFromResponse($response, $configs) {
     $contents = $response->getBody()->getContents();
     $responseArray = $this->responseArray($contents);
     if (array_key_exists('success', $responseArray)) {
@@ -76,7 +76,7 @@ class MintArkIdentifier extends MintIdentifier {
       return $configs['credentials']->get('host') . '/id/' . $responseArray['success'];
     }
     else {
-      return FALSE;
+      throw new Exception($contents);
     }
   }
 

@@ -20,6 +20,27 @@ Install as usual, see
 [this](https://drupal.org/documentation/install/modules-themes/modules-8) for
 further information.
 
+## Implementation
+
+In order to leverage Identifier Minting and Deleting for a given identifier, the following configs are required:
+* Identifier Config - dgi_actions.identifier.type.yml
+  * Contains the identifiers main information.
+  * Ex. dgi_actions.identifier.ark.yml
+* Identifier Credentials Config - dgi_actions.credentials.type.yml
+  * Contains the credentials for specified identifier type.
+  * Ex. dgi_actions.credentials.ark.yml
+* Identifier Data Profile - dgi_actions.data_profile.type.yml
+  * Contains the data layout for the specified data profile type.
+  * Ex. dgi_actions.data_profile.erc.yml
+
+Once configured, the applicable Mint or Delete class will need to be extended
+to implement Identifier specific abstracted functions.
+
+Once the extended classes have been implemented, the Actions will need to be
+enabled and configured in the UI at '/admin/config/system/actions' after that,
+a Context will have to be created at '/admin/structure/context' configured using
+either the 'Mint (dgi_actions)' or 'Delete (dgi_actions)' Reaction targetting the applicable Action.
+
 ## Troubleshooting/Issues
 
 Having problems or solved a problem? Contact

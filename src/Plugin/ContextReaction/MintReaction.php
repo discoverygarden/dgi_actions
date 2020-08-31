@@ -9,7 +9,7 @@ use Drupal\islandora\PresetReaction\PresetReaction;
  *
  * @ContextReaction(
  *   id = "mint",
- *   label = @Translation("Mint")
+ *   label = @Translation("Mint (dgi_actions)")
  * )
  */
 class MintReaction extends PresetReaction {}
