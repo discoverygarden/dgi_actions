@@ -2,9 +2,8 @@
 
 namespace Drupal\dgi_actions\Plugin\Action;
 
-use Drupal\dgi_actions\Plugin\Action\IdentifierAction;
-use Drupal\dgi_actions\Plugin\Action\mintIdentifier;
-use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Entity\FieldableEntityInterface;
+use Drupal\Core\Entity\Exception\UndefinedLinkTemplateException;
 use Exception;
 
 /**
@@ -22,13 +21,19 @@ abstract class MintIdentifier extends IdentifierAction {
    * Gets the External URL of the Entity.
    *
    * @param EntityInterface $entity
-   *  The entity.
-   * @return String
-   *  Entitiy's external URL as a string.
+   *   The entity.
+   *
+   * @return string
+   *   Entitiy's external URL as a string.
    */
-  protected function getExternalURL($entity = NULL){
-    if ($entity) {
-      return $entity->toUrl('canonical', ['absolute' => TRUE])->toString();
+  protected function getExternalUrl(EntityInterface $entity = NULL) {
+    try {
+      if ($entity) {
+        return $entity->toUrl('canonical', ['absolute' => TRUE])->toString();
+      }
+    }
+    catch (UndefinedLinkTemplateException $le) {
+      throw $le;
     }
   }
 
@@ -36,20 +41,17 @@ abstract class MintIdentifier extends IdentifierAction {
    * Gets the data of the fields provided by the data_profile config.
    *
    * @param EntityInterface $entity
-   *  The Entity.
-   * @param Array $configs
-   *  The configured configs for the identifier.
-   * @return Array $data
-   *  The returned data structured in a key value pair based on the data_profile.
-   * @throws Exception $e
-   *  Throws an Exception if $entity or $configs are NULL.
+   *   The Entity.
+   *
+   * @return array
+   *   The returned data structured in a key value pair
+   *   based on the data_profile.
    */
-  protected function getFieldData($entity = null, $configs) {
-    if ($entity && $configs) {
+  protected function getFieldData(EntityInterface $entity) {
+    if ($entity && $this->configs && $entity instanceof FieldableEntityInterface) {
       $data = [];
-      foreach ($configs['data_profile']->get() as $key => $value) {
-        if(is_numeric($key)) {
-          // getValue might be better, and give more control over multivalued fields.
+      foreach ($this->configs['data_profile']->get() as $key => $value) {
+        if (is_numeric($key) && $entity->hasField($value['source_field'])) {
           $data[$value['key']] = $entity->get($value['source_field'])->getString();
         }
       }
@@ -57,62 +59,57 @@ abstract class MintIdentifier extends IdentifierAction {
       return $data;
     }
 
-    throw new Exception('Field Data could not be acquired because of missing Entity or Configs.');
+    $this->logger->error('Field Data could not be acquired because of missing Entity or Configs.');
   }
 
   /**
    * Constructs the body data into what the format the minting service expects.
    *
    * @param EntityInterface $entity
-   *  The Entity.
+   *   The Entity.
    * @param mixed $data
-   *  The data that's to be built for the service.
-   * @param Array $configs
-   *  An array of the identifier's configs.
-   * @return Mixed
-   *  Returns the request body formatted to the minting service specifications.
+   *   The data that's to be built for the service.
+   *
+   * @return mixed
+   *   Returns the request body formatted to the minting service specifications.
    */
-  abstract protected function buildRequestBody($entity, $data = null, $configs);
+  abstract protected function buildRequestBody(EntityInterface $entity, $data = NULL);
 
   /**
    * Builds the Guzzle HTTP Request.
    *
-   * @param Array $configs
-   *  The array of the configs.
-   * @return Request $request
-   *  The Guzzle HTTP Request Object.
+   * @return Request
+   *   The Guzzle HTTP Request Object.
    */
-  abstract public function buildRequest($configs);
+  abstract public function buildRequest();
 
   /**
    * Sends the Request and Request Body.
    *
    * @param Request $request
-   *  The Guzzle HTTP Request Object.
+   *   The Guzzle HTTP Request Object.
    * @param mixed $requestBody
-   *  The request body structured how the API service expects.
-   * @return Response $response
-   *  The Guzzle HTTP Response Object.
+   *   The request body structured how the API service expects.
+   *
+   * @return Response
+   *   The Guzzle HTTP Response Object.
    */
-  abstract public function sendRequest($request, $requestBody, $configs);
+  abstract public function sendRequest(Request $request, $requestBody);
 
   /**
    * Mints the identifier to the service.
    *
    * @param EntityInterface $entity
-   *  The entity that is being minted.
-   * @param mixed $requestBody
-   *  The request body formatted as expected for the service.
-   * @param Array $configs
-   *  The array of identifier configs.
-   * @return mixed $response
-   *  The request response returned by the service.
+   *   The entity that is being minted.
+   *
+   * @return mixed
+   *   The request response returned by the service.
    */
-  public function mint($entity, $configs) {
-    $fieldData = $this->getFieldData($entity, $configs);
-    $requestBody = $this->buildRequestBody($entity, $fieldData, $configs);
-    $request = $this->buildRequest($configs);
-    $response = $this->sendRequest($request, $requestBody, $configs);
+  public function mint(EntityInterface $entity) {
+    $fieldData = $this->getFieldData($entity);
+    $requestBody = $this->buildRequestBody($entity, $fieldData);
+    $request = $this->buildRequest();
+    $response = $this->sendRequest($request, $requestBody);
     return $response;
   }
 
@@ -120,30 +117,34 @@ abstract class MintIdentifier extends IdentifierAction {
    * Gets the Identifier from the service API response.
    *
    * @param mixed $response
-   *  Response from the service API.
-   * @param Array $configs
-   *  The array of identifier configs.
-   * @return String $response
-   *  The identifier returned in the API response.
+   *   Response from the service API.
+   *
+   * @return string
+   *   The identifier returned in the API response.
    */
-  abstract protected function getIdentifierFromResponse($response, $configs);
+  abstract protected function getIdentifierFromResponse($response);
 
   /**
    * Sets the Entity field with the Identifier.
+   *
    * @param EntityInterface $entity
-   *  The entity.
-   * @param String $identifier
-   *  The identifier formatted as a URL.
-   * @param Array $configs
-   *  The Array of Configs.
+   *   The entity.
+   * @param string $identifier
+   *   The identifier formatted as a URL.
    */
-  protected function setIdentifierField($entity, $identifier, $configs) {
-    if ($identifier) {
-      $entity->set($configs['credentials']->get('field'), $identifier);
-      $entity->save();
+  protected function setIdentifierField(EntityInterface $entity, string $identifier) {
+    if ($identifier && $this->configs) {
+      $field = $this->configs['credentials']->get('field');
+      if (!empty($field) && $entity->hasField($field)) {
+        $entity->set($field, $identifier);
+        $entity->save();
+      }
+      else {
+        $this->logger->error('Error with Entity Identifier field.');
+      }
     }
     else {
-      throw new Exception('Identifier is not set.');
+      $this->logger->error('Identifier or Configs are not set.');
     }
   }
 
@@ -153,10 +154,9 @@ abstract class MintIdentifier extends IdentifierAction {
   public function execute($entity = NULL) {
     if ($entity) {
       try {
-        $configs = $this->utils->getAssociatedConfigs($this->configuration['identifier_type']);
-        $response = $this->mint($entity, $configs);
-        $identifier = $this->getIdentifierFromResponse($response, $configs);
-        $this->setIdentifierField($entity, $identifier, $configs);
+        $response = $this->mint($entity);
+        $identifier = $this->getIdentifierFromResponse($response);
+        $this->setIdentifierField($entity, $identifier);
       }
       catch (Exception $e) {
         $this->logger->error('Exception: Mint Identifier Action: @e', ['@e' => $e->getMessage()]);

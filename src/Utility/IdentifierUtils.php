@@ -6,6 +6,9 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Config\ConfigFactory;
 use Psr\Log\LoggerInterface;
 
+/**
+ * DGI Actions Identifier Utils.
+ */
 class IdentifierUtils {
 
   /**
@@ -13,7 +16,7 @@ class IdentifierUtils {
    *
    * @var \Drupal\Core\Config\ConfigFactory
    */
-  protected $config_factory;
+  protected $configFactory;
 
   /**
    * Logger.
@@ -25,11 +28,11 @@ class IdentifierUtils {
   /**
    * Constructor.
    *
-   * @param Drupal\Core\Config\ConfigFactory
+   * @param Drupal\Core\Config\ConfigFactory $config_factory
    *   Config factory.
    * @param Psr\Log\LoggerInterface $logger
    *   Logger.
-     */
+   */
   public function __construct(
     ConfigFactory $config_factory,
     LoggerInterface $logger
@@ -49,10 +52,11 @@ class IdentifierUtils {
   }
 
   /**
-   * Put this in a Utils File/Class
+   * Gets configured dgi_actions Identifier configs.
    *
-   * @return Array $config_options | String 'No Identifiers Configured'
-   *   Returns list of configured DGI Actions Identifiers or a string indicating identifiers not configured.
+   * @return array|string
+   *   Returns list of configured DGI Actions Identifiers
+   *   or a string indicating identifiers not configured.
    */
   public function getIdentifiers() {
     $configs = $this->configFactory->listAll('dgi_actions.identifier');
@@ -68,19 +72,24 @@ class IdentifierUtils {
   }
 
   /**
-   * Returns associated Identifer, Credentials, and Data Profile config values based on identifier config name. 
+   * Returns associated identifier configs.
    *
-   * @param String $identifier
+   * Returns the associated Identifer, Credentials, and
+   * Data Profile config values based on identifier config name.
+   *
+   * @param string $identifier
    *   Name of the identifier config to find associated configs.
-   * @return array $configs
-   *   Array of associated Identifier, Credential, and Data Profile config values.
+   *
+   * @return array
+   *   Array of associated Identifier, Credential,
+   *   and Data Profile config values.
    */
   public function getAssociatedConfigs($identifier) {
     $configs = [];
     $identifier = $this->configFactory->get($identifier);
     if (!empty($identifier->get())) {
-      $creds = $this->configFactory->get('dgi_actions.credentials.'.$identifier->get('identifier_id'));
-      $data_profile = $this->configFactory->get('dgi_actions.data_profile.'.$identifier->get('data_profile.id'));
+      $creds = $this->configFactory->get('dgi_actions.credentials.' . $identifier->get('identifier_id'));
+      $data_profile = $this->configFactory->get('dgi_actions.data_profile.' . $identifier->get('data_profile.id'));
 
       $configs['identifier'] = $identifier;
       $configs['credentials'] = (!empty($creds)) ? $creds : 'Credentials not Configured';
@@ -89,7 +98,7 @@ class IdentifierUtils {
       return $configs;
     }
 
-   return FALSE;
+    return FALSE;
   }
 
 }

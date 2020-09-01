@@ -5,25 +5,24 @@
  * Contains dgi_actions.module.
  */
 
-use Drupal\Component\Plugin\Exception\PluginNotFoundException;
-use Drupal\node\NodeInterface;
+use Drupal\Core\Entity\EntityInterface;
 
 /**
- * Implements hook_node_insert().
+ * Implements hook_entity_insert().
  */
-function dgi_actions_node_insert(NodeInterface $node) {
-  $utils = \Drupal::service('islandora.utils');
+function dgi_actions_entity_insert(EntityInterface $entity) {
+  $utils = \Drupal::service('dgi_actions.dgiutils');
 
   // Execute index reactions.
-  $utils->executeNodeReactions('\Drupal\dgi_actions\Plugin\ContextReaction\MintReaction', $node);
+  $utils->executeEntityReactions('\Drupal\dgi_actions\Plugin\ContextReaction\MintReaction', $entity);
 }
 
 /**
- * Implements hook_node_delete().
+ * Implements hook_entity_delete().
  */
-function dgi_actions_node_delete(NodeInterface $node) {
-  $utils = \Drupal::service('islandora.utils');
+function dgi_actions_entity_delete(EntityInterface $entity) {
+  $utils = \Drupal::service('dgi_actions.dgiutils');
 
   // Execute index reactions.
-  $utils->executeNodeReactions('\Drupal\dgi_actions\Plugin\ContextReaction\DeleteReaction', $node);
+  $utils->executeEntityReactions('\Drupal\dgi_actions\Plugin\ContextReaction\DeleteReaction', $entity);
 }

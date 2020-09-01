@@ -5,6 +5,8 @@ namespace Drupal\dgi_actions\Plugin\Action;
 use Drupal\dgi_actions\Plugin\Action\IdentifierAction;
 use Drupal\Core\Form\FormStateInterface;
 use GuzzleHttp\Psr7\Request;
+use GuzzleHttp\Exception\BadResponseException;
+use GuzzleHttp\Exception\RequestException;
 use Exception;
 
 /**
@@ -24,26 +26,31 @@ class MintArkIdentifier extends MintIdentifier {
    * Constructs the Metadata into a colon separated value
    * string for the CDL EZID service.
    *
-   * @return String $outputString | ""
-   *  Returns the stringified version of the key-value
-   *  pairs else returns an empty string if $data is empty or null.
+   * @return String
+   *   Returns the stringified version of the key-value
+   *   pairs else returns an empty string if $data is empty or null.
    */
-  protected function buildRequestBody($entity, $data = null, $configs) {
-    if ($data) {
-      /// Adding the External URL to the Data Array using the CDL EZID _target key.
-      // Also setting _status as reserved. Else identifier cannot be deleted.
-      $data = array_merge(['_target' => $this->getExternalURL($entity), '_status' => 'reserved'], $data);
-      $outputString = "";
-      foreach($data as $key => $val) {
-        $outputString .= $key . ": " . $val . "\r\n";
+  protected function buildRequestBody(EntityInterface $entity, $data = NULL) {
+    try {
+      if ($data) {
+        /// Adding the External URL to the Data Array using the CDL EZID _target key.
+        // Also setting _status as reserved. Else identifier cannot be deleted.
+        $data = array_merge(['_target' => $this->getExternalURL($entity), '_status' => 'reserved'], $data);
+        $outputString = "";
+        foreach($data as $key => $val) {
+          $outputString .= $key . ": " . $val . "\r\n";
+        }
+
+        return $outputString;
       }
+      else {
+        $this->logger->warning('buildRequestBody - Data is missing or malformed.');
 
-      return $outputString;
+        return "";
+      }
     }
-    else {
-      $this->logger->warning('buildRequestBody - Data is missing or malformed.');
-
-      return "";
+    catch (UndefinedLinkTemplateException $le) {
+      $this->logger->warning('Error retrieving Entity URL: @errorMessage', ['@errorMessage' => $le->getMessage()]);
     }
   }
 
@@ -68,12 +75,12 @@ class MintArkIdentifier extends MintIdentifier {
   /**
    * {@inheritdoc}
    */
-  protected function getIdentifierFromResponse($response, $configs) {
+  protected function getIdentifierFromResponse($response) {
     $contents = $response->getBody()->getContents();
     $responseArray = $this->responseArray($contents);
     if (array_key_exists('success', $responseArray)) {
       $this->logger->info('ARK Identifier Minted: @contents', ['@contents' => $contents]);
-      return $configs['credentials']->get('host') . '/id/' . $responseArray['success'];
+      return $this->configs['credentials']->get('host') . '/id/' . $responseArray['success'];
     }
     else {
       throw new Exception($contents);
@@ -83,26 +90,35 @@ class MintArkIdentifier extends MintIdentifier {
   /**
    * {@inheritdoc}
    */
-  public function buildRequest($configs) {
-    $request = new Request('POST', $configs['credentials']->get('host') . '/shoulder/' . $configs['credentials']->get('shoulder'));
+  public function buildRequest() {
+    try {
+      $request = new Request('POST', $this->configs['credentials']->get('host') . '/shoulder/' . $this->configs['credentials']->get('shoulder'));
 
-    return $request;
+      return $request;
+    } catch (RequestException $re) {
+      $this->logger->error('Bad Request: @badrequest', ['@badrequest' => $re->getMessage()]);
+    }
   }
 
   /**
    * {@inheritdoc}
    */
-  public function sendRequest($request, $requestBody, $configs) {
-    $response = $this->client->send($request, [
-      'auth' => [$configs['credentials']->get('username'), $configs['credentials']->get('password')],
-      'headers' => [
-        'Content-Type' => 'text/plain; charset=UTF-8',
-        'Content-Length' => strlen($requestBody)
-      ],
-      'body' => $requestBody
-    ]);
+  public function sendRequest($request, $requestBody) {
+    try {
+      $response = $this->client->send($request, [
+        'auth' => [$this->configs['credentials']->get('username'), $this->configs['credentials']->get('password')],
+        'headers' => [
+          'Content-Type' => 'text/plain; charset=UTF-8',
+          'Content-Length' => strlen($requestBody)
+        ],
+        'body' => $requestBody
+      ]);
 
-    return $response;
+      return $response;
+    }
+    catch (BadResponseException $bre) {
+      $this->logger->error('Error in response from service: @response', ['@response' => $bre->getMessage()]);
+    }
   }
 
 }

@@ -5,6 +5,7 @@ namespace Drupal\dgi_actions\Plugin\Condition;
 use Drupal\Core\Condition\ConditionPluginBase;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Config\ConfigFactory;
@@ -13,7 +14,7 @@ use Drupal\dgi_actions\Utility\IdentifierUtils;
 use Psr\Log\LoggerInterface;
 
 /**
- * Provides a condition to check an Entity for an existing persistent identifier.
+ * Condition to check an Entity for an existing persistent identifier.
  *
  * @Condition(
  *   id = "dgi_actions_entity_persistent_identifier_populated",
@@ -25,12 +26,14 @@ use Psr\Log\LoggerInterface;
  */
 class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactoryPluginInterface {
 
+  use StringTranslationTrait;
+
   /**
    * Config Factory.
    *
    * @var \Drupal\Core\Config\ConfigFactory
    */
-  protected $config_factory;
+  protected $configFactory;
 
   /**
    * Logger.
@@ -50,7 +53,7 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
    * Term storage.
    *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-  */
+   */
   protected $entityTypeManager;
 
   /**
@@ -65,12 +68,14 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
    *   The plugin_id for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
-   * @param Drupal\Core\Config\ConfigFactory
+   * @param Drupal\Core\Config\ConfigFactory $config_factory
    *   Config factory.
    * @param Psr\Log\LoggerInterface $logger
    *   Logger.
    * @param Drupal\dgi_actions\Utility\IdentifierUtils $utils
    *   Identifier utils.
+   * @param Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   Entity type manager.
    */
   public function __construct(
     array $configuration,
@@ -108,17 +113,15 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
    */
   public function evaluate() {
     $entity = $this->getContextValue('entity');
-    if ($entity) {
+    if ($entity instanceof FieldableEntityInterface) {
       $configs = $this->utils->getAssociatedConfigs($this->configuration['identifier']);
       $field = $configs['credentials']->get('field');
-      if ($entity instanceof FieldableEntityInterface && !empty($field)) {
-        if ($entity->hasField($field) && !$entity->get($field)->isEmpty()) {
-          return TRUE;
-        }
-      }
+      $cant_get_content = (!empty($field) && $entity->hasField($field) && $entity->get($field)->isEmpty());
+
+      return !($this->isNegated() && $cant_get_content);
     }
 
-    return FALSE;
+    return !$this->isNegated();
   }
 
   /**
@@ -139,10 +142,10 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
   public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
     $form['identifier'] = [
       '#type' => 'select',
-      '#title' => t('Identifier Type'),
+      '#title' => $this->t('Identifier Type'),
       '#default_value' => $this->configuration['identifier'],
       '#options' => $this->utils->getIdentifiers(),
-      '#description' => t('The persistent identifier configuration to be used.'),
+      '#description' => $this->t('The persistent identifier configuration to be used.'),
     ];
 
     return parent::buildConfigurationForm($form, $form_state);;

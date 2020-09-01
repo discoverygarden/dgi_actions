@@ -6,7 +6,6 @@ use Drupal\dgi_actions\Utility\IdentifierUtils;
 use Drupal\Core\Action\ConfigurableActionBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Entity\EntityTypeManager;
-use Drupal\Core\Entity\EntityTypeBundleInfo;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use GuzzleHttp\Client;
@@ -14,9 +13,21 @@ use Psr\Log\LoggerInterface;
 use Drupal\Core\Entity\EntityFieldManager;
 use Drupal\Core\Config\ConfigFactory;
 use Drupal\Core\Session\AccountInterface;
-use Exception;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 
+/**
+ * Base class for Identifier Actions.
+ */
 abstract class IdentifierAction extends ConfigurableActionBase implements ContainerFactoryPluginInterface {
+
+  use StringTranslationTrait;
+
+  /**
+   * Configured Identifier config values.
+   *
+   * @var array
+   */
+  protected $configs;
 
   /**
    * Logger.
@@ -37,29 +48,21 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
    *
    * @var \Drupal\Core\Entity\EntityTypeManager
    */
-  protected $entity_type_manager;
-
-
-  /**
-   * Entity Type Bundle Info.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeBundleInfo
-   */
-  protected $entity_type_bundle_info;
+  protected $entityTypeManager;
 
   /**
    * Entity Field Manager.
    *
    * @var \Drupal\Core\Entity\EntityFieldManager
    */
-  protected $entity_field_manager;
+  protected $entityFieldManager;
 
   /**
    * Config Factory.
    *
    * @var \Drupal\Core\Config\ConfigFactory
    */
-  protected $config_factory;
+  protected $configFactory;
 
   /**
    * Identifier Utils.
@@ -85,9 +88,9 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
    *   Logger.
    * @param Drupal\Core\Entity\EntityFieldManager $entity_field_manager
    *   Entity field manager.
-   * @param Drupal\Core\Config\ConfigFactory
+   * @param Drupal\Core\Config\ConfigFactory $config_factory
    *   Config factory.
-   * @param Drupal\dgi_actions\Utilities\IdentifierUtils
+   * @param Drupal\dgi_actions\Utilities\IdentifierUtils $utils
    *   Identifier utils.
    */
   public function __construct(
@@ -96,7 +99,6 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
     $plugin_definition,
     Client $client,
     EntityTypeManager $entity_type_manager,
-    EntityTypeBundleInfo $entity_type_bundle_info,
     LoggerInterface $logger,
     EntityFieldManager $entity_field_manager,
     ConfigFactory $config_factory,
@@ -105,7 +107,6 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->client = $client;
     $this->entityTypeManager = $entity_type_manager;
-    $this->entityTypeBundleInfo = $entity_type_bundle_info;
     $this->logger = $logger;
     $this->entityFieldManager = $entity_field_manager;
     $this->configFactory = $config_factory;
@@ -122,7 +123,6 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
       $plugin_definition,
       $container->get('http_client'),
       $container->get('entity_type.manager'),
-      $container->get('entity_type.bundle.info'),
       $container->get('logger.factory')->get('dgi_actions'),
       $container->get('entity_field.manager'),
       $container->get('config.factory'),
@@ -158,10 +158,10 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
   public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
     $form['identifier_type'] = [
       '#type' => 'select',
-      '#title' => t('Identifier Type'),
+      '#title' => $this->t('Identifier Type'),
       '#default_value' => $this->configuration['identifier_type'],
       '#options' => $this->utils->getIdentifiers(),
-      '#description' => t('The persistent identifier configuration to be used.'),
+      '#description' => $this->t('The persistent identifier configuration to be used.'),
     ];
 
     return $form;
@@ -172,5 +172,8 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
    */
   public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
     $this->configuration = $form_state->getValues();
+
+    $this->configs = $this->utils->getAssociatedConfigs($this->configuration['identifier_type']);
   }
+
 }
