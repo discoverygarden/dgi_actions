@@ -27,25 +27,23 @@ class MintArkIdentifier extends MintIdentifier {
    */
   protected function buildRequestBody(EntityInterface $entity, $data = NULL) {
     try {
-      if ($data) {
-        // Adding External URL to the Data Array under the EZID _target key.
-        // Also setting _status as reserved. Else identifier cannot be deleted.
-        $data = array_merge(['_target' => $this->getExternalURL($entity), '_status' => 'reserved'], $data);
-        $outputString = "";
-        foreach ($data as $key => $val) {
-          $outputString .= $key . ": " . $val . "\r\n";
-        }
-
-        return $outputString;
-      }
-      else {
+      if (!$data) {
         $this->logger->warning('buildRequestBody - Data is missing or malformed.');
-
-        return "";
+        $data = [];
       }
+
+      // Adding External URL to the Data Array under the EZID _target key.
+      // Also setting _status as reserved. Else identifier cannot be deleted.
+      $data = array_merge(['_target' => $this->getExternalURL($entity), '_status' => 'reserved'], $data);
+      $outputString = "";
+      foreach ($data as $key => $val) {
+        $outputString .= $key . ": " . $val . "\r\n";
+      }
+
+      return $outputString;
     }
-    catch (UndefinedLinkTemplateException $le) {
-      $this->logger->warning('Error retrieving Entity URL: @errorMessage', ['@errorMessage' => $le->getMessage()]);
+    catch (UndefinedLinkTemplateException $ulte) {
+      throw $ulte;
     }
   }
 
@@ -77,9 +75,6 @@ class MintArkIdentifier extends MintIdentifier {
       $this->logger->info('ARK Identifier Minted: @contents', ['@contents' => $contents]);
       return $this->configs['credentials']->get('host') . '/id/' . $responseArray['success'];
     }
-    else {
-      throw new Exception($contents);
-    }
   }
 
   /**
@@ -92,7 +87,7 @@ class MintArkIdentifier extends MintIdentifier {
       return $request;
     }
     catch (RequestException $re) {
-      $this->logger->error('Bad Request: @badrequest', ['@badrequest' => $re->getMessage()]);
+      throw $re;
     }
   }
 
@@ -113,7 +108,7 @@ class MintArkIdentifier extends MintIdentifier {
       return $response;
     }
     catch (BadResponseException $bre) {
-      $this->logger->error('Error in response from service: @response', ['@response' => $bre->getMessage()]);
+      throw $bre;
     }
   }
 

@@ -4,7 +4,6 @@ namespace Drupal\dgi_actions\Plugin\Action;
 
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Entity\Exception\UndefinedLinkTemplateException;
-use Exception;
 
 /**
  * Basic implementation for minting an identifier.
@@ -106,11 +105,23 @@ abstract class MintIdentifier extends IdentifierAction {
    *   The request response returned by the service.
    */
   public function mint(EntityInterface $entity) {
-    $fieldData = $this->getFieldData($entity);
-    $requestBody = $this->buildRequestBody($entity, $fieldData);
-    $request = $this->buildRequest();
-    $response = $this->sendRequest($request, $requestBody);
-    return $response;
+    try {
+      $fieldData = $this->getFieldData($entity);
+      $requestBody = $this->buildRequestBody($entity, $fieldData);
+      $request = $this->buildRequest();
+      $response = $this->sendRequest($request, $requestBody);
+
+      return $response;
+    }
+    catch (UndefinedLinkTemplateException $ulte) {
+      throw $ulte;
+    }
+    catch (RequestException $re) {
+      throw $re;
+    }
+    catch (BadResponseException $bre) {
+      throw $bre;
+    }
   }
 
   /**
@@ -158,8 +169,14 @@ abstract class MintIdentifier extends IdentifierAction {
         $identifier = $this->getIdentifierFromResponse($response);
         $this->setIdentifierField($entity, $identifier);
       }
-      catch (Exception $e) {
-        $this->logger->error('Exception: Mint Identifier Action: @e', ['@e' => $e->getMessage()]);
+      catch (UndefinedLinkTemplateException $ulte) {
+        $this->logger->warning('Error retrieving Entity URL: @errorMessage', ['@errorMessage' => $ulte->getMessage()]);
+      }
+      catch (RequestException $re) {
+        $this->logger->error('Bad Request: @badrequest', ['@badrequest' => $re->getMessage()]);
+      }
+      catch (BadResponseException $bre) {
+        $this->logger->error('Error in response from service: @response', ['@response' => $bre->getMessage()]);
       }
     }
   }
