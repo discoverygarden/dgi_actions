@@ -4,37 +4,14 @@ namespace Drupal\dgi_actions\Plugin\Action;
 
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Entity\Exception\UndefinedLinkTemplateException;
+use Drupal\rules\Exception\InvalidArgumentException;
+use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Exception\BadResponseException;
 
 /**
  * Basic implementation for minting an identifier.
- *
- * @Action(
- *   id = "mint_identifier_record",
- *   label = @Translation("Mint Identifier"),
- *   type = "entity"
- * )
  */
 abstract class MintIdentifier extends IdentifierAction {
-
-  /**
-   * Gets the External URL of the Entity.
-   *
-   * @param EntityInterface $entity
-   *   The entity.
-   *
-   * @return string
-   *   Entitiy's external URL as a string.
-   */
-  protected function getExternalUrl(EntityInterface $entity = NULL) {
-    try {
-      if ($entity) {
-        return $entity->toUrl('canonical', ['absolute' => TRUE])->toString();
-      }
-    }
-    catch (UndefinedLinkTemplateException $le) {
-      throw $le;
-    }
-  }
 
   /**
    * Gets the data of the fields provided by the data_profile config.
@@ -42,12 +19,15 @@ abstract class MintIdentifier extends IdentifierAction {
    * @param EntityInterface $entity
    *   The Entity.
    *
+   * @throws Drupal\rules\Exception\InvalidArgumentException
+   *   If the Entity doesn't have the configured identifier field.
+   *
    * @return array
    *   The returned data structured in a key value pair
    *   based on the data_profile.
    */
   protected function getFieldData(EntityInterface $entity) {
-    if ($entity && $this->configs && $entity instanceof FieldableEntityInterface) {
+    if ($entity && $this->configs) {
       $data = [];
       foreach ($this->configs['data_profile']->get() as $key => $value) {
         if (is_numeric($key) && $entity->hasField($value['source_field'])) {
@@ -77,6 +57,9 @@ abstract class MintIdentifier extends IdentifierAction {
   /**
    * Builds the Guzzle HTTP Request.
    *
+   * @throws GuzzleHttp\Exception\RequestException
+   *   Thrown by Guzzle when creating an invalid Request.
+   *
    * @return Request
    *   The Guzzle HTTP Request Object.
    */
@@ -89,6 +72,9 @@ abstract class MintIdentifier extends IdentifierAction {
    *   The Guzzle HTTP Request Object.
    * @param mixed $requestBody
    *   The request body structured how the API service expects.
+   *
+   * @throws GuzzleHttp\Exception\BadResponseException
+   *   Thrown when receiving 4XX or 5XX error.
    *
    * @return Response
    *   The Guzzle HTTP Response Object.
@@ -105,23 +91,12 @@ abstract class MintIdentifier extends IdentifierAction {
    *   The request response returned by the service.
    */
   public function mint(EntityInterface $entity) {
-    try {
-      $fieldData = $this->getFieldData($entity);
-      $requestBody = $this->buildRequestBody($entity, $fieldData);
-      $request = $this->buildRequest();
-      $response = $this->sendRequest($request, $requestBody);
+    $fieldData = $this->getFieldData($entity);
+    $requestBody = $this->buildRequestBody($entity, $fieldData);
+    $request = $this->buildRequest();
+    $response = $this->sendRequest($request, $requestBody);
 
-      return $response;
-    }
-    catch (UndefinedLinkTemplateException $ulte) {
-      throw $ulte;
-    }
-    catch (RequestException $re) {
-      throw $re;
-    }
-    catch (BadResponseException $bre) {
-      throw $bre;
-    }
+    return $response;
   }
 
   /**
@@ -162,8 +137,8 @@ abstract class MintIdentifier extends IdentifierAction {
   /**
    * {@inheritdoc}
    */
-  public function execute($entity = NULL) {
-    if ($entity) {
+  public function execute(EntityInterface $entity) {
+    if ($entity instanceof FieldableEntityInterface) {
       try {
         $response = $this->mint($entity);
         $identifier = $this->getIdentifierFromResponse($response);
@@ -171,6 +146,9 @@ abstract class MintIdentifier extends IdentifierAction {
       }
       catch (UndefinedLinkTemplateException $ulte) {
         $this->logger->warning('Error retrieving Entity URL: @errorMessage', ['@errorMessage' => $ulte->getMessage()]);
+      }
+      catch (InvalidArgumentException $iae) {
+        $this->logger->error('Configured field not found on Entity: @iae', ['@iae' => $iae->getMessage()]);
       }
       catch (RequestException $re) {
         $this->logger->error('Bad Request: @badrequest', ['@badrequest' => $re->getMessage()]);

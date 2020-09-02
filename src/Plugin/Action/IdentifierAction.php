@@ -139,6 +139,23 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
   }
 
   /**
+   * Gets the External URL of the Entity.
+   *
+   * @param EntityInterface $entity
+   *   The entity.
+   *
+   * @throws UndefinedLinkTemplateException
+   *
+   * @return string
+   *   Entitiy's external URL as a string.
+   */
+  protected function getExternalUrl(EntityInterface $entity) {
+    if ($entity) {
+      return $entity->toUrl('canonical', ['absolute' => TRUE])->toString();
+    }
+  }
+
+  /**
    * {@inheritdoc}
    */
   abstract public function execute();

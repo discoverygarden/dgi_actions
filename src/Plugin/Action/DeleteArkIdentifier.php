@@ -37,35 +37,25 @@ class DeleteArkIdentifier extends DeleteIdentifier {
    * {@inheritdoc}
    */
   public function buildRequest($identifier) {
-    try {
-      $request = new Request('DELETE', $identifier);
+    $request = new Request('DELETE', $identifier);
 
-      return $request;
-    }
-    catch (RequestException $re) {
-      throw $re;
-    }
+    return $request;
   }
 
   /**
    * {@inheritdoc}
    */
   public function sendRequest($request) {
-    try {
-      $response = $this->client->send($request, [
-        'auth' => [$this->configs['credentials']->get('username'), $this->configs['credentials']->get('password')],
-      ]);
+    $response = $this->client->send($request, [
+      'auth' => [$this->configs['credentials']->get('username'), $this->configs['credentials']->get('password')],
+    ]);
 
-      $bodyContents = $response->getBody()->getContents();
-      $filteredResponse = $this->responseArray($bodyContents);
+    $bodyContents = $response->getBody()->getContents();
+    $filteredResponse = $this->responseArray($bodyContents);
 
-      // If not success, Guzzle will throw a BadResponseException.
-      if (array_key_exists('success', $filteredResponse)) {
-        $this->logger->info('ARK Identifier Deleted: @contents', ['@contents' => $bodyContents]);
-      }
-    }
-    catch (BadResponseException $bre) {
-      throw $bre;
+    // If not success, Guzzle will throw a BadResponseException.
+    if (array_key_exists('success', $filteredResponse)) {
+      $this->logger->info('ARK Identifier Deleted: @contents', ['@contents' => $bodyContents]);
     }
   }
 

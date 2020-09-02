@@ -2,9 +2,10 @@
 
 namespace Drupal\dgi_actions\Plugin\Action;
 
+use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\rules\Exception\InvalidArgumentException;
-use GuzzleHttp\Exception\BadResponseException;
 use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Exception\BadResponseException;
 
 /**
  * Basic implementation for deleting an identifier.
@@ -24,18 +25,13 @@ abstract class DeleteIdentifier extends IdentifierAction {
    *   Returns the value stored in the identifier field as a string.
    */
   public function getIdentifier(EntityInterface $entity) {
-    try {
-      $field = $this->configs['credentials']->get('field');
-      $identifier = $entity->get($field)->getString();
-      if (empty($identifier)) {
-        $this->logger->error('Identifier field @field is empty.', ['@field' => $field]);
-      }
+    $field = $this->configs['credentials']->get('field');
+    $identifier = $entity->get($field)->getString();
+    if (empty($identifier)) {
+      $this->logger->error('Identifier field @field is empty.', ['@field' => $field]);
+    }
 
-      return $identifier;
-    }
-    catch (InvalidArgumentException $iae) {
-      throw $iae;
-    }
+    return $identifier;
   }
 
   /**
@@ -71,36 +67,18 @@ abstract class DeleteIdentifier extends IdentifierAction {
    *
    * @param EntityInterface $entity
    *   The entity with the identifier to delete.
-   *
-   * @throws Drupal\rules\Exception\InvalidArgumentException
-   *   If the Entity doesn't have the configured identifier field.
-   * @throws GuzzleHttp\Exception\RequestException
-   *   Thrown by Guzzle when creating an invalid Request.
-   * @throws GuzzleHttp\Exception\BadResponseException
-   *   Thrown when receiving 4XX or 5XX error.
    */
   public function delete(EntityInterface $entity) {
-    try {
-      $identifier = $this->getIdentifier($entity);
-      $request = $this->buildRequest($identifier);
-      $this->sendRequest($request);
-    }
-    catch (InvalidArgumentException $iae) {
-      throw $iae;
-    }
-    catch (RequestException $re) {
-      throw $re;
-    }
-    catch (BadResponseException $bre) {
-      throw $bre;
-    }
+    $identifier = $this->getIdentifier($entity);
+    $request = $this->buildRequest($identifier);
+    $this->sendRequest($request);
   }
 
   /**
    * {@inheritdoc}
    */
   public function execute(EntityInterface $entity) {
-    if ($entity) {
+    if ($entity instanceof FieldableEntityInterface) {
       try {
         $this->delete($entity);
       }
