@@ -2,8 +2,6 @@
 
 namespace Drupal\dgi_actions\Plugin\Action;
 
-use GuzzleHttp\Psr7\Request;
-
 /**
  * Mints an ARK Identifier Record on CDL EZID.
  *
@@ -16,16 +14,19 @@ use GuzzleHttp\Psr7\Request;
 class MintArkIdentifier extends MintIdentifier {
 
   /**
-   * {@inheritdoc}
+   * Builds the Request Body.
    *
    * Constructs the Metadata into a colon separated value
    * string for the CDL EZID service.
+   *
+   * @param mixed $data
+   *   The Entity data that's to be built for the service.
    *
    * @return string
    *   Returns the stringified version of the key-value
    *   pairs else returns an empty string if $data is empty or null.
    */
-  protected function buildRequestBody(EntityInterface $entity, $data = NULL) {
+  protected function buildRequestBody($data = NULL) {
     if (!$data) {
       $this->logger->warning('buildRequestBody - Data is missing or malformed.');
       $data = [];
@@ -33,7 +34,7 @@ class MintArkIdentifier extends MintIdentifier {
 
     // Adding External URL to the Data Array under the EZID _target key.
     // Also setting _status as reserved. Else identifier cannot be deleted.
-    $data = array_merge(['_target' => $this->getExternalURL($entity), '_status' => 'reserved'], $data);
+    $data = array_merge(['_target' => $this->getExternalURL(), '_status' => 'reserved'], $data);
     $outputString = "";
     foreach ($data as $key => $val) {
       $outputString .= $key . ": " . $val . "\r\n";
@@ -75,26 +76,43 @@ class MintArkIdentifier extends MintIdentifier {
   /**
    * {@inheritdoc}
    */
-  public function buildRequest() {
-    $request = new Request('POST', $this->configs['credentials']->get('host') . '/shoulder/' . $this->configs['credentials']->get('shoulder'));
-
-    return $request;
+  protected function getRequestType() {
+    return 'POST';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function sendRequest($request, $requestBody) {
-    $response = $this->client->send($request, [
+  protected function getUri() {
+    $uri = $this->configs['credentials']->get('host') . '/shoulder/' . $this->configs['credentials']->get('shoulder');
+
+    return $uri;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function getRequestParams() {
+    $fieldData = $this->getFieldData();
+    $requestBody = $this->requestBody($fieldData);
+    $requestParams = [
       'auth' => [$this->configs['credentials']->get('username'), $this->configs['credentials']->get('password')],
       'headers' => [
         'Content-Type' => 'text/plain; charset=UTF-8',
         'Content-Length' => strlen($requestBody),
       ],
       'body' => $requestBody,
-    ]);
+    ];
 
-    return $response;
+    return $requestParams;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function handleResponse($response) {
+    $identifier = $this->getIdentifierFromResponse($response);
+    $this->setIdentifierField($identifier);
   }
 
 }

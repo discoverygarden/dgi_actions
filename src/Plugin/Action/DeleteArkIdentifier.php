@@ -2,8 +2,6 @@
 
 namespace Drupal\dgi_actions\Plugin\Action;
 
-use GuzzleHttp\Psr7\Request;
-
 /**
  * Deletes an ARK Identifier Record on CDL EZID..
  *
@@ -36,20 +34,34 @@ class DeleteArkIdentifier extends DeleteIdentifier {
   /**
    * {@inheritdoc}
    */
-  public function buildRequest($identifier) {
-    $request = new Request('DELETE', $identifier);
-
-    return $request;
+  protected function getRequestType() {
+    return 'DELETE';
   }
 
   /**
    * {@inheritdoc}
    */
-  public function sendRequest($request) {
-    $response = $this->client->send($request, [
-      'auth' => [$this->configs['credentials']->get('username'), $this->configs['credentials']->get('password')],
-    ]);
+  protected function getUri() {
+    $identifier = $this->getIdentifierFromEntity();
 
+    return $identifier;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function getRequestParams() {
+    $requestParams = [
+      'auth' => [$this->configs['credentials']->get('username'), $this->configs['credentials']->get('password')],
+    ];
+
+    return $requestParams;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function handleResponse($response) {
     $bodyContents = $response->getBody()->getContents();
     $filteredResponse = $this->responseArray($bodyContents);
 

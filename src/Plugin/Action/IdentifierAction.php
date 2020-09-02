@@ -30,6 +30,13 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
   protected $configs;
 
   /**
+   * Current actioned Entity.
+   *
+   * @var \Drupal\Core\Entity\EntityInterface
+   */
+  protected $entity;
+
+  /**
    * Logger.
    *
    * @var Psr\Log\LoggerInterface
@@ -141,19 +148,84 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
   /**
    * Gets the External URL of the Entity.
    *
-   * @param EntityInterface $entity
-   *   The entity.
-   *
    * @throws UndefinedLinkTemplateException
    *
    * @return string
    *   Entitiy's external URL as a string.
    */
-  protected function getExternalUrl(EntityInterface $entity) {
-    if ($entity) {
-      return $entity->toUrl('canonical', ['absolute' => TRUE])->toString();
+  protected function getExternalUrl() {
+    if ($this->entity) {
+      return $this->entity->toUrl('canonical', ['absolute' => TRUE])->toString();
     }
   }
+
+  /**
+   * Gets the request type.
+   *
+   * @return string
+   *   Request type. (IE. POST, GET, DELETE, etc).
+   */
+  abstract protected function getRequestType();
+
+  /**
+   * Gets the URI end-point for the request.
+   *
+   * @return string
+   *   URI end-point for the request.
+   */
+  abstract protected function getUri();
+
+  /**
+   * Builds the Guzzle HTTP Request.
+   *
+   * @throws GuzzleHttp\Exception\RequestException
+   *   Thrown by Guzzle when creating an invalid Request.
+   *
+   * @return Request
+   *   The Guzzle HTTP Request Object.
+   */
+  protected function buildRequest() {
+    $requestType = $this->getRequestType();
+    $uri = $this->getUri();
+    $request = new Request($requestType, $uri);
+
+    return $request;
+  }
+
+  /**
+   * Returns the request param array.
+   *
+   * @return array
+   *   Required params for the applicable service.
+   */
+  abstract protected function getRequestParams();
+
+  /**
+   * Sends the Request and Request Body.
+   *
+   * @param Request $request
+   *   The Guzzle HTTP Request Object.
+   *
+   * @throws GuzzleHttp\Exception\BadResponseException
+   *   Thrown when receiving 4XX or 5XX error.
+   *
+   * @return Response
+   *   The Guzzle HTTP Response Object.
+   */
+  protected function sendRequest(Request $request) {
+    $requestParams = $this->getRequestParams();
+    $response = $this->client->send($request, $requestParams);
+
+    return $response;
+  }
+
+  /**
+   * Handles the Response.
+   *
+   * @param Response $response
+   *   Handles the Guzzle Response as needed.
+   */
+  abstract protected function handleResponse(Response $response);
 
   /**
    * {@inheritdoc}

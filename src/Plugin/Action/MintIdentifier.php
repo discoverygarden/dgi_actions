@@ -16,9 +16,6 @@ abstract class MintIdentifier extends IdentifierAction {
   /**
    * Gets the data of the fields provided by the data_profile config.
    *
-   * @param EntityInterface $entity
-   *   The Entity.
-   *
    * @throws Drupal\rules\Exception\InvalidArgumentException
    *   If the Entity doesn't have the configured identifier field.
    *
@@ -26,12 +23,12 @@ abstract class MintIdentifier extends IdentifierAction {
    *   The returned data structured in a key value pair
    *   based on the data_profile.
    */
-  protected function getFieldData(EntityInterface $entity) {
-    if ($entity && $this->configs) {
+  protected function getFieldData() {
+    if ($this->entity && $this->configs) {
       $data = [];
       foreach ($this->configs['data_profile']->get() as $key => $value) {
-        if (is_numeric($key) && $entity->hasField($value['source_field'])) {
-          $data[$value['key']] = $entity->get($value['source_field'])->getString();
+        if (is_numeric($key) && $this->entity->hasField($value['source_field'])) {
+          $data[$value['key']] = $this->entity->get($value['source_field'])->getString();
         }
       }
 
@@ -42,59 +39,14 @@ abstract class MintIdentifier extends IdentifierAction {
   }
 
   /**
-   * Constructs the body data into what the format the minting service expects.
-   *
-   * @param EntityInterface $entity
-   *   The Entity.
-   * @param mixed $data
-   *   The data that's to be built for the service.
-   *
-   * @return mixed
-   *   Returns the request body formatted to the minting service specifications.
-   */
-  abstract protected function buildRequestBody(EntityInterface $entity, $data = NULL);
-
-  /**
-   * Builds the Guzzle HTTP Request.
-   *
-   * @throws GuzzleHttp\Exception\RequestException
-   *   Thrown by Guzzle when creating an invalid Request.
-   *
-   * @return Request
-   *   The Guzzle HTTP Request Object.
-   */
-  abstract public function buildRequest();
-
-  /**
-   * Sends the Request and Request Body.
-   *
-   * @param Request $request
-   *   The Guzzle HTTP Request Object.
-   * @param mixed $requestBody
-   *   The request body structured how the API service expects.
-   *
-   * @throws GuzzleHttp\Exception\BadResponseException
-   *   Thrown when receiving 4XX or 5XX error.
-   *
-   * @return Response
-   *   The Guzzle HTTP Response Object.
-   */
-  abstract public function sendRequest(Request $request, $requestBody);
-
-  /**
    * Mints the identifier to the service.
-   *
-   * @param EntityInterface $entity
-   *   The entity that is being minted.
    *
    * @return mixed
    *   The request response returned by the service.
    */
-  public function mint(EntityInterface $entity) {
-    $fieldData = $this->getFieldData($entity);
-    $requestBody = $this->buildRequestBody($entity, $fieldData);
+  public function mint() {
     $request = $this->buildRequest();
-    $response = $this->sendRequest($request, $requestBody);
+    $response = $this->sendRequest($request);
 
     return $response;
   }
@@ -113,17 +65,15 @@ abstract class MintIdentifier extends IdentifierAction {
   /**
    * Sets the Entity field with the Identifier.
    *
-   * @param EntityInterface $entity
-   *   The entity.
    * @param string $identifier
    *   The identifier formatted as a URL.
    */
-  protected function setIdentifierField(EntityInterface $entity, string $identifier) {
+  protected function setIdentifierField(string $identifier) {
     if ($identifier && $this->configs) {
       $field = $this->configs['credentials']->get('field');
-      if (!empty($field) && $entity->hasField($field)) {
-        $entity->set($field, $identifier);
-        $entity->save();
+      if (!empty($field) && $this->entity->hasField($field)) {
+        $this->entity->set($field, $identifier);
+        $this->entity->save();
       }
       else {
         $this->logger->error('Error with Entity Identifier field.');
@@ -140,9 +90,9 @@ abstract class MintIdentifier extends IdentifierAction {
   public function execute(EntityInterface $entity) {
     if ($entity instanceof FieldableEntityInterface) {
       try {
-        $response = $this->mint($entity);
-        $identifier = $this->getIdentifierFromResponse($response);
-        $this->setIdentifierField($entity, $identifier);
+        $this->entity = $entity;
+        $response = $this->mint();
+        $this->handleResponse($response);
       }
       catch (UndefinedLinkTemplateException $ulte) {
         $this->logger->warning('Error retrieving Entity URL: @errorMessage', ['@errorMessage' => $ulte->getMessage()]);
@@ -155,6 +105,9 @@ abstract class MintIdentifier extends IdentifierAction {
       }
       catch (BadResponseException $bre) {
         $this->logger->error('Error in response from service: @response', ['@response' => $bre->getMessage()]);
+      }
+      finally {
+        $this->entity = NULL;
       }
     }
   }

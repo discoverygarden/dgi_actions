@@ -13,10 +13,7 @@ use GuzzleHttp\Exception\BadResponseException;
 abstract class DeleteIdentifier extends IdentifierAction {
 
   /**
-   * Gets the Identifier from the entity field.
-   *
-   * @param EntityInterface $entity
-   *   The entity.
+   * Gets the Identifier from the entity's field.
    *
    * @throws Drupal\rules\Exception\InvalidArgumentException
    *   If the Entity doesn't have the configured identifier field.
@@ -24,9 +21,9 @@ abstract class DeleteIdentifier extends IdentifierAction {
    * @return string
    *   Returns the value stored in the identifier field as a string.
    */
-  public function getIdentifier(EntityInterface $entity) {
+  public function getIdentifierFromEntity() {
     $field = $this->configs['credentials']->get('field');
-    $identifier = $entity->get($field)->getString();
+    $identifier = $this->entity->get($field)->getString();
     if (empty($identifier)) {
       $this->logger->error('Identifier field @field is empty.', ['@field' => $field]);
     }
@@ -35,43 +32,12 @@ abstract class DeleteIdentifier extends IdentifierAction {
   }
 
   /**
-   * Builds the Guzzle HTTP Request.
-   *
-   * @param string $identifier
-   *   The location of the identifier.
-   *
-   * @throws GuzzleHttp\Exception\RequestException
-   *   Thrown by Guzzle when creating an invalid Request.
-   *
-   * @return Request
-   *   The Guzzle HTTP Request Object.
-   */
-  abstract public function buildRequest($identifier);
-
-  /**
-   * Sends the Request and Request Body.
-   *
-   * @param Request $request
-   *   The Guzzle HTTP Request Object.
-   *
-   * @throws GuzzleHttp\Exception\BadResponseException
-   *   Thrown when receiving 4XX or 5XX error.
-   *
-   * @return Response
-   *   The Guzzle HTTP Response Object.
-   */
-  abstract public function sendRequest(Request $request);
-
-  /**
    * Delete's the identifier from the service.
-   *
-   * @param EntityInterface $entity
-   *   The entity with the identifier to delete.
    */
-  public function delete(EntityInterface $entity) {
-    $identifier = $this->getIdentifier($entity);
-    $request = $this->buildRequest($identifier);
-    $this->sendRequest($request);
+  public function delete() {
+    $request = $this->buildRequest();
+    $response = $this->sendRequest($request);
+    $this->handleResponse($response);
   }
 
   /**
@@ -80,7 +46,8 @@ abstract class DeleteIdentifier extends IdentifierAction {
   public function execute(EntityInterface $entity) {
     if ($entity instanceof FieldableEntityInterface) {
       try {
-        $this->delete($entity);
+        $this->entity = $entity;
+        $this->delete();
       }
       catch (InvalidArgumentException $iae) {
         $this->logger->error('Configured field not found on Entity: @iae', ['@iae' => $iae->getMessage()]);
@@ -90,6 +57,9 @@ abstract class DeleteIdentifier extends IdentifierAction {
       }
       catch (BadResponseException $bre) {
         $this->logger->error('Bad Response: @bre', ['@bre' => $bre->getMessage()]);
+      }
+      finally {
+        $this->entity = NULL;
       }
     }
   }
