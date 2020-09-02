@@ -2,16 +2,12 @@
 
 namespace Drupal\dgi_actions\Plugin\Action;
 
-use Exception;
+use Drupal\rules\Exception\InvalidArgumentException;
+use GuzzleHttp\Exception\BadResponseException;
+use GuzzleHttp\Exception\RequestException;
 
 /**
  * Basic implementation for deleting an identifier.
- *
- * @Action(
- *   id = "delete_identifier_record",
- *   label = @Translation("Delete Identifier"),
- *   type = "entity"
- * )
  */
 abstract class DeleteIdentifier extends IdentifierAction {
 
@@ -21,21 +17,24 @@ abstract class DeleteIdentifier extends IdentifierAction {
    * @param EntityInterface $entity
    *   The entity.
    *
+   * @throws Drupal\rules\Exception\InvalidArgumentException
+   *   If the Entity doesn't have the configured identifier field.
+   *
    * @return string
    *   Returns the value stored in the identifier field as a string.
    */
   public function getIdentifier(EntityInterface $entity) {
-    if ($entity) {
-      $identifier = $entity->get($this->configs['credentials']->get('field'))->getString();
-      if (!empty($identifier)) {
-        return $identifier;
+    try {
+      $field = $this->configs['credentials']->get('field');
+      $identifier = $entity->get($field)->getString();
+      if (empty($identifier)) {
+        $this->logger->error('Identifier field @field is empty.', ['@field' => $field]);
       }
-      else {
-        throw new Exception('Identifier field is empty.');
-      }
+
+      return $identifier;
     }
-    else {
-      throw new Exception('Entity is NULL.');
+    catch (InvalidArgumentException $iae) {
+      throw $iae;
     }
   }
 
@@ -44,6 +43,9 @@ abstract class DeleteIdentifier extends IdentifierAction {
    *
    * @param string $identifier
    *   The location of the identifier.
+   *
+   * @throws GuzzleHttp\Exception\RequestException
+   *   Thrown by Guzzle when creating an invalid Request.
    *
    * @return Request
    *   The Guzzle HTTP Request Object.
@@ -56,6 +58,9 @@ abstract class DeleteIdentifier extends IdentifierAction {
    * @param Request $request
    *   The Guzzle HTTP Request Object.
    *
+   * @throws GuzzleHttp\Exception\BadResponseException
+   *   Thrown when receiving 4XX or 5XX error.
+   *
    * @return Response
    *   The Guzzle HTTP Response Object.
    */
@@ -66,6 +71,13 @@ abstract class DeleteIdentifier extends IdentifierAction {
    *
    * @param EntityInterface $entity
    *   The entity with the identifier to delete.
+   *
+   * @throws Drupal\rules\Exception\InvalidArgumentException
+   *   If the Entity doesn't have the configured identifier field.
+   * @throws GuzzleHttp\Exception\RequestException
+   *   Thrown by Guzzle when creating an invalid Request.
+   * @throws GuzzleHttp\Exception\BadResponseException
+   *   Thrown when receiving 4XX or 5XX error.
    */
   public function delete(EntityInterface $entity) {
     try {
@@ -73,8 +85,14 @@ abstract class DeleteIdentifier extends IdentifierAction {
       $request = $this->buildRequest($identifier);
       $this->sendRequest($request);
     }
-    catch (Exception $e) {
-      throw $e;
+    catch (InvalidArgumentException $iae) {
+      throw $iae;
+    }
+    catch (RequestException $re) {
+      throw $re;
+    }
+    catch (BadResponseException $bre) {
+      throw $bre;
     }
   }
 
@@ -86,8 +104,14 @@ abstract class DeleteIdentifier extends IdentifierAction {
       try {
         $this->delete($entity);
       }
-      catch (Exception $e) {
-        $this->logger->error('Exception: Delete Identifier Action: @e', ['@e' => $e->getMessage()]);
+      catch (InvalidArgumentException $iae) {
+        $this->logger->error('Configured field not found on Entity: @iae', ['@iae' => $iae->getMessage()]);
+      }
+      catch (RequestException $re) {
+        $this->logger->error('Invalid Request: @re', ['@re' => $re->getMessage()]);
+      }
+      catch (BadResponseException $bre) {
+        $this->logger->error('Bad Response: @bre', ['@bre' => $bre->getMessage()]);
       }
     }
   }

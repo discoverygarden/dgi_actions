@@ -3,7 +3,6 @@
 namespace Drupal\dgi_actions\Plugin\Action;
 
 use GuzzleHttp\Psr7\Request;
-use Exception;
 
 /**
  * Deletes an ARK Identifier Record on CDL EZID..
@@ -38,32 +37,35 @@ class DeleteArkIdentifier extends DeleteIdentifier {
    * {@inheritdoc}
    */
   public function buildRequest($identifier) {
-    $request = new Request('DELETE', $identifier);
+    try {
+      $request = new Request('DELETE', $identifier);
 
-    return $request;
+      return $request;
+    }
+    catch (RequestException $re) {
+      throw $re;
+    }
   }
 
   /**
    * {@inheritdoc}
    */
-  public function sendRequest($request, $configs) {
+  public function sendRequest($request) {
     try {
       $response = $this->client->send($request, [
-        'auth' => [$configs['credentials']->get('username'), $configs['credentials']->get('password')],
+        'auth' => [$this->configs['credentials']->get('username'), $this->configs['credentials']->get('password')],
       ]);
 
       $bodyContents = $response->getBody()->getContents();
       $filteredResponse = $this->responseArray($bodyContents);
 
+      // If not success, Guzzle will throw a BadResponseException.
       if (array_key_exists('success', $filteredResponse)) {
-        return $this->logger->info('ARK Identifier Deleted: @contents', ['@contents' => $bodyContents]);
-      }
-      else {
-        throw new Exception($bodyContents);
+        $this->logger->info('ARK Identifier Deleted: @contents', ['@contents' => $bodyContents]);
       }
     }
-    catch (Exception $e) {
-      throw $e;
+    catch (BadResponseException $bre) {
+      throw $bre;
     }
   }
 

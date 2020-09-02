@@ -3,9 +3,6 @@
 namespace Drupal\dgi_actions\Plugin\Action;
 
 use GuzzleHttp\Psr7\Request;
-use GuzzleHttp\Exception\BadResponseException;
-use GuzzleHttp\Exception\RequestException;
-use Exception;
 
 /**
  * Mints an ARK Identifier Record on CDL EZID.
