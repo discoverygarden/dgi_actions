@@ -2,8 +2,6 @@
 
 namespace Drupal\dgi_actions\Plugin\Action;
 
-use Drupal\dgi_actions\Plugin\Action\IdentifierAction;
-use Drupal\Core\Form\FormStateInterface;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Exception\BadResponseException;
 use GuzzleHttp\Exception\RequestException;
@@ -26,18 +24,18 @@ class MintArkIdentifier extends MintIdentifier {
    * Constructs the Metadata into a colon separated value
    * string for the CDL EZID service.
    *
-   * @return String
+   * @return string
    *   Returns the stringified version of the key-value
    *   pairs else returns an empty string if $data is empty or null.
    */
   protected function buildRequestBody(EntityInterface $entity, $data = NULL) {
     try {
       if ($data) {
-        /// Adding the External URL to the Data Array using the CDL EZID _target key.
+        // Adding External URL to the Data Array under the EZID _target key.
         // Also setting _status as reserved. Else identifier cannot be deleted.
         $data = array_merge(['_target' => $this->getExternalURL($entity), '_status' => 'reserved'], $data);
         $outputString = "";
-        foreach($data as $key => $val) {
+        foreach ($data as $key => $val) {
           $outputString .= $key . ": " . $val . "\r\n";
         }
 
@@ -95,7 +93,8 @@ class MintArkIdentifier extends MintIdentifier {
       $request = new Request('POST', $this->configs['credentials']->get('host') . '/shoulder/' . $this->configs['credentials']->get('shoulder'));
 
       return $request;
-    } catch (RequestException $re) {
+    }
+    catch (RequestException $re) {
       $this->logger->error('Bad Request: @badrequest', ['@badrequest' => $re->getMessage()]);
     }
   }
@@ -109,9 +108,9 @@ class MintArkIdentifier extends MintIdentifier {
         'auth' => [$this->configs['credentials']->get('username'), $this->configs['credentials']->get('password')],
         'headers' => [
           'Content-Type' => 'text/plain; charset=UTF-8',
-          'Content-Length' => strlen($requestBody)
+          'Content-Length' => strlen($requestBody),
         ],
-        'body' => $requestBody
+        'body' => $requestBody,
       ]);
 
       return $response;
