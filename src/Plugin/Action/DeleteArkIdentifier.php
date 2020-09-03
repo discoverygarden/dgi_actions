@@ -7,7 +7,7 @@ namespace Drupal\dgi_actions\Plugin\Action;
  *
  * @Action(
  *   id = "delete_ark_identifier_record",
- *   label = @Translation("Delete ARK Identifier"),
+ *   label = @Translation("Delete ARK EZID Identifier"),
  *   type = "entity"
  * )
  */

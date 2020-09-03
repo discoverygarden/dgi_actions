@@ -7,7 +7,7 @@ namespace Drupal\dgi_actions\Plugin\Action;
  *
  * @Action(
  *   id = "mint_ark_identifier_record",
- *   label = @Translation("Mint Ark Identifier"),
+ *   label = @Translation("Mint ARK EZID Identifier"),
  *   type = "entity"
  * )
  */
