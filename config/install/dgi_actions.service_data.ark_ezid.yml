@@ -1,6 +1,6 @@
 langcode: 'en'
 data:
-  label: 'ARK Identifier Credentials'
+  label: 'ARK CDL EZID Service Data'
   host: 'https://ezid.cdlib.org'
   username: 'apitest'
   password: 'apitest'

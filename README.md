@@ -26,9 +26,9 @@ In order to leverage Identifier Minting and Deleting for a given identifier, the
 * Identifier Config - dgi_actions.identifier.type.yml
   * Contains the identifiers main information.
   * Ex. dgi_actions.identifier.ark.yml
-* Identifier Credentials Config - dgi_actions.credentials.type.yml
-  * Contains the credentials for specified identifier type.
-  * Ex. dgi_actions.credentials.ark.yml
+* Identifier Service Data Config - dgi_actions.service_data.type.yml
+  * Contains the service data for specified identifier service.
+  * Ex. dgi_actions.service_data.ark_ezid.yml
 * Identifier Data Profile - dgi_actions.data_profile.type.yml
   * Contains the data layout for the specified data profile type.
   * Ex. dgi_actions.data_profile.erc.yml

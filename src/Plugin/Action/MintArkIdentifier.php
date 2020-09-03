@@ -69,7 +69,7 @@ class MintArkIdentifier extends MintIdentifier {
     $responseArray = $this->responseArray($contents);
     if (array_key_exists('success', $responseArray)) {
       $this->logger->info('ARK Identifier Minted: @contents', ['@contents' => $contents]);
-      return $this->configs['credentials']->get('host') . '/id/' . $responseArray['success'];
+      return $this->configs['service_data']->get('host') . '/id/' . $responseArray['success'];
     }
   }
 
@@ -84,7 +84,7 @@ class MintArkIdentifier extends MintIdentifier {
    * {@inheritdoc}
    */
   protected function getUri() {
-    $uri = $this->configs['credentials']->get('host') . '/shoulder/' . $this->configs['credentials']->get('shoulder');
+    $uri = $this->configs['service_data']->get('host') . '/shoulder/' . $this->configs['service_data']->get('shoulder');
 
     return $uri;
   }
@@ -96,7 +96,7 @@ class MintArkIdentifier extends MintIdentifier {
     $fieldData = $this->getFieldData();
     $requestBody = $this->requestBody($fieldData);
     $requestParams = [
-      'auth' => [$this->configs['credentials']->get('username'), $this->configs['credentials']->get('password')],
+      'auth' => [$this->configs['service_data']->get('username'), $this->configs['service_data']->get('password')],
       'headers' => [
         'Content-Type' => 'text/plain; charset=UTF-8',
         'Content-Length' => strlen($requestBody),

@@ -70,7 +70,7 @@ abstract class MintIdentifier extends IdentifierAction {
    */
   protected function setIdentifierField(string $identifier) {
     if ($identifier && $this->configs) {
-      $field = $this->configs['credentials']->get('field');
+      $field = $this->configs['identifier']->get('field');
       if (!empty($field) && $this->entity->hasField($field)) {
         $this->entity->set($field, $identifier);
         $this->entity->save();

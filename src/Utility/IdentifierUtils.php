@@ -74,26 +74,26 @@ class IdentifierUtils {
   /**
    * Returns associated identifier configs.
    *
-   * Returns the associated Identifer, Credentials, and
+   * Returns the associated Identifer, Service Data, and
    * Data Profile config values based on identifier config name.
    *
    * @param string $identifier
    *   Name of the identifier config to find associated configs.
    *
    * @return array
-   *   Array of associated Identifier, Credential,
+   *   Array of associated Identifier, Service Data,
    *   and Data Profile config values.
    */
   public function getAssociatedConfigs($identifier) {
     $configs = [];
     $identifier = $this->configFactory->get($identifier);
     if (!empty($identifier->get())) {
-      $creds = $this->configFactory->get('dgi_actions.credentials.' . $identifier->get('identifier_id'));
+      $service_data = $this->configFactory->get('dgi_actions.service_data.' . $identifier->get('service_data.id'));
       $data_profile = $this->configFactory->get('dgi_actions.data_profile.' . $identifier->get('data_profile.id'));
 
       $configs['identifier'] = $identifier;
-      $configs['credentials'] = (!empty($creds)) ? $creds : 'Credentials not Configured';
-      $configs['data_profile'] = (!empty($data_profile)) ? $data_profile : 'Data Profile not Configured';
+      $configs['service_data'] = (!empty($service_data)) ? $service_data->get('data') : 'Service Data not Configured';
+      $configs['data_profile'] = (!empty($data_profile)) ? $data_profile->get('data') : 'Data Profile not Configured';
 
       return $configs;
     }

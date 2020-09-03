@@ -22,7 +22,7 @@ abstract class DeleteIdentifier extends IdentifierAction {
    *   Returns the value stored in the identifier field as a string.
    */
   public function getIdentifierFromEntity() {
-    $field = $this->configs['credentials']->get('field');
+    $field = $this->configs['identifier']->get('field');
     $identifier = $this->entity->get($field)->getString();
     if (empty($identifier)) {
       $this->logger->error('Identifier field @field is empty.', ['@field' => $field]);
