@@ -43,10 +43,11 @@ abstract class DeleteIdentifier extends IdentifierAction {
   /**
    * {@inheritdoc}
    */
-  public function execute(EntityInterface $entity) {
+  public function execute($entity = NULL) {
     if ($entity instanceof FieldableEntityInterface) {
       try {
         $this->entity = $entity;
+        $this->configs = $this->utils->getAssociatedConfigs($this->configuration['identifier_type']);
         $this->delete();
       }
       catch (InvalidArgumentException $iae) {
@@ -60,6 +61,7 @@ abstract class DeleteIdentifier extends IdentifierAction {
       }
       finally {
         $this->entity = NULL;
+        $this->configs = NULL;
       }
     }
   }

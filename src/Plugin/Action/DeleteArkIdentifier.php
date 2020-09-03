@@ -52,7 +52,7 @@ class DeleteArkIdentifier extends DeleteIdentifier {
    */
   protected function getRequestParams() {
     $requestParams = [
-      'auth' => [$this->configs['service_data']->get('username'), $this->configs['service_data']->get('password')],
+      'auth' => [$this->configs['service_data']->get('data.username'), $this->configs['service_data']->get('data.password')],
     ];
 
     return $requestParams;

@@ -9,6 +9,8 @@ use Drupal\Core\Entity\EntityTypeManager;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use GuzzleHttp\Client;
+use GuzzleHttp\Psr7\Request;
+use GuzzleHttp\Psr7\Response;
 use Psr\Log\LoggerInterface;
 use Drupal\Core\Entity\EntityFieldManager;
 use Drupal\Core\Config\ConfigFactory;
@@ -181,7 +183,7 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
    * @throws GuzzleHttp\Exception\RequestException
    *   Thrown by Guzzle when creating an invalid Request.
    *
-   * @return Request
+   * @return GuzzleHttp\Psr7\Request
    *   The Guzzle HTTP Request Object.
    */
   protected function buildRequest() {
@@ -203,13 +205,13 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
   /**
    * Sends the Request and Request Body.
    *
-   * @param Request $request
+   * @param GuzzleHttp\Psr7\Request $request
    *   The Guzzle HTTP Request Object.
    *
    * @throws GuzzleHttp\Exception\BadResponseException
    *   Thrown when receiving 4XX or 5XX error.
    *
-   * @return Response
+   * @return GuzzleHttp\Psr7\Response
    *   The Guzzle HTTP Response Object.
    */
   protected function sendRequest(Request $request) {
@@ -222,7 +224,7 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
   /**
    * Handles the Response.
    *
-   * @param Response $response
+   * @param GuzzleHttp\Psr7\Response $response
    *   Handles the Guzzle Response as needed.
    */
   abstract protected function handleResponse(Response $response);
@@ -230,7 +232,7 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
   /**
    * {@inheritdoc}
    */
-  abstract public function execute();
+  abstract public function execute($entity = NULL);
 
   /**
    * {@inheritdoc}
@@ -261,8 +263,6 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
    */
   public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
     $this->configuration = $form_state->getValues();
-
-    $this->configs = $this->utils->getAssociatedConfigs($this->configuration['identifier_type']);
   }
 
 }

@@ -26,7 +26,7 @@ abstract class MintIdentifier extends IdentifierAction {
   protected function getFieldData() {
     if ($this->entity && $this->configs) {
       $data = [];
-      foreach ($this->configs['data_profile']->get() as $key => $value) {
+      foreach ($this->configs['data_profile']->get('data') as $key => $value) {
         if (is_numeric($key) && $this->entity->hasField($value['source_field'])) {
           $data[$value['key']] = $this->entity->get($value['source_field'])->getString();
         }
@@ -87,10 +87,11 @@ abstract class MintIdentifier extends IdentifierAction {
   /**
    * {@inheritdoc}
    */
-  public function execute(EntityInterface $entity) {
+  public function execute($entity = NULL) {
     if ($entity instanceof FieldableEntityInterface) {
       try {
         $this->entity = $entity;
+        $this->configs = $this->utils->getAssociatedConfigs($this->configuration['identifier_type']);
         $response = $this->mint();
         $this->handleResponse($response);
       }
@@ -108,6 +109,7 @@ abstract class MintIdentifier extends IdentifierAction {
       }
       finally {
         $this->entity = NULL;
+        $this->configs = NULL;
       }
     }
   }

@@ -92,8 +92,8 @@ class IdentifierUtils {
       $data_profile = $this->configFactory->get('dgi_actions.data_profile.' . $identifier->get('data_profile.id'));
 
       $configs['identifier'] = $identifier;
-      $configs['service_data'] = (!empty($service_data)) ? $service_data->get('data') : 'Service Data not Configured';
-      $configs['data_profile'] = (!empty($data_profile)) ? $data_profile->get('data') : 'Data Profile not Configured';
+      $configs['service_data'] = (!empty($service_data)) ? $service_data : 'Service Data not Configured';
+      $configs['data_profile'] = (!empty($data_profile)) ? $data_profile : 'Data Profile not Configured';
 
       return $configs;
     }
