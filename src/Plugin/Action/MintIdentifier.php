@@ -24,11 +24,11 @@ abstract class MintIdentifier extends IdentifierAction {
    *   based on the data_profile.
    */
   protected function getFieldData() {
-    if ($this->entity && $this->configs) {
+    if ($this->getEntity() && $this->getConfigs()['data_profile']) {
       $data = [];
-      foreach ($this->configs['data_profile']->get('data') as $key => $value) {
-        if (is_numeric($key) && $this->entity->hasField($value['source_field'])) {
-          $data[$value['key']] = $this->entity->get($value['source_field'])->getString();
+      foreach ($this->getConfigs()['data_profile']->get('data') as $key => $value) {
+        if (is_numeric($key) && $this->getEntity()->hasField($value['source_field'])) {
+          $data[$value['key']] = $this->getEntity()->get($value['source_field'])->getString();
         }
       }
 
@@ -44,7 +44,7 @@ abstract class MintIdentifier extends IdentifierAction {
    * @return mixed
    *   The request response returned by the service.
    */
-  public function mint() {
+  protected function mint() {
     $request = $this->buildRequest();
     $response = $this->sendRequest($request);
 
@@ -69,11 +69,11 @@ abstract class MintIdentifier extends IdentifierAction {
    *   The identifier formatted as a URL.
    */
   protected function setIdentifierField(string $identifier) {
-    if ($identifier && $this->configs) {
-      $field = $this->configs['identifier']->get('field');
-      if (!empty($field) && $this->entity->hasField($field)) {
-        $this->entity->set($field, $identifier);
-        $this->entity->save();
+    if ($identifier && $this->getConfigs()) {
+      $field = $this->getConfigs()['identifier']->get('field');
+      if (!empty($field) && $this->getEntity()->hasField($field)) {
+        $this->getEntity()->set($field, $identifier);
+        $this->getEntity()->save();
       }
       else {
         $this->logger->error('Error with Entity Identifier field.');
@@ -90,8 +90,8 @@ abstract class MintIdentifier extends IdentifierAction {
   public function execute($entity = NULL) {
     if ($entity instanceof FieldableEntityInterface) {
       try {
-        $this->entity = $entity;
-        $this->configs = $this->utils->getAssociatedConfigs($this->configuration['identifier_type']);
+        $this->setEntity($entity);
+        $this->setConfigs($this->utils->getAssociatedConfigs($this->configuration['identifier_type']));
         $response = $this->mint();
         $this->handleResponse($response);
       }
@@ -106,10 +106,6 @@ abstract class MintIdentifier extends IdentifierAction {
       }
       catch (BadResponseException $bre) {
         $this->logger->error('Error in response from service: @response', ['@response' => $bre->getMessage()]);
-      }
-      finally {
-        $this->entity = NULL;
-        $this->configs = NULL;
       }
     }
   }

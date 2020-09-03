@@ -2,14 +2,33 @@
 
 namespace Drupal\dgi_actions\Utility;
 
-use Drupal\islandora\IslandoraUtils;
+use Drupal\context\ContextManager;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\dgi_actions\ContextProvider\EntityContextProvider;
 
 /**
  * Utility functions for figuring out when to fire derivative reactions.
  */
-class DgiUtils extends IslandoraUtils {
+class DgiUtils {
+
+  /**
+   * Context manager.
+   *
+   * @var \Drupal\context\ContextManager
+   */
+  protected $contextManager;
+
+  /**
+   * Constructor.
+   *
+   * @param \Drupal\context\ContextManager $context_manager
+   *   Context manager.
+   */
+  public function __construct(
+    ContextManager $context_manager
+  ) {
+    $this->contextManager = $context_manager;
+  }
 
   /**
    * Executes context reactions for an Entity.

@@ -5,6 +5,7 @@ namespace Drupal\dgi_actions\Plugin\Action;
 use Drupal\dgi_actions\Utility\IdentifierUtils;
 use Drupal\Core\Action\ConfigurableActionBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManager;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -15,14 +16,11 @@ use Psr\Log\LoggerInterface;
 use Drupal\Core\Entity\EntityFieldManager;
 use Drupal\Core\Config\ConfigFactory;
 use Drupal\Core\Session\AccountInterface;
-use Drupal\Core\StringTranslation\StringTranslationTrait;
 
 /**
  * Base class for Identifier Actions.
  */
 abstract class IdentifierAction extends ConfigurableActionBase implements ContainerFactoryPluginInterface {
-
-  use StringTranslationTrait;
 
   /**
    * Configured Identifier config values.
@@ -120,6 +118,7 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
     $this->entityFieldManager = $entity_field_manager;
     $this->configFactory = $config_factory;
     $this->utils = $utils;
+    $this->configs = $this->utils->getAssociatedConfigs($this->configuration['identifier_type']);
   }
 
   /**
@@ -159,6 +158,46 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
     if ($this->entity) {
       return $this->entity->toUrl('canonical', ['absolute' => TRUE])->toString();
     }
+  }
+
+  /**
+   * Sets the config value.
+   *
+   * @param array $configs
+   *   Sets the objects $configs value.
+   */
+  protected function setConfigs(array $configs) {
+    $this->configs = $configs;
+  }
+
+  /**
+   * Gets the configs value.
+   *
+   * @return array
+   *   Returns the array of configs.
+   */
+  protected function getConfigs() {
+    return $this->configs;
+  }
+
+  /**
+   * Sets the entity value.
+   *
+   * @param Drupal\Core\Entity\EntityInterface $entity
+   *   Sets the object's $entity value.
+   */
+  protected function setEntity(EntityInterface $entity) {
+    $this->entity = $entity;
+  }
+
+  /**
+   * Gets the entity value.
+   *
+   * @return Drupal\Core\Entity\EntityInterface
+   *   Returns the EntityInterface value of entity.
+   */
+  protected function getEntity() {
+    return $this->entity;
   }
 
   /**

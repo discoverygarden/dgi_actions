@@ -10,4 +10,4 @@ services:
       - '@logger.channel.dgi_actions'
   dgi_actions.dgiutils:
     class: Drupal\dgi_actions\Utility\DgiUtils
-    arguments: ['@entity_type.manager', '@entity_field.manager', '@entity.query', '@context.manager', '@flysystem_factory', '@language_manager']
+    arguments: ['@context.manager']

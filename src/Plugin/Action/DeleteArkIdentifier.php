@@ -52,7 +52,7 @@ class DeleteArkIdentifier extends DeleteIdentifier {
    */
   protected function getRequestParams() {
     $requestParams = [
-      'auth' => [$this->configs['service_data']->get('data.username'), $this->configs['service_data']->get('data.password')],
+      'auth' => [$this->getConfigs()['service_data']->get('data.username'), $this->getConfigs()['service_data']->get('data.password')],
     ];
 
     return $requestParams;
@@ -62,12 +62,14 @@ class DeleteArkIdentifier extends DeleteIdentifier {
    * {@inheritdoc}
    */
   public function handleResponse($response) {
-    $bodyContents = $response->getBody()->getContents();
-    $filteredResponse = $this->responseArray($bodyContents);
+    $contents = $response->getBody()->getContents();
+    $filteredResponse = $this->responseArray($contents);
 
-    // If not success, Guzzle will throw a BadResponseException.
     if (array_key_exists('success', $filteredResponse)) {
-      $this->logger->info('ARK Identifier Deleted: @contents', ['@contents' => $bodyContents]);
+      $this->logger->info('ARK Identifier Deleted: @contents', ['@contents' => $contents]);
+    }
+    else {
+      $this->logger->error('There was an issue deleting the ARK Identifier: @contents', ['@contents' => $contents]);
     }
   }
 
