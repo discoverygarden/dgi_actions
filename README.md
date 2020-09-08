@@ -4,8 +4,9 @@
 
 DGI Action Utilities, including:
 * Actions to Mint/Delete Persistent Identifiers.
-* Context Reactions for Minting and Deleting.
-* Context Conditions for if an Identifier field is or is not populated.
+* Context Condition for if an Identifier field is or is not populated.
+* Context Reactions for Entity Insert and Entity Delete.
+* Method to execute Entity Reactions.
 * Utility functions to get a list of configured identifiers.
 
 ## Requirements
@@ -13,6 +14,7 @@ DGI Action Utilities, including:
 This module requires the following modules/libraries:
 
 * [Islandora](https://github.com/Islandora/islandora)
+* [Entity Route Context](https://www.drupal.org/project/entity_route_context)
 
 ## Installation
 
