@@ -3,12 +3,10 @@
 namespace Drupal\dgi_actions\Plugin\Condition;
 
 use Drupal\Core\Condition\ConditionPluginBase;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\Core\Config\ConfigFactory;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\dgi_actions\Utility\IdentifierUtils;
 use Psr\Log\LoggerInterface;
@@ -29,13 +27,6 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
   use StringTranslationTrait;
 
   /**
-   * Config Factory.
-   *
-   * @var \Drupal\Core\Config\ConfigFactory
-   */
-  protected $configFactory;
-
-  /**
    * Logger.
    *
    * @var Psr\Log\LoggerInterface
@@ -50,13 +41,6 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
   protected $utils;
 
   /**
-   * Term storage.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
    * Constructor.
    *
    * @param array $configuration
@@ -68,29 +52,21 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
    *   The plugin_id for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
-   * @param Drupal\Core\Config\ConfigFactory $config_factory
-   *   Config factory.
    * @param Psr\Log\LoggerInterface $logger
    *   Logger.
    * @param Drupal\dgi_actions\Utility\IdentifierUtils $utils
    *   Identifier utils.
-   * @param Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   *   Entity type manager.
    */
   public function __construct(
     array $configuration,
     $plugin_id,
     $plugin_definition,
-    ConfigFactory $config_factory,
     LoggerInterface $logger,
-    IdentifierUtils $utils,
-    EntityTypeManagerInterface $entity_type_manager
+    IdentifierUtils $utils
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->configFactory = $config_factory;
     $this->logger = $logger;
     $this->utils = $utils;
-    $this->entityTypeManager = $entity_type_manager;
   }
 
   /**
@@ -101,10 +77,8 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
       $configuration,
       $plugin_id,
       $plugin_definition,
-      $container->get('config.factory'),
       $container->get('logger.channel.dgi_actions'),
-      $container->get('dgi_actions.utils'),
-      $container->get('entity_type.manager')
+      $container->get('dgi_actions.utils')
     );
   }
 

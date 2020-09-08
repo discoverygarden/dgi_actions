@@ -6,15 +6,12 @@ use Drupal\dgi_actions\Utility\IdentifierUtils;
 use Drupal\Core\Action\ConfigurableActionBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\Core\Entity\EntityTypeManager;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
 use Psr\Log\LoggerInterface;
-use Drupal\Core\Entity\EntityFieldManager;
-use Drupal\Core\Config\ConfigFactory;
 use Drupal\Core\Session\AccountInterface;
 
 /**
@@ -51,27 +48,6 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
   protected $client;
 
   /**
-   * Entity Type Manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManager
-   */
-  protected $entityTypeManager;
-
-  /**
-   * Entity Field Manager.
-   *
-   * @var \Drupal\Core\Entity\EntityFieldManager
-   */
-  protected $entityFieldManager;
-
-  /**
-   * Config Factory.
-   *
-   * @var \Drupal\Core\Config\ConfigFactory
-   */
-  protected $configFactory;
-
-  /**
    * Identifier Utils.
    *
    * @var \Drupal\dgi_actions\Utilities\IdentifierUtils
@@ -89,14 +65,8 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
    *   The plugin implementation definition.
    * @param \GuzzleHttp\Client $client
    *   Http Client connection.
-   * @param \Drupal\Core\Entity\EntityTypeManager $entity_type_manager
-   *   Entity type manager.
    * @param Psr\Log\LoggerInterface $logger
    *   Logger.
-   * @param Drupal\Core\Entity\EntityFieldManager $entity_field_manager
-   *   Entity field manager.
-   * @param Drupal\Core\Config\ConfigFactory $config_factory
-   *   Config factory.
    * @param Drupal\dgi_actions\Utilities\IdentifierUtils $utils
    *   Identifier utils.
    */
@@ -105,18 +75,12 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
     $plugin_id,
     $plugin_definition,
     Client $client,
-    EntityTypeManager $entity_type_manager,
     LoggerInterface $logger,
-    EntityFieldManager $entity_field_manager,
-    ConfigFactory $config_factory,
     IdentifierUtils $utils
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->client = $client;
-    $this->entityTypeManager = $entity_type_manager;
     $this->logger = $logger;
-    $this->entityFieldManager = $entity_field_manager;
-    $this->configFactory = $config_factory;
     $this->utils = $utils;
     $this->configs = $this->utils->getAssociatedConfigs($this->configuration['identifier_type']);
   }
@@ -130,10 +94,7 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
       $plugin_id,
       $plugin_definition,
       $container->get('http_client'),
-      $container->get('entity_type.manager'),
-      $container->get('logger.factory')->get('dgi_actions'),
-      $container->get('entity_field.manager'),
-      $container->get('config.factory'),
+      $container->get('logger.channel.dgi_actions'),
       $container->get('dgi_actions.utils')
     );
   }
