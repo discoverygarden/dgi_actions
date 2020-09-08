@@ -2,6 +2,12 @@
 
 namespace Drupal\dgi_actions\Plugin\Action;
 
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\dgi_actions\Utility\IdentifierUtils;
+use Drupal\dgi_actions\Utility\EzidTextParser;
+use GuzzleHttp\Client;
+use Psr\Log\LoggerInterface;
+
 /**
  * Deletes an ARK Identifier Record on CDL EZID..
  *
@@ -14,21 +20,56 @@ namespace Drupal\dgi_actions\Plugin\Action;
 class DeleteArkIdentifier extends DeleteIdentifier {
 
   /**
-   * Formats the CDL EZID response as a key-value pair array.
+   * CDL EZID Text Parser.
    *
-   * CDL EZID sends back a response body as a single string,
-   * with response values separated by colons, this method
-   * separates that into a key-value pair array.
+   * @var \Drupal\dgi_actions\Utilities\EzidTextParser
    */
-  protected function responseArray($contents) {
-    $responseArray = preg_split('/\r\n|\r|\n/', trim($contents));
-    $assocArray = [];
-    foreach ($responseArray as $res_line) {
-      $splitRes = explode(':', $res_line, 2);
-      $assocArray[trim($splitRes[0])] = trim($splitRes[1]);
-    }
+  protected $ezidParser;
 
-    return $assocArray;
+  /**
+   * Constructor.
+   *
+   * @param array $configuration
+   *   A configuration array containing information about the plugin instance.
+   * @param string $plugin_id
+   *   The plugin ID for the plugin instance.
+   * @param mixed $plugin_definition
+   *   The plugin implementation definition.
+   * @param \GuzzleHttp\Client $client
+   *   Http Client connection.
+   * @param Psr\Log\LoggerInterface $logger
+   *   Logger.
+   * @param Drupal\dgi_actions\Utilities\IdentifierUtils $utils
+   *   Identifier utils.
+   * @param Drupal\dgi_actions\Utilities\EzidTextParser $ezid_parser
+   *   CDL EZID Text parser.
+   */
+  public function __construct(
+    array $configuration,
+    $plugin_id,
+    $plugin_definition,
+    Client $client,
+    LoggerInterface $logger,
+    IdentifierUtils $utils,
+    EzidTextParser $ezid_parser
+  ) {
+    parent::__construct($configuration, $plugin_id, $plugin_definition, $client, $logger, $utils);
+    $this->ezidParser = $ezid_parser;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+    return new static(
+      $configuration,
+      $plugin_id,
+      $plugin_definition,
+      $container->get('http_client'),
+      $container->get('logger.channel.dgi_actions'),
+      $container->get('dgi_actions.utils'),
+      $container->get('dgi_actions.ezidtextparser')
+    );
   }
 
   /**
@@ -63,7 +104,7 @@ class DeleteArkIdentifier extends DeleteIdentifier {
    */
   public function handleResponse($response) {
     $contents = $response->getBody()->getContents();
-    $filteredResponse = $this->responseArray($contents);
+    $filteredResponse = $this->ezidParser->parseEzidResponse($contents);
 
     if (array_key_exists('success', $filteredResponse)) {
       $this->logger->info('ARK Identifier Deleted: @contents', ['@contents' => $contents]);

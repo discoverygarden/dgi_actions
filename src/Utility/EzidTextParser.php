@@ -1,8 +1,13 @@
 <?php
 
+namespace Drupal\dgi_actions\Utility;
+
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Psr\Log\LoggerInterface;
 
+/**
+ * Text parser for CDL EZID Requests and Responses.
+ */
 class EzidTextParser {
 
   /**
@@ -42,8 +47,8 @@ class EzidTextParser {
    * @return array
    *   Response organized into a key-value array.
    */
-  protected function parseEzidResponse(string $response) {
-    $responseArray = preg_split('/\r\n|\r|\n/', trim($contents));
+  public function parseEzidResponse(string $response) {
+    $responseArray = preg_split('/\r\n|\r|\n/', trim($response));
     $assocArray = [];
     foreach ($responseArray as $res_line) {
       $splitRes = explode(':', $res_line, 2);
@@ -56,18 +61,22 @@ class EzidTextParser {
   /**
    * Builds the request content body for the EZID service.
    *
+   * Build the request content body from a key-value supplied
+   * array of values.
+   *
    * @param array $data
+   *   The key-value array of data to be formated.
    *
    * @return string
    *   The quest content body.
    */
-  protected function buildEzidQuery($data) {
-    $outputString = "";
+  public function buildEzidRequestBody(array $data) {
+    $output = "";
     foreach ($data as $key => $val) {
-      $outputString .= $key . ": " . $val . "\r\n";
+      $output .= $key . ": " . $val . "\r\n";
     }
 
-    return $outputString;
+    return $output;
   }
 
 }
