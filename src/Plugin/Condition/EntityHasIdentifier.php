@@ -117,7 +117,8 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
     $form['identifier'] = [
       '#type' => 'select',
       '#title' => $this->t('Identifier Type'),
-      '#default_value' => $this->configuration['identifier'],
+      '#empty_option' => $this->t('- None -'),
+      '#default_value' => ($this->configuration['identifier']) ?: $this->t('- None -'),
       '#options' => $this->utils->getIdentifiers(),
       '#description' => $this->t('The persistent identifier configuration to be used.'),
     ];
@@ -138,7 +139,7 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
    */
   public function defaultConfiguration() {
     return array_merge(
-      ['identifier' => ''],
+      ['identifier' => NULL],
       parent::defaultConfiguration()
     );
   }

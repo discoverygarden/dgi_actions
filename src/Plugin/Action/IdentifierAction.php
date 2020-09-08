@@ -82,7 +82,7 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
     $this->client = $client;
     $this->logger = $logger;
     $this->utils = $utils;
-    $this->configs = $this->utils->getAssociatedConfigs($this->configuration['identifier_type']);
+    $this->configs = ($this->configuration['identifier_type']) ? $this->utils->getAssociatedConfigs($this->configuration['identifier_type']) : NULL;
   }
 
   /**
@@ -239,7 +239,7 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
    */
   public function defaultConfiguration() {
     return [
-      'identifier_type' => '',
+      'identifier_type' => NULL,
     ];
   }
 
@@ -250,7 +250,8 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
     $form['identifier_type'] = [
       '#type' => 'select',
       '#title' => $this->t('Identifier Type'),
-      '#default_value' => $this->configuration['identifier_type'],
+      '#empty_option' => $this->t('- None -'),
+      '#default_value' => ($this->configuration['identifier_type']) ?: $this->t('- None -'),
       '#options' => $this->utils->getIdentifiers(),
       '#description' => $this->t('The persistent identifier configuration to be used.'),
     ];
