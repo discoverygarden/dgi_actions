@@ -21,21 +21,19 @@ abstract class MintIdentifier extends IdentifierAction {
    *
    * @return array
    *   The returned data structured in a key value pair
-   *   based on the data_profile.
+   *   based on the configured data_profile.
    */
   protected function getFieldData() {
-    if ($this->getEntity() && $this->getConfigs()['data_profile']) {
-      $data = [];
+    $data = [];
+    if ($this->getConfigs()['data_profile']) {
       foreach ($this->getConfigs()['data_profile']->get('data') as $key => $value) {
         if (is_numeric($key) && $this->getEntity()->hasField($value['source_field'])) {
           $data[$value['key']] = $this->getEntity()->get($value['source_field'])->getString();
         }
       }
-
-      return $data;
     }
 
-    $this->logger->error('Field Data could not be acquired because of missing Entity or Configs.');
+    return $data;
   }
 
   /**
@@ -69,18 +67,18 @@ abstract class MintIdentifier extends IdentifierAction {
    *   The identifier formatted as a URL.
    */
   protected function setIdentifierField(string $identifier) {
-    if ($identifier && $this->getConfigs()) {
+    if ($identifier) {
       $field = $this->getConfigs()['identifier']->get('field');
       if (!empty($field) && $this->getEntity()->hasField($field)) {
         $this->getEntity()->set($field, $identifier);
         $this->getEntity()->save();
       }
       else {
-        $this->logger->error('Error with Entity Identifier field.');
+        $this->logger->error('Error with Entity Identifier field. The identifier was not set to the entity.');
       }
     }
     else {
-      $this->logger->error('Identifier or Configs are not set.');
+      $this->logger->error('The identifier is missing and was not set to the entity.');
     }
   }
 
@@ -92,8 +90,13 @@ abstract class MintIdentifier extends IdentifierAction {
       try {
         $this->setEntity($entity);
         $this->setConfigs($this->utils->getAssociatedConfigs($this->configuration['identifier_type']));
-        $response = $this->mint();
-        $this->handleResponse($response);
+        if ($this->getEntity() && $this->getConfigs()) {
+          $response = $this->mint();
+          $this->handleResponse($response);
+        }
+        else {
+          $this->logger->error('Entity or Configs were not properly set.');
+        }
       }
       catch (UndefinedLinkTemplateException $ulte) {
         $this->logger->warning('Error retrieving Entity URL: @errorMessage', ['@errorMessage' => $ulte->getMessage()]);

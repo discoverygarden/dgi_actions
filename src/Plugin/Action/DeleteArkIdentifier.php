@@ -6,6 +6,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\dgi_actions\Utility\IdentifierUtils;
 use Drupal\dgi_actions\Utility\EzidTextParser;
 use GuzzleHttp\Client;
+use GuzzleHttp\Psr7\Response;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -102,7 +103,7 @@ class DeleteArkIdentifier extends DeleteIdentifier {
   /**
    * {@inheritdoc}
    */
-  protected function handleResponse($response) {
+  protected function handleResponse(Response $response) {
     $contents = $response->getBody()->getContents();
     $filteredResponse = $this->ezidParser->parseEzidResponse($contents);
 

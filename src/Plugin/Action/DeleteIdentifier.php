@@ -48,7 +48,9 @@ abstract class DeleteIdentifier extends IdentifierAction {
       try {
         $this->setEntity($entity);
         $this->setConfigs($this->utils->getAssociatedConfigs($this->configuration['identifier_type']));
-        $this->delete();
+        if ($this->getEntity() && $this->getConfigs()) {
+          $this->delete();
+        }
       }
       catch (InvalidArgumentException $iae) {
         $this->logger->error('Configured field not found on Entity: @iae', ['@iae' => $iae->getMessage()]);

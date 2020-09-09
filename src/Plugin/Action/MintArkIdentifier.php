@@ -6,6 +6,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\dgi_actions\Utility\IdentifierUtils;
 use Drupal\dgi_actions\Utility\EzidTextParser;
 use GuzzleHttp\Client;
+use GuzzleHttp\Psr7\Response;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -78,22 +79,17 @@ class MintArkIdentifier extends MintIdentifier {
    * Constructs the Metadata into a colon separated value
    * string for the CDL EZID service.
    *
-   * @param mixed $data
+   * @param array $data
    *   The Entity data that's to be built for the service.
    *
    * @return string
    *   Returns the stringified version of the key-value
    *   pairs else returns an empty string if $data is empty or null.
    */
-  protected function buildRequestBody($data = NULL) {
-    if (!$data) {
-      $this->logger->warning('buildRequestBody - Data is missing or malformed.');
-      $data = [];
-    }
-
+  protected function buildRequestBody(array $data) {
     // Adding External URL to the Data Array under the EZID _target key.
     // Also setting _status as reserved. Else identifier cannot be deleted.
-    $data = array_merge(['_target' => $this->getExternalURL(), '_status' => 'reserved'], $data);
+    $data = array_merge(['_target' => $this->getExternalUrl(), '_status' => 'reserved'], $data);
     $output = $this->ezidParser->buildEzidRequestBody($data);
 
     return $output;
@@ -109,9 +105,9 @@ class MintArkIdentifier extends MintIdentifier {
       $this->logger->info('ARK Identifier Minted: @contents', ['@contents' => $contents]);
       return $this->getConfigs()['service_data']->get('data.host') . '/id/' . $responseArray['success'];
     }
-    else {
-      $this->logger->error('There was an issue minting the ARK Identifier: @contents', ['@contents' => $contents]);
-    }
+
+    $this->logger->error('There was an issue minting the ARK Identifier: @contents', ['@contents' => $contents]);
+    return FALSE;
   }
 
   /**
@@ -151,7 +147,7 @@ class MintArkIdentifier extends MintIdentifier {
   /**
    * {@inheritdoc}
    */
-  protected function handleResponse($response) {
+  protected function handleResponse(Response $response) {
     $identifier = $this->getIdentifierFromResponse($response);
     $this->setIdentifierField($identifier);
   }

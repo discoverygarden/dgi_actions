@@ -116,9 +116,7 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
    *   Entitiy's external URL as a string.
    */
   public function getExternalUrl() {
-    if ($this->entity) {
-      return $this->entity->toUrl('canonical', ['absolute' => TRUE])->toString();
-    }
+    return $this->entity->toUrl('canonical', ['absolute' => TRUE])->toString();
   }
 
   /**
