@@ -41,7 +41,7 @@ to implement Identifier specific abstracted functions.
 Once the extended classes have been implemented, the Actions will need to be
 enabled and configured in the UI at '/admin/config/system/actions' after that,
 a Context will have to be created at '/admin/structure/context' configured using
-either the 'Mint (dgi_actions)' or 'Delete (dgi_actions)' Reaction targetting the applicable Action.
+either the 'Entity Insert (dgi_actions)' or 'Entity Delete (dgi_actions)' Reaction targeting the applicable Action.
 
 ## Troubleshooting/Issues
 

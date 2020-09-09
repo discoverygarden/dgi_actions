@@ -68,7 +68,7 @@ class IdentifierUtils {
       return $config_options;
     }
 
-    return 'No Identifiers Configured';
+    return NULL;
   }
 
   /**
@@ -98,7 +98,7 @@ class IdentifierUtils {
       return $configs;
     }
 
-    return FALSE;
+    return NULL;
   }
 
 }

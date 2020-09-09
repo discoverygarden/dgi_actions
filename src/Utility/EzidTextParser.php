@@ -39,13 +39,13 @@ class EzidTextParser {
   }
 
   /**
-   * Parses EZID Response into a key-value array.
+   * Parses CDL EZID API responses into a key-value array.
    *
    * @param string $response
    *   Response body from EZID.
    *
    * @return array
-   *   Response organized into a key-value array.
+   *   Response body reorganized into a key-value array.
    */
   public function parseEzidResponse(string $response) {
     $responseArray = preg_split('/\r\n|\r|\n/', trim($response));
@@ -61,14 +61,13 @@ class EzidTextParser {
   /**
    * Builds the request content body for the EZID service.
    *
-   * Build the request content body from a key-value supplied
-   * array of values.
+   * Build the request content body from a supplied key-value array.
    *
    * @param array $data
    *   The key-value array of data to be formated.
    *
    * @return string
-   *   The quest content body.
+   *   The request content body.
    */
   public function buildEzidRequestBody(array $data) {
     $output = "";

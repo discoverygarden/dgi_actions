@@ -82,7 +82,7 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
     $this->client = $client;
     $this->logger = $logger;
     $this->utils = $utils;
-    $this->configs = ($this->configuration['identifier_type']) ? $this->utils->getAssociatedConfigs($this->configuration['identifier_type']) : NULL;
+    $this->configs = ($this->utils->getAssociatedConfigs($this->configuration['identifier_type'])) ?: NULL;
   }
 
   /**
@@ -115,7 +115,7 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
    * @return string
    *   Entitiy's external URL as a string.
    */
-  protected function getExternalUrl() {
+  public function getExternalUrl() {
     if ($this->entity) {
       return $this->entity->toUrl('canonical', ['absolute' => TRUE])->toString();
     }
@@ -127,7 +127,7 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
    * @param array $configs
    *   Sets the objects $configs value.
    */
-  protected function setConfigs(array $configs) {
+  public function setConfigs(array $configs) {
     $this->configs = $configs;
   }
 
@@ -137,7 +137,7 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
    * @return array
    *   Returns the array of configs.
    */
-  protected function getConfigs() {
+  public function getConfigs() {
     return $this->configs;
   }
 
@@ -147,7 +147,7 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
    * @param Drupal\Core\Entity\EntityInterface $entity
    *   Sets the object's $entity value.
    */
-  protected function setEntity(EntityInterface $entity) {
+  public function setEntity(EntityInterface $entity) {
     $this->entity = $entity;
   }
 
@@ -157,7 +157,7 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
    * @return Drupal\Core\Entity\EntityInterface
    *   Returns the EntityInterface value of entity.
    */
-  protected function getEntity() {
+  public function getEntity() {
     return $this->entity;
   }
 

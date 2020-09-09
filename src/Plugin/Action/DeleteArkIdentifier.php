@@ -102,7 +102,7 @@ class DeleteArkIdentifier extends DeleteIdentifier {
   /**
    * {@inheritdoc}
    */
-  public function handleResponse($response) {
+  protected function handleResponse($response) {
     $contents = $response->getBody()->getContents();
     $filteredResponse = $this->ezidParser->parseEzidResponse($contents);
 

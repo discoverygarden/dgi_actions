@@ -34,7 +34,7 @@ abstract class DeleteIdentifier extends IdentifierAction {
   /**
    * Delete's the identifier from the service.
    */
-  public function delete() {
+  protected function delete() {
     $request = $this->buildRequest();
     $response = $this->sendRequest($request);
     $this->handleResponse($response);
