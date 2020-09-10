@@ -1,0 +1,5 @@
+---
+services:
+  dgi_actions.ezidtextparser:
+    class: Drupal\dgi_actions_ark_identifier\Utility\EzidTextParser
+    arguments: ['@logger.channel.dgi_actions']
