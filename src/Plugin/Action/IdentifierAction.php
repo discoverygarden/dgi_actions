@@ -82,7 +82,6 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
     $this->client = $client;
     $this->logger = $logger;
     $this->utils = $utils;
-    $this->configs = ($this->utils->getAssociatedConfigs($this->configuration['identifier_type'])) ?: NULL;
   }
 
   /**
@@ -237,7 +236,7 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
    */
   public function defaultConfiguration() {
     return [
-      'identifier_type' => NULL,
+      'identifier_type' => '',
     ];
   }
 

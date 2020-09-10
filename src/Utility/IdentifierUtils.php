@@ -60,15 +60,14 @@ class IdentifierUtils {
    */
   public function getIdentifiers() {
     $configs = $this->configFactory->listAll('dgi_actions.identifier');
+    $config_options = [];
     if (!empty($configs)) {
-      $config_options = [];
       foreach ($configs as $config_id) {
         $config_options[$config_id] = $this->configFactory->get($config_id)->get('label');
       }
-      return $config_options;
     }
 
-    return FALSE;
+    return $config_options;
   }
 
   /**
@@ -95,10 +94,9 @@ class IdentifierUtils {
       $configs['service_data'] = (!empty($service_data)) ? $service_data : [];
       $configs['data_profile'] = (!empty($data_profile)) ? $data_profile : [];
 
-      return $configs;
     }
 
-    return FALSE;
+    return $configs;
   }
 
 }
