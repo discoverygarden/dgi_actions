@@ -1,0 +1,13 @@
+---
+services:
+  logger.channel.dgi_actions:
+    parent: logger.channel_base
+    arguments: ['dgi_actions']
+  dgi_actions.utils:
+    class: Drupal\dgi_actions\Utility\IdentifierUtils
+    arguments:
+      - '@config.factory'
+      - '@logger.channel.dgi_actions'
+  dgi_actions.dgiutils:
+    class: Drupal\dgi_actions\Utility\DgiUtils
+    arguments: ['@context.manager']

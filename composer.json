@@ -4,6 +4,6 @@
     "license": "GPL-3.0-only",
     "require": {
       "islandora/islandora": "^1",
-      "drupal/node": "^8"
+      "drupal/entity_route_context": "^8"
     }
 }
