@@ -1,0 +1,7 @@
+name: 'DGI Actions ARK Identifier'
+description: "DGI Actions ARK Identifier sub-module."
+type: module
+package: DGI Actions
+core: 8.x
+dependencies:
+  - dgi_actions

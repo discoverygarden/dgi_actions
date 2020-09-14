@@ -14,8 +14,17 @@ dgi_actions.identifier.*:
     label:
       type: string
       label: 'Identifier Label'
-    credentials:
-      type: dgi_actions.credentials.[%parent.identifier_id]
+    field:
+      type: string
+      label: 'Identifier Object Field'
+    service_data:
+      type: mapping
+      label: 'Service Data'
+      mapping:
+        id:
+          type: string
+        data:
+          type: dgi_actions.service_data.[%parent.id]
     data_profile:
       type: mapping
       label: 'Data Profile'
@@ -26,38 +35,24 @@ dgi_actions.identifier.*:
           type: dgi_actions.data_profile.[%parent.id]
 
 dgi_actions.data_profile.*:
-  type: sequence
+  type: config_object
   label: 'Data Profile'
-  sequence:
-    type: mapping
-    mapping:
-      key:
-        type: string
-      source_field:
-        type: string
-
-dgi_actions.credentials.*:
-  type: mapping
-  label: 'Identifier Credentials'
   mapping:
-    label:
-      type: string
-      label: "Credentials Label"
-    host:
-      type: string
-      label: 'Host URI'
-    langcode:
-      type: string
-      label: 'Language Code'
-    username:
-      type: string
-      label: 'Username'
-    password:
-      type: string
-      label: 'Password'
-    shoulder:
-      type: string
-      label: 'Namespace/Shoulder'
-    field:
-      type: string
-      label: 'Field mapping for the Identifier'
+    data:
+      type: sequence
+      sequence:
+        type: mapping
+        mapping:
+          key:
+            type: string
+          source_field:
+            type: string
+
+dgi_actions.service_data.*:
+  type: config_object
+  label: 'Service Data'
+  mapping:
+    data:
+      type: sequence
+      sequence:
+        type: string

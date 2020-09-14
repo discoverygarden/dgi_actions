@@ -1,8 +1,8 @@
 name: 'DGI Actions'
 description: "DGI Actions"
 type: module
-package: DGI Action
+package: DGI Actions
 core: 8.x
 dependencies:
   - islandora
-  - node
+  - entity_route_context

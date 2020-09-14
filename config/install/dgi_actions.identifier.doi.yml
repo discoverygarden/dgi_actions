@@ -3,5 +3,8 @@ status: true
 dependencies: { }
 identifier_id: 'doi'
 label: 'Test DOI Identifier'
+field: 'field_ark_identifier'
+service_data:
+  id: 'doi'
 data_profile:
   id: 'erc'

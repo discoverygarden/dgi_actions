@@ -8,3 +8,6 @@ services:
     arguments:
       - '@config.factory'
       - '@logger.channel.dgi_actions'
+  dgi_actions.dgiutils:
+    class: Drupal\dgi_actions\Utility\DgiUtils
+    arguments: ['@context.manager']
