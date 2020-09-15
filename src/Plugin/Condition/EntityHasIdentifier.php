@@ -95,7 +95,7 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
       return !($this->isNegated() && $identifier_not_available);
     }
 
-    return !$this->isNegated();
+    return $this->isNegated();
   }
 
   /**
