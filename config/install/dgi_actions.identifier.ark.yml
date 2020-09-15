@@ -3,7 +3,7 @@ status: true
 dependencies: { }
 identifier_id: 'ark'
 label: 'ARK Identifier'
-field: 'field_ark_identifier'
+field: 'field_ark'
 service_data:
   id: 'ark_ezid'
 data_profile:

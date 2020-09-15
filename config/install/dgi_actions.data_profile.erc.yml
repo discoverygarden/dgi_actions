@@ -1,10 +1,10 @@
 data:
   -
     key: 'erc.who'
-    source_field: 'field_erc_who'
+    source_field: 'field_publisher'
   -
     key: 'erc.when'
-    source_field: 'field_erc_when'
+    source_field: 'field_edtf_date_created'
   -
     key: 'erc.what'
-    source_field: 'field_erc_what'
+    source_field: 'title'
