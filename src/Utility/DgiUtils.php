@@ -43,11 +43,6 @@ class DgiUtils {
     $provided = $provider->getRuntimeContexts([]);
     $this->contextManager->evaluateContexts($provided);
 
-    dpm($provided, 'Provided');
-    dpm(($this->contextManager->conditionsHasBeenEvaluated() ? 'TRUE' : 'FALSE'), 'Conditions Evaluated');
-    dpm($this->contextManager->getActiveContexts(), 'Active Contexts');
-    dpm($this->contextManager->getActiveReactions($reaction_type), 'Active Reactions by Type');
-
     // Fire off index reactions.
     foreach ($this->contextManager->getActiveReactions($reaction_type) as $reaction) {
       $reaction->execute($entity);

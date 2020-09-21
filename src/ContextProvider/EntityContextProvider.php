@@ -38,7 +38,7 @@ class EntityContextProvider implements ContextProviderInterface {
   public function getRuntimeContexts(array $unqualified_context_ids) {
     $context_definition = new ContextDefinition('entity', NULL, FALSE);
     $context = new Context($context_definition, $this->entity);
-    return ['@entity_route_context.entity_route_context' => $context];
+    return ['@entity_route_context.entity_route_context:canonical_entity' => $context];
   }
 
   /**
@@ -46,7 +46,7 @@ class EntityContextProvider implements ContextProviderInterface {
    */
   public function getAvailableContexts() {
     $context = new Context(new ContextDefinition('entity', $this->t('Entity from hook')));
-    return ['@entity_route_context.entity_route_context' => $context];
+    return ['@entity_route_context.entity_route_context:canonical_entity' => $context];
   }
 
 }
