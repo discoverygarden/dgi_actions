@@ -16,7 +16,7 @@ use Psr\Log\LoggerInterface;
  *
  * @Condition(
  *   id = "dgi_actions_entity_persistent_identifier_populated",
- *   label = @Translation("Identifier field has persistent identifier"),
+ *   label = @Translation("Entity has persistent identifier"),
  *   context_definitions = {
  *     "entity" = @ContextDefinition("entity", required = FALSE, label = @Translation("Entity"))
  *   }
@@ -90,12 +90,17 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
     if ($entity instanceof FieldableEntityInterface) {
       $configs = $this->utils->getAssociatedConfigs($this->configuration['identifier']);
       $field = $configs['identifier']->get('field');
-      $identifier_not_available = (!empty($field) && $entity->hasField($field) && $entity->get($field)->isEmpty());
 
-      return !($this->isNegated() && $identifier_not_available);
+      if (!empty($field) && $entity->hasField($field)) {
+        return !$entity->get($field)->isEmpty();
+      }
+      else {
+        return $this->isNegated();
+      }
     }
-
-    return $this->isNegated();
+    else {
+      return $this->isNegated();
+    }
   }
 
   /**
