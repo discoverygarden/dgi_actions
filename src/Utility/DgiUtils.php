@@ -2,7 +2,7 @@
 
 namespace Drupal\dgi_actions\Utility;
 
-use Drupal\context\ContextManager;
+use Drupal\islandora\IslandoraContextManager;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\dgi_actions\ContextProvider\EntityContextProvider;
 
@@ -14,18 +14,18 @@ class DgiUtils {
   /**
    * Context manager.
    *
-   * @var \Drupal\context\ContextManager
+   * @var \Drupal\islandora\IslandoraContextManager
    */
   protected $contextManager;
 
   /**
    * Constructor.
    *
-   * @param \Drupal\context\ContextManager $context_manager
-   *   Context manager.
+   * @param \Drupal\islandora\IslandoraContextManager $context_manager
+   *   Islandora Context manager.
    */
   public function __construct(
-    ContextManager $context_manager
+    IslandoraContextManager $context_manager
   ) {
     $this->contextManager = $context_manager;
   }
