@@ -1,0 +1,13 @@
+# Menu list of DGI Actions configuration forms
+dgi_actions.admin:
+  title: 'DGI Actions'
+  parent: system.admin_config
+  route_name: dgi_actions.admin
+  weight: 100
+
+# Identifiers configuration collection page
+entity.identifiers_identifier.collection:
+  title: 'Identifiers'
+  parent: dgi_actions.admin
+  route_name: entity.identifiers_identifier.collection
+  description: 'Identifier Collection configuration page.'

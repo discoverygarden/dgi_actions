@@ -1,5 +1,5 @@
 dgi_actions.identifier.*:
-  type: config_object
+  type: config_entity
   label: 'Identifier'
   mapping:
     status:
@@ -8,7 +8,7 @@ dgi_actions.identifier.*:
     dependencies:
       type: sequence
       label: 'Dependencies'
-    identifier_id:
+    id:
       type: string
       label: 'Identifier ID'
     label:

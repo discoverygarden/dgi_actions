@@ -26,3 +26,21 @@ function dgi_actions_entity_delete(EntityInterface $entity) {
   // Execute index reactions.
   $utils->executeEntityReactions('\Drupal\dgi_actions\Plugin\ContextReaction\EntityDeleteReaction', $entity);
 }
+
+/**
+ * Implements hook_help().
+ */
+/*
+function dgi_actions_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    case 'dgi_actions.entity.identifiers_identifier.add_form':
+    case 'dgi_actions.entity.identifiers_identifier.edit_form':
+      $output = '';
+      $output .= '<p>' . t('DGI Actions Identifier Help') . '</p>';
+      $output .= '<p>' . t('Placeholder Help Text') . '</p>';
+
+      return $output;
+  }
+
+  return NULL;
+}*/

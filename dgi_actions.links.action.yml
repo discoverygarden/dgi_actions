@@ -1,0 +1,5 @@
+entity.identifiers_identifier.add_form:
+  route_name: entity.identifiers_identifier.add_form
+  title: 'Add Identifier'
+  appears_on:
+    - entity.identifiers_identifier.collection
