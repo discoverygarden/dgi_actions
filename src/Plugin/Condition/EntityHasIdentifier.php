@@ -29,14 +29,14 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
   /**
    * Logger.
    *
-   * @var Psr\Log\LoggerInterface
+   * @var \Psr\Log\LoggerInterface
    */
   protected $logger;
 
   /**
    * Utils.
    *
-   * @var Drupal\dgi_actions\Utility\IdentifierUtils
+   * @var \Drupal\dgi_actions\Utility\IdentifierUtils
    */
   protected $utils;
 
@@ -52,9 +52,9 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
    *   The plugin_id for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
-   * @param Psr\Log\LoggerInterface $logger
+   * @param \Psr\Log\LoggerInterface $logger
    *   Logger.
-   * @param Drupal\dgi_actions\Utility\IdentifierUtils $utils
+   * @param \Drupal\dgi_actions\Utility\IdentifierUtils $utils
    *   Identifier utils.
    */
   public function __construct(
@@ -128,7 +128,7 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
       '#description' => $this->t('The persistent identifier configuration to be used.'),
     ];
 
-    return parent::buildConfigurationForm($form, $form_state);;
+    return parent::buildConfigurationForm($form, $form_state);
   }
 
   /**

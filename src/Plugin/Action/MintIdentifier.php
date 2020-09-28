@@ -16,7 +16,7 @@ abstract class MintIdentifier extends IdentifierAction {
   /**
    * Gets the data of the fields provided by the data_profile config.
    *
-   * @throws Drupal\rules\Exception\InvalidArgumentException
+   * @throws \Drupal\rules\Exception\InvalidArgumentException
    *   If the Entity doesn't have the configured identifier field.
    *
    * @return array

@@ -8,7 +8,7 @@ dgi_actions.identifier.*:
     dependencies:
       type: sequence
       label: 'Dependencies'
-    identifier_id:
+    id:
       type: string
       label: 'Identifier ID'
     label:

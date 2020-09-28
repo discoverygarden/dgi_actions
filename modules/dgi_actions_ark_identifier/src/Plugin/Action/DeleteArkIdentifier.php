@@ -39,11 +39,11 @@ class DeleteArkIdentifier extends DeleteIdentifier {
    *   The plugin implementation definition.
    * @param \GuzzleHttp\Client $client
    *   Http Client connection.
-   * @param Psr\Log\LoggerInterface $logger
+   * @param \Psr\Log\LoggerInterface $logger
    *   Logger.
-   * @param Drupal\dgi_actions\Utilities\IdentifierUtils $utils
+   * @param \Drupal\dgi_actions\Utilities\IdentifierUtils $utils
    *   Identifier utils.
-   * @param Drupal\dgi_actions\Utilities\EzidTextParser $ezid_parser
+   * @param \Drupal\dgi_actions\Utilities\EzidTextParser $ezid_parser
    *   CDL EZID Text parser.
    */
   public function __construct(
@@ -95,7 +95,10 @@ class DeleteArkIdentifier extends DeleteIdentifier {
    */
   protected function getRequestParams() {
     $requestParams = [
-      'auth' => [$this->getConfigs()['service_data']->get('data.username'), $this->getConfigs()['service_data']->get('data.password')],
+      'auth' => [
+        $this->getConfigs()['service_data']->get('data.username'),
+        $this->getConfigs()['service_data']->get('data.password'),
+      ],
     ];
 
     return $requestParams;

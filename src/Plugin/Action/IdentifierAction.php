@@ -36,7 +36,7 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
   /**
    * Logger.
    *
-   * @var Psr\Log\LoggerInterface
+   * @var \Psr\Log\LoggerInterface
    */
   protected $logger;
 
@@ -65,9 +65,9 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
    *   The plugin implementation definition.
    * @param \GuzzleHttp\Client $client
    *   Http Client connection.
-   * @param Psr\Log\LoggerInterface $logger
+   * @param \Psr\Log\LoggerInterface $logger
    *   Logger.
-   * @param Drupal\dgi_actions\Utilities\IdentifierUtils $utils
+   * @param \Drupal\dgi_actions\Utilities\IdentifierUtils $utils
    *   Identifier utils.
    */
   public function __construct(
@@ -115,7 +115,7 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
    *   Entitiy's external URL as a string.
    */
   public function getExternalUrl() {
-    return $this->entity->toUrl('canonical', ['absolute' => TRUE])->toString();
+    return $this->entity->toUrl('canonical', ['absolute' => TRUE])->toString(TRUE)->getGeneratedUrl();
   }
 
   /**

@@ -39,11 +39,11 @@ class MintArkIdentifier extends MintIdentifier {
    *   The plugin implementation definition.
    * @param \GuzzleHttp\Client $client
    *   Http Client connection.
-   * @param Psr\Log\LoggerInterface $logger
+   * @param \Psr\Log\LoggerInterface $logger
    *   Logger.
-   * @param Drupal\dgi_actions\Utilities\IdentifierUtils $utils
+   * @param \Drupal\dgi_actions\Utilities\IdentifierUtils $utils
    *   Identifier utils.
-   * @param Drupal\dgi_actions\Utilities\EzidTextParser $ezid_parser
+   * @param \Drupal\dgi_actions\Utilities\EzidTextParser $ezid_parser
    *   CDL EZID Text parser.
    */
   public function __construct(
@@ -88,9 +88,17 @@ class MintArkIdentifier extends MintIdentifier {
    *   pairs else returns an empty string if $data is empty or null.
    */
   protected function buildRequestBody(array $data) {
+    // Setting custom values for the identifiers internal metadata.
     // Adding External URL to the Data Array under the EZID _target key.
     // Also setting _status as reserved. Else identifier cannot be deleted.
-    $data = array_merge(['_target' => $this->getExternalUrl(), '_status' => 'reserved'], $data);
+    // For more info: https://ezid.cdlib.org/doc/apidoc.html#internal-metadata.
+    $data = array_merge(
+      [
+        '_target' => $this->getExternalUrl(),
+        '_status' => 'reserved',
+      ], $data
+    );
+
     $output = $this->ezidParser->buildEzidRequestBody($data);
 
     return $output;
@@ -134,7 +142,10 @@ class MintArkIdentifier extends MintIdentifier {
     $fieldData = $this->getFieldData();
     $requestBody = $this->buildRequestBody($fieldData);
     $requestParams = [
-      'auth' => [$this->getConfigs()['service_data']->get('data.username'), $this->getConfigs()['service_data']->get('data.password')],
+      'auth' => [
+        $this->getConfigs()['service_data']->get('data.username'),
+        $this->getConfigs()['service_data']->get('data.password'),
+      ],
       'headers' => [
         'Content-Type' => 'text/plain; charset=UTF-8',
         'Content-Length' => strlen($requestBody),

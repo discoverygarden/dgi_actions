@@ -21,16 +21,16 @@ class IdentifierUtils {
   /**
    * Logger.
    *
-   * @var Psr\Log\LoggerInterface
+   * @var \Psr\Log\LoggerInterface
    */
   protected $logger;
 
   /**
    * Constructor.
    *
-   * @param Drupal\Core\Config\ConfigFactory $config_factory
+   * @param \Drupal\Core\Config\ConfigFactory $config_factory
    *   Config factory.
-   * @param Psr\Log\LoggerInterface $logger
+   * @param \Psr\Log\LoggerInterface $logger
    *   Logger.
    */
   public function __construct(
@@ -54,9 +54,8 @@ class IdentifierUtils {
   /**
    * Gets configured dgi_actions Identifier configs.
    *
-   * @return array|string
-   *   Returns list of configured DGI Actions Identifiers
-   *   or a string indicating identifiers not configured.
+   * @return array
+   *   Returns list of configured DGI Actions Identifiers.
    */
   public function getIdentifiers() {
     $configs = $this->configFactory->listAll('dgi_actions.identifier');

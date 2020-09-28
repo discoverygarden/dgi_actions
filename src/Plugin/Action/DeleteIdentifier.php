@@ -15,7 +15,7 @@ abstract class DeleteIdentifier extends IdentifierAction {
   /**
    * Gets the Identifier from the entity's field.
    *
-   * @throws Drupal\rules\Exception\InvalidArgumentException
+   * @throws \Drupal\rules\Exception\InvalidArgumentException
    *   If the Entity doesn't have the configured identifier field.
    *
    * @return string

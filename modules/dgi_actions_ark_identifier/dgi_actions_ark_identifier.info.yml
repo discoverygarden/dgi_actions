@@ -4,4 +4,4 @@ type: module
 package: DGI Actions
 core: 8.x
 dependencies:
-  - dgi_actions
+  - discoverygarden:dgi_actions
