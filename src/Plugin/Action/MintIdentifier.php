@@ -89,6 +89,7 @@ abstract class MintIdentifier extends IdentifierAction {
     if ($entity instanceof FieldableEntityInterface) {
       try {
         $this->entity = $entity;
+        $this->setConfigs();
         if ($this->entity && $this->identifierConfig) {
           $response = $this->mint();
           $this->handleResponse($response);

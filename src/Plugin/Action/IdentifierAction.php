@@ -268,6 +268,17 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
    */
   public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
     $this->configuration = $form_state->getValues();
+    $this->setConfigs();
+  }
+
+  /**
+   * Sets the configs based on the configured identifier.
+   *
+   * Sets the IdentifierConfig, ServiceDataConfig, and
+   * dataProfileConfig variables to their corresponding
+   * config data based on the currently selected identifier.
+   */
+  public function setConfigs() {
     $this->identifierConfig = $this->configFactory->get($this->configuration['identifier_type']);
     if (!empty($this->identifierConfig->get())) {
       $this->serviceDataConfig = $this->configFactory->get('dgi_actions.service_data.' . $this->identifierConfig->get('service_data.id'));

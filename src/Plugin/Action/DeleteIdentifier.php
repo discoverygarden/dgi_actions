@@ -47,6 +47,7 @@ abstract class DeleteIdentifier extends IdentifierAction {
     if ($entity instanceof FieldableEntityInterface) {
       try {
         $this->entity = $entity;
+        $this->setConfigs();
         if ($this->entity && $this->identifierConfig) {
           $this->delete();
         }
