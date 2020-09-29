@@ -22,6 +22,8 @@ use Psr\Log\LoggerInterface;
  */
 class MintArkIdentifier extends MintIdentifier {
 
+  // @codingStandardsIgnoreStart
+
   /**
    * CDL EZID Text Parser.
    *
@@ -78,6 +80,7 @@ class MintArkIdentifier extends MintIdentifier {
       $container->get('dgi_actions.ezidtextparser')
     );
   }
+  // @codingStandardsIgnoreEnd
 
   /**
    * Builds the Request Body.

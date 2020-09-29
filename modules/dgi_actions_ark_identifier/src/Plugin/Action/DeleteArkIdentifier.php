@@ -22,6 +22,8 @@ use Psr\Log\LoggerInterface;
  */
 class DeleteArkIdentifier extends DeleteIdentifier {
 
+  // @codingStandardsIgnoreStart
+
   /**
    * CDL EZID Text Parser.
    *
@@ -78,6 +80,8 @@ class DeleteArkIdentifier extends DeleteIdentifier {
       $container->get('dgi_actions.ezidtextparser')
     );
   }
+
+  // @codingStandardsIgnoreEnd
 
   /**
    * {@inheritdoc}
