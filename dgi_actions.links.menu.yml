@@ -1,0 +1,12 @@
+# Menu list of DGI Actions configuration forms
+dgi_actions.admin:
+  title: 'DGI Actions'
+  parent: system.admin_config
+  route_name: dgi_actions.admin
+  weight: 100
+
+dgi_actions.identifier_service_config:
+  title: 'Identifier Service Config'
+  parent: dgi_actions.admin
+  route_name: dgi_actions.identifier_service_config
+  description: 'Configuration for the Identifier Service.'

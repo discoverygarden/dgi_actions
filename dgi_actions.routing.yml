@@ -1,0 +1,17 @@
+# Menu list of DGI Actions configuration forms
+dgi_actions.admin:
+  path: '/admin/config/dgi_actions'
+  defaults:
+    _controller: '\Drupal\system\Controller\SystemController::systemAdminMenuBlockPage'
+    _title: 'DGI Actions'
+  requirements:
+    _permission: 'access administration pages'
+
+# Identifiers Admin Page
+dgi_actions.identifier_service_config:
+  path: '/admin/config/dgi_actions/identifier_service_config'
+  defaults:
+    _form: '\Drupal\dgi_actions\Form\IdentifierConfigForm'
+    _title: 'Identifier Service Admin'
+  requirements:
+    _permission: 'access administration pages'
