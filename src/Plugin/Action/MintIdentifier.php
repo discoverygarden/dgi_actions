@@ -25,10 +25,10 @@ abstract class MintIdentifier extends IdentifierAction {
    */
   protected function getFieldData() {
     $data = [];
-    if ($this->getConfigs()['data_profile']) {
-      foreach ($this->getConfigs()['data_profile']->get('data') as $key => $value) {
-        if (is_numeric($key) && $this->getEntity()->hasField($value['source_field'])) {
-          $data[$value['key']] = $this->getEntity()->get($value['source_field'])->getString();
+    if ($this->dataProfileConfig) {
+      foreach ($this->dataProfileConfig->get('data') as $key => $value) {
+        if (is_numeric($key) && $this->entity->hasField($value['source_field'])) {
+          $data[$value['key']] = $this->entity->get($value['source_field'])->getString();
         }
       }
     }
@@ -68,10 +68,10 @@ abstract class MintIdentifier extends IdentifierAction {
    */
   protected function setIdentifierField(string $identifier) {
     if ($identifier) {
-      $field = $this->getConfigs()['identifier']->get('field');
-      if (!empty($field) && $this->getEntity()->hasField($field)) {
-        $this->getEntity()->set($field, $identifier);
-        $this->getEntity()->save();
+      $field = $this->identifierConfig->get('field');
+      if (!empty($field) && $this->entity->hasField($field)) {
+        $this->entity->set($field, $identifier);
+        $this->entity->save();
       }
       else {
         $this->logger->error('Error with Entity Identifier field. The identifier was not set to the entity.');
@@ -88,9 +88,8 @@ abstract class MintIdentifier extends IdentifierAction {
   public function execute($entity = NULL) {
     if ($entity instanceof FieldableEntityInterface) {
       try {
-        $this->setEntity($entity);
-        $this->setConfigs($this->utils->getAssociatedConfigs($this->configuration['identifier_type']));
-        if ($this->getEntity() && $this->getConfigs()) {
+        $this->entity = $entity;
+        if ($this->entity && $this->identifierConfig) {
           $response = $this->mint();
           $this->handleResponse($response);
         }

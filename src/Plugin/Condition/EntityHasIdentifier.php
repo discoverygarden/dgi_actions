@@ -9,6 +9,7 @@ use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\dgi_actions\Utility\IdentifierUtils;
+use Drupal\Core\Config\ConfigFactory;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -25,6 +26,13 @@ use Psr\Log\LoggerInterface;
 class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactoryPluginInterface {
 
   use StringTranslationTrait;
+
+  /**
+   * Config Factory.
+   *
+   * @var \Drupal\Core\Config\ConfigFactory
+   */
+  protected $configFactory;
 
   /**
    * Logger.
@@ -54,6 +62,8 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
    *   The plugin implementation definition.
    * @param \Psr\Log\LoggerInterface $logger
    *   Logger.
+   * @param \Drupal\Core\Config\ConfigFactory $config_factory
+   *   Config Factory.
    * @param \Drupal\dgi_actions\Utility\IdentifierUtils $utils
    *   Identifier utils.
    */
@@ -62,10 +72,12 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
     $plugin_id,
     $plugin_definition,
     LoggerInterface $logger,
+    ConfigFactory $config_factory,
     IdentifierUtils $utils
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->logger = $logger;
+    $this->configFactory = $config_factory;
     $this->utils = $utils;
   }
 
@@ -78,6 +90,7 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
       $plugin_id,
       $plugin_definition,
       $container->get('logger.channel.dgi_actions'),
+      $container->get('config.factory'),
       $container->get('dgi_actions.utils')
     );
   }
@@ -88,8 +101,8 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
   public function evaluate() {
     $entity = $this->getContextValue('entity');
     if ($entity instanceof FieldableEntityInterface) {
-      $configs = $this->utils->getAssociatedConfigs($this->configuration['identifier']);
-      $field = $configs['identifier']->get('field');
+      $identifier_config = $this->configFactory->get($this->configuration['identifier']);
+      $field = $identifier_config->get('field');
 
       if (!empty($field) && $entity->hasField($field)) {
         return !$entity->get($field)->isEmpty();
