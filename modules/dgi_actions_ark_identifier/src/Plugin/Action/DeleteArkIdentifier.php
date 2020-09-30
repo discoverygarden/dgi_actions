@@ -8,6 +8,7 @@ use Drupal\dgi_actions\Utility\IdentifierUtils;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Response;
+use Drupal\Core\Config\ConfigFactory;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -20,6 +21,8 @@ use Psr\Log\LoggerInterface;
  * )
  */
 class DeleteArkIdentifier extends DeleteIdentifier {
+
+  // @codingStandardsIgnoreStart
 
   /**
    * CDL EZID Text Parser.
@@ -39,11 +42,13 @@ class DeleteArkIdentifier extends DeleteIdentifier {
    *   The plugin implementation definition.
    * @param \GuzzleHttp\Client $client
    *   Http Client connection.
-   * @param Psr\Log\LoggerInterface $logger
+   * @param \Psr\Log\LoggerInterface $logger
    *   Logger.
-   * @param Drupal\dgi_actions\Utilities\IdentifierUtils $utils
+   * @param \Drupal\Core\Config\ConfigFactory $config_factory
+   *   Config Factory.
+   * @param \Drupal\dgi_actions\Utilities\IdentifierUtils $utils
    *   Identifier utils.
-   * @param Drupal\dgi_actions\Utilities\EzidTextParser $ezid_parser
+   * @param \Drupal\dgi_actions\Utilities\EzidTextParser $ezid_parser
    *   CDL EZID Text parser.
    */
   public function __construct(
@@ -52,10 +57,11 @@ class DeleteArkIdentifier extends DeleteIdentifier {
     $plugin_definition,
     Client $client,
     LoggerInterface $logger,
+    ConfigFactory $config_factory,
     IdentifierUtils $utils,
     EzidTextParser $ezid_parser
   ) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition, $client, $logger, $utils);
+    parent::__construct($configuration, $plugin_id, $plugin_definition, $client, $logger, $config_factory, $utils);
     $this->ezidParser = $ezid_parser;
   }
 
@@ -69,10 +75,13 @@ class DeleteArkIdentifier extends DeleteIdentifier {
       $plugin_definition,
       $container->get('http_client'),
       $container->get('logger.channel.dgi_actions'),
+      $container->get('config.factory'),
       $container->get('dgi_actions.utils'),
       $container->get('dgi_actions.ezidtextparser')
     );
   }
+
+  // @codingStandardsIgnoreEnd
 
   /**
    * {@inheritdoc}
@@ -95,7 +104,10 @@ class DeleteArkIdentifier extends DeleteIdentifier {
    */
   protected function getRequestParams() {
     $requestParams = [
-      'auth' => [$this->getConfigs()['service_data']->get('data.username'), $this->getConfigs()['service_data']->get('data.password')],
+      'auth' => [
+        $this->serviceDataConfig->get('data.username'),
+        $this->serviceDataConfig->get('data.password'),
+      ],
     ];
 
     return $requestParams;

@@ -13,14 +13,14 @@ class EzidTextParser {
   /**
    * Logger.
    *
-   * @var Psr\Log\LoggerInterface
+   * @var \Psr\Log\LoggerInterface
    */
   protected $logger;
 
   /**
    * Constructor.
    *
-   * @param Psr\Log\LoggerInterface $logger
+   * @param \Psr\Log\LoggerInterface $logger
    *   Logger.
    */
   public function __construct(

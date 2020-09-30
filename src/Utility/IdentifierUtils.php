@@ -21,16 +21,16 @@ class IdentifierUtils {
   /**
    * Logger.
    *
-   * @var Psr\Log\LoggerInterface
+   * @var \Psr\Log\LoggerInterface
    */
   protected $logger;
 
   /**
    * Constructor.
    *
-   * @param Drupal\Core\Config\ConfigFactory $config_factory
+   * @param \Drupal\Core\Config\ConfigFactory $config_factory
    *   Config factory.
-   * @param Psr\Log\LoggerInterface $logger
+   * @param \Psr\Log\LoggerInterface $logger
    *   Logger.
    */
   public function __construct(
@@ -54,9 +54,8 @@ class IdentifierUtils {
   /**
    * Gets configured dgi_actions Identifier configs.
    *
-   * @return array|string
-   *   Returns list of configured DGI Actions Identifiers
-   *   or a string indicating identifiers not configured.
+   * @return array
+   *   Returns list of configured DGI Actions Identifiers.
    */
   public function getIdentifiers() {
     $configs = $this->configFactory->listAll('dgi_actions.identifier');
@@ -68,35 +67,6 @@ class IdentifierUtils {
     }
 
     return $config_options;
-  }
-
-  /**
-   * Returns associated identifier configs.
-   *
-   * Returns the associated Identifer, Service Data, and
-   * Data Profile config values based on identifier config name.
-   *
-   * @param string $identifier
-   *   Name of the identifier config to find associated configs.
-   *
-   * @return array
-   *   Array of associated Identifier, Service Data,
-   *   and Data Profile config values.
-   */
-  public function getAssociatedConfigs($identifier) {
-    $configs = [];
-    $identifier = $this->configFactory->get($identifier);
-    if (!empty($identifier->get())) {
-      $service_data = $this->configFactory->get('dgi_actions.service_data.' . $identifier->get('service_data.id'));
-      $data_profile = $this->configFactory->get('dgi_actions.data_profile.' . $identifier->get('data_profile.id'));
-
-      $configs['identifier'] = $identifier;
-      $configs['service_data'] = (!empty($service_data)) ? $service_data : [];
-      $configs['data_profile'] = (!empty($data_profile)) ? $data_profile : [];
-
-    }
-
-    return $configs;
   }
 
 }

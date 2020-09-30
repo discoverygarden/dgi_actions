@@ -8,7 +8,7 @@ dgi_actions.identifier.*:
     dependencies:
       type: sequence
       label: 'Dependencies'
-    identifier_id:
+    id:
       type: string
       label: 'Identifier ID'
     label:
@@ -23,16 +23,12 @@ dgi_actions.identifier.*:
       mapping:
         id:
           type: string
-        data:
-          type: dgi_actions.service_data.[%parent.id]
     data_profile:
       type: mapping
       label: 'Data Profile'
       mapping:
         id:
           type: string
-        data:
-          type: dgi_actions.data_profile.[%parent.id]
 
 dgi_actions.data_profile.*:
   type: config_object

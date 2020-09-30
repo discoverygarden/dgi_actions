@@ -8,6 +8,7 @@ use Drupal\dgi_actions\Utility\IdentifierUtils;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Response;
+use Drupal\Core\Config\ConfigFactory;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -20,6 +21,8 @@ use Psr\Log\LoggerInterface;
  * )
  */
 class MintArkIdentifier extends MintIdentifier {
+
+  // @codingStandardsIgnoreStart
 
   /**
    * CDL EZID Text Parser.
@@ -39,11 +42,13 @@ class MintArkIdentifier extends MintIdentifier {
    *   The plugin implementation definition.
    * @param \GuzzleHttp\Client $client
    *   Http Client connection.
-   * @param Psr\Log\LoggerInterface $logger
+   * @param \Psr\Log\LoggerInterface $logger
    *   Logger.
-   * @param Drupal\dgi_actions\Utilities\IdentifierUtils $utils
+   * @param \Drupal\Core\Config\ConfigFactory $config_factory
+   *   Config Factory.
+   * @param \Drupal\dgi_actions\Utilities\IdentifierUtils $utils
    *   Identifier utils.
-   * @param Drupal\dgi_actions\Utilities\EzidTextParser $ezid_parser
+   * @param \Drupal\dgi_actions\Utilities\EzidTextParser $ezid_parser
    *   CDL EZID Text parser.
    */
   public function __construct(
@@ -52,10 +57,11 @@ class MintArkIdentifier extends MintIdentifier {
     $plugin_definition,
     Client $client,
     LoggerInterface $logger,
+    ConfigFactory $config_factory,
     IdentifierUtils $utils,
     EzidTextParser $ezid_parser
   ) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition, $client, $logger, $utils);
+    parent::__construct($configuration, $plugin_id, $plugin_definition, $client, $logger, $config_factory, $utils);
     $this->ezidParser = $ezid_parser;
   }
 
@@ -69,10 +75,12 @@ class MintArkIdentifier extends MintIdentifier {
       $plugin_definition,
       $container->get('http_client'),
       $container->get('logger.channel.dgi_actions'),
+      $container->get('config.factory'),
       $container->get('dgi_actions.utils'),
       $container->get('dgi_actions.ezidtextparser')
     );
   }
+  // @codingStandardsIgnoreEnd
 
   /**
    * Builds the Request Body.
@@ -88,9 +96,17 @@ class MintArkIdentifier extends MintIdentifier {
    *   pairs else returns an empty string if $data is empty or null.
    */
   protected function buildRequestBody(array $data) {
+    // Setting custom values for the identifiers internal metadata.
     // Adding External URL to the Data Array under the EZID _target key.
     // Also setting _status as reserved. Else identifier cannot be deleted.
-    $data = array_merge(['_target' => $this->getExternalUrl(), '_status' => 'reserved'], $data);
+    // For more info: https://ezid.cdlib.org/doc/apidoc.html#internal-metadata.
+    $data = array_merge(
+      [
+        '_target' => $this->getExternalUrl(),
+        '_status' => 'reserved',
+      ], $data
+    );
+
     $output = $this->ezidParser->buildEzidRequestBody($data);
 
     return $output;
@@ -104,7 +120,7 @@ class MintArkIdentifier extends MintIdentifier {
     $responseArray = $this->ezidParser->parseEzidResponse($contents);
     if (array_key_exists('success', $responseArray)) {
       $this->logger->info('ARK Identifier Minted: @contents', ['@contents' => $contents]);
-      return $this->getConfigs()['service_data']->get('data.host') . '/id/' . $responseArray['success'];
+      return $this->serviceDataConfig->get('data.host') . '/id/' . $responseArray['success'];
     }
 
     $this->logger->error('There was an issue minting the ARK Identifier: @contents', ['@contents' => $contents]);
@@ -122,7 +138,7 @@ class MintArkIdentifier extends MintIdentifier {
    * {@inheritdoc}
    */
   protected function getUri() {
-    $uri = $this->getConfigs()['service_data']->get('data.host') . '/shoulder/' . $this->getConfigs()['service_data']->get('data.shoulder');
+    $uri = $this->serviceDataConfig->get('data.host') . '/shoulder/' . $this->serviceDataConfig->get('data.shoulder');
 
     return $uri;
   }
@@ -134,7 +150,10 @@ class MintArkIdentifier extends MintIdentifier {
     $fieldData = $this->getFieldData();
     $requestBody = $this->buildRequestBody($fieldData);
     $requestParams = [
-      'auth' => [$this->getConfigs()['service_data']->get('data.username'), $this->getConfigs()['service_data']->get('data.password')],
+      'auth' => [
+        $this->serviceDataConfig->get('data.username'),
+        $this->serviceDataConfig->get('data.password'),
+      ],
       'headers' => [
         'Content-Type' => 'text/plain; charset=UTF-8',
         'Content-Length' => strlen($requestBody),

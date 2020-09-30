@@ -4,5 +4,5 @@ type: module
 package: DGI Actions
 core: 8.x
 dependencies:
-  - islandora
-  - entity_route_context
+  - islandora:islandora
+  - entity_route_context:entity_route_context
