@@ -12,6 +12,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
 use Psr\Log\LoggerInterface;
+use Drupal\Core\Config\ConfigFactory;
 use Drupal\Core\Session\AccountInterface;
 
 /**
@@ -20,11 +21,32 @@ use Drupal\Core\Session\AccountInterface;
 abstract class IdentifierAction extends ConfigurableActionBase implements ContainerFactoryPluginInterface {
 
   /**
-   * Configured Identifier config values.
+   * Config Factory.
+   *
+   * @var \Drupal\Core\Config\ConfigFactory
+   */
+  protected $configFactory;
+
+  /**
+   * Identifier config.
    *
    * @var array
    */
-  protected $configs;
+  protected $identifierConfig;
+
+  /**
+   * Service Data config.
+   *
+   * @var array
+   */
+  protected $serviceDataConfig;
+
+  /**
+   * Data Profile config.
+   *
+   * @var array
+   */
+  protected $dataProfileConfig;
 
   /**
    * Current actioned Entity.
@@ -67,6 +89,8 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
    *   Http Client connection.
    * @param \Psr\Log\LoggerInterface $logger
    *   Logger.
+   * @param \Drupal\Core\Config\ConfigFactory $config_factory
+   *   Config Factory.
    * @param \Drupal\dgi_actions\Utilities\IdentifierUtils $utils
    *   Identifier utils.
    */
@@ -76,11 +100,13 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
     $plugin_definition,
     Client $client,
     LoggerInterface $logger,
+    ConfigFactory $config_factory,
     IdentifierUtils $utils
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->client = $client;
     $this->logger = $logger;
+    $this->configFactory = $config_factory;
     $this->utils = $utils;
   }
 
@@ -94,6 +120,7 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
       $plugin_definition,
       $container->get('http_client'),
       $container->get('logger.channel.dgi_actions'),
+      $container->get('config.factory'),
       $container->get('dgi_actions.utils')
     );
   }
@@ -114,28 +141,8 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
    * @return string
    *   Entitiy's external URL as a string.
    */
-  public function getExternalUrl() {
-    return $this->entity->toUrl('canonical', ['absolute' => TRUE])->toString(TRUE)->getGeneratedUrl();
-  }
-
-  /**
-   * Sets the config value.
-   *
-   * @param array $configs
-   *   Sets the objects $configs value.
-   */
-  public function setConfigs(array $configs) {
-    $this->configs = $configs;
-  }
-
-  /**
-   * Gets the configs value.
-   *
-   * @return array
-   *   Returns the array of configs.
-   */
-  public function getConfigs() {
-    return $this->configs;
+  public function getexternalurl() {
+    return $this->entity->tourl('canonical', ['absolute' => TRUE])->tostring(TRUE)->getgeneratedurl();
   }
 
   /**
@@ -261,6 +268,22 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
    */
   public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
     $this->configuration = $form_state->getValues();
+    $this->setConfigs();
+  }
+
+  /**
+   * Sets the configs based on the configured identifier.
+   *
+   * Sets the IdentifierConfig, ServiceDataConfig, and
+   * dataProfileConfig variables to their corresponding
+   * config data based on the currently selected identifier.
+   */
+  public function setConfigs() {
+    $this->identifierConfig = $this->configFactory->get($this->configuration['identifier_type']);
+    if (!empty($this->identifierConfig->get())) {
+      $this->serviceDataConfig = $this->configFactory->get('dgi_actions.service_data.' . $this->identifierConfig->get('service_data.id'));
+      $this->dataProfileConfig = $this->configFactory->get('dgi_actions.data_profile.' . $this->identifierConfig->get('data_profile.id'));
+    }
   }
 
 }

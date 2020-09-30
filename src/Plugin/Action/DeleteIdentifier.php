@@ -22,8 +22,8 @@ abstract class DeleteIdentifier extends IdentifierAction {
    *   Returns the value stored in the identifier field as a string.
    */
   public function getIdentifierFromEntity() {
-    $field = $this->getConfigs()['identifier']->get('field');
-    $identifier = $this->getEntity()->get($field)->getString();
+    $field = $this->identifierConfig->get('field');
+    $identifier = $this->entity->get($field)->getString();
     if (empty($identifier)) {
       $this->logger->error('Identifier field @field is empty.', ['@field' => $field]);
     }
@@ -46,9 +46,9 @@ abstract class DeleteIdentifier extends IdentifierAction {
   public function execute($entity = NULL) {
     if ($entity instanceof FieldableEntityInterface) {
       try {
-        $this->setEntity($entity);
-        $this->setConfigs($this->utils->getAssociatedConfigs($this->configuration['identifier_type']));
-        if ($this->getEntity() && $this->getConfigs()) {
+        $this->entity = $entity;
+        $this->setConfigs();
+        if ($this->entity && $this->identifierConfig) {
           $this->delete();
         }
       }
