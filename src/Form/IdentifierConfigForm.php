@@ -2,132 +2,90 @@
 
 namespace Drupal\dgi_actions\Form;
 
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Component\Utility\UrlHelper;
-use Drupal\dgi_actions\Utility\IdentifierUtils;
 
 /**
- * Class IslandoraIIIFConfigForm.
+ * Identifier Config Form.
+ *
+ * Contains the form for configuring the Identifier.
  */
 class IdentifierConfigForm extends ConfigFormBase {
-
-  /**
-   * Utils.
-   *
-   * @var \Drupal\dgi_actions\Utility\IdentifierUtils
-   */
-  protected $utils;
-
-  /**
-   * Constructor.
-   *
-   * @param array $configuration
-   *   The plugin configuration, i.e. an array with configuration values keyed
-   *   by configuration option name. The special key 'context' may be used to
-   *   initialize the defined contexts by setting it to an array of context
-   *   values keyed by context names.
-   * @param string $plugin_id
-   *   The plugin_id for the plugin instance.
-   * @param mixed $plugin_definition
-   *   The plugin implementation definition.
-   * @param \Psr\Log\LoggerInterface $logger
-   *   Logger.
-   * @param \Drupal\dgi_actions\Utility\IdentifierUtils $utils
-   *   Identifier utils.
-   */
-  public function __construct(
-    ConfigFactoryInterface $config_factory,
-    IdentifierUtils $utils
-  ) {
-    parent::__construct($config_factory);
-    $this->utils = $utils;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container) {
-    return new static(
-      $container->get('config.factory'),
-      $container->get('dgi_actions.utils')
-    );
-  }
 
   /**
    * {@inheritdoc}
    */
   protected function getEditableConfigNames() {
-    $editable_configs = $this->configFactory->listAll('dgi_actions.service_data');
-
-    return $editable_configs;
+    return [
+      'dgi_actions.identifier.ark',
+    ];
   }
 
   /**
    * {@inheritdoc}
    */
   public function getFormId() {
-    return 'dgi_actions_identifier_service_config_form';
+    return 'dgi_actions_identifier_config_form';
   }
 
   /**
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-    $editable_configs = $this->getEditableConfigNames();
-    dpm($editable_configs);
-    $identifier_options = $this->utils->getIdentifiers();
-    $form['identifier_type'] = [
-      '#type' => 'select',
-      '#title' => $this->t('Identifier Type'),
-      '#empty_option' => $this->t('- None -'),
-      '#default_value' => (reset($identifier_options)) ? reset($identifier_options) : '',
-      '#options' => $identifier_options,
-      '#description' => $this->t('The persistent identifier to configure.'),
-    ];
-    // get the currently selected identifier
-      // get the identifier config
-      // get the service id from the config
-      // get the service config based on that id 
+    $config = $this->config('dgi_actions.identifier.ark');
 
-    //$config = $this->config('dgi_actions.service_data.ark_ezid');
-    $form['host'] = [
-      '#type' => 'url',
-      '#title' => $this->t('Host URL'),
-      '#description' => $this->t('Please enter the Host URL for the service. e.g. http://www.example.org'),
-      '#default_value' => '',
-/*
-      '#states' => [
-        'disabled' => [
-          ':input[name="identifier_type"]' => ['checked' => FALSE],
-        ],
-        'visible' => [
-          ':input[name="identifier_type"]' => ['checked' => TRUE],
-        ],
-      ],*/
-    ];
-    $form['shoulder'] = [
+    $form['label'] = [
       '#type' => 'textfield',
-      '#title' => $this->t('Service Shoulder'),
-      '#description' => $this->t('Indicate the shoulder for the service, if one is applicable.'),
-      '#default_value' => /*$config->get('shoulder')*/ '',
+      '#title' => $this->t('Label'),
+      '#description' => $this->t('Label for the service data.'),
+      '#default_value' => $config->get('label'),
     ];
-    $form['username'] = [
+    $form['id'] = [
       '#type' => 'textfield',
-      '#title' => $this->t('Username'),
-      '#description' => $this->t('Username for the service.'),
-      '#default_value' => '', // pull this out of the state instead
+      '#title' => $this->t('ID'),
+      '#description' => $this->t('The ID of the identifier.'),
+      '#default_value' => $config->get('id'),
     ];
-    $form['password'] = [
-      '#type' => 'password',
-      '#title' => $this->t('Password'),
-      '#description' => $this->t('Password for the service'),
-      '#default_value' => '', // pull this out of the state as well
+    $form['field'] = [
+      '#type' => 'textfield',
+      '#title' => $this->t('Field'),
+      '#description' => $this->t('The field the identifier is stored.'),
+      '#default_value' => $config->get('field'),
+    ];
+
+    $form['service_data'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Service Data Config'),
+      '#empty_option' => $this->t('- None -'),
+      '#options' => $this->buildSelectOptions($this->configFactory->listAll('dgi_actions.service_data')),
+      '#default_value' => ($config->get('service_data.id')) ? 'dgi_actions.service_data.' . $config->get('service_data.id') : $this->t('- None -'),
+      '#description' => $this->t('The service data to be used with the identifier.'),
+    ];
+    $form['data_profile'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Data Profile Config'),
+      '#empty_option' => $this->t('- None -'),
+      '#options' => $this->buildSelectOptions($this->configFactory->listAll('dgi_actions.data_profile')),
+      '#default_value' => ($config->get('data_profile.id')) ? 'dgi_actions.data_profile.' . $config->get('data_profile.id') : $this->t('- None -'),
+      '#description' => $this->t('The data profile to be used with the identifier.'),
     ];
 
     return parent::buildForm($form, $form_state);
+  }
+
+  /**
+   * Populates the config select options.
+   *
+   * Populates the select options with available configs
+   * organized by keys and label.
+   */
+  protected function buildSelectOptions($configsList) {
+    $configs_with_labels = [];
+    foreach ($configsList as $config) {
+      $configs_with_labels[$config] = $this->configFactory->get($config)->get('label');
+    }
+
+    return $configs_with_labels;
   }
 
   /**
@@ -142,9 +100,13 @@ class IdentifierConfigForm extends ConfigFormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     parent::submitForm($form, $form_state);
 
-    $this->config('dgi_actions.service_data.*')
-      ->set('host', $form_state->getValue('host'))
-      ->save();
+    $config = $this->config('dgi_actions.identifier.ark');
+    $config->set('label', $form_state->getValue('label'));
+    $config->set('id', $form_state->getValue('id'));
+    $config->set('field', $form_state->getValue('field'));
+    $config->set('service_data.id', $this->configFactory->get($form_state->getValue('service_data'))->get('id'));
+    $config->set('data_profile.id', $this->configFactory->get($form_state->getValue('data_profile'))->get('id'));
+    $config->save();
   }
 
 }

@@ -5,8 +5,26 @@ dgi_actions.admin:
   route_name: dgi_actions.admin
   weight: 100
 
-dgi_actions.identifier_service_config:
-  title: 'Identifier Service Config'
+dgi_actions.identifiers:
+  title: 'Identifiers'
   parent: dgi_actions.admin
+  route_name: dgi_actions.identifiers
+  description: 'Configurations associated with Identifiers.'
+
+dgi_actions.identifier_service_config:
+  title: 'Identifier Config'
+  parent: dgi_actions.identifiers
   route_name: dgi_actions.identifier_service_config
+  description: 'Configuration for the Identifier.'
+
+dgi_actions.service_config:
+  title: 'Service Data Config'
+  parent: dgi_actions.identifiers
+  route_name: dgi_actions.service_config
   description: 'Configuration for the Identifier Service.'
+
+dgi_actions.data_profile_config:
+  title: 'Data Profile Config'
+  parent: dgi_actions.identifiers
+  route_name: dgi_actions.data_profile_config
+  description: 'Configuration for the Data Profile.'

@@ -8,6 +8,8 @@ dgi_actions.identifier.*:
     dependencies:
       type: sequence
       label: 'Dependencies'
+      sequence:
+        type: string
     id:
       type: string
       label: 'Identifier ID'
@@ -34,6 +36,10 @@ dgi_actions.data_profile.*:
   type: config_object
   label: 'Data Profile'
   mapping:
+    label:
+      type: string
+    id:
+      type: string
     data:
       type: sequence
       sequence:
@@ -48,6 +54,10 @@ dgi_actions.service_data.*:
   type: config_object
   label: 'Service Data'
   mapping:
+    label:
+      type: string
+    id:
+      type: string
     data:
       type: sequence
       sequence:

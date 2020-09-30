@@ -7,11 +7,38 @@ dgi_actions.admin:
   requirements:
     _permission: 'access administration pages'
 
-# Identifiers Admin Page
+# Menu list of Identifiers configuration forms
+dgi_actions.identifiers:
+  path: '/admin/config/dgi_actions/identifiers'
+  defaults:
+    _controller: '\Drupal\system\Controller\SystemController::systemAdminMenuBlockPage'
+    _title: 'Identifiers'
+  requirements:
+    _permission: 'access administration pages'
+
+# Identifier Config Admin Page
 dgi_actions.identifier_service_config:
-  path: '/admin/config/dgi_actions/identifier_service_config'
+  path: '/admin/config/dgi_actions/identifiers/identifier_config'
   defaults:
     _form: '\Drupal\dgi_actions\Form\IdentifierConfigForm'
-    _title: 'Identifier Service Admin'
+    _title: 'Identifier Config Admin'
+  requirements:
+    _permission: 'access administration pages'
+
+# Service Data Config Admin Page
+dgi_actions.service_config:
+  path: '/admin/config/dgi_actions/identifiers/service_config'
+  defaults:
+    _form: '\Drupal\dgi_actions\Form\ServiceDataConfigForm'
+    _title: 'Service Data Config Admin'
+  requirements:
+    _permission: 'access administration pages'
+
+# Data Profile Config Admin Page
+dgi_actions.data_profile_config:
+  path: '/admin/config/dgi_actions/identifiers/data_profile_config'
+  defaults:
+    _form: '\Drupal\dgi_actions\Form\DataProfileConfigForm'
+    _title: 'Data Profile Config Admin'
   requirements:
     _permission: 'access administration pages'
