@@ -104,7 +104,6 @@ class ServiceDataConfigForm extends ConfigFormBase {
       '#title' => $this->t('Password'),
       '#description' => $this->t('Password for the service'),
       '#default_value' => '',
-      '#attributes' => ['value' => ($creds['password']) ?: ''],
     ];
 
     return parent::buildForm($form, $form_state);
@@ -122,10 +121,12 @@ class ServiceDataConfigForm extends ConfigFormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     parent::submitForm($form, $form_state);
 
-    $creds = $this->state->get('dgi_actions_ark_ezid');
-    $creds['username'] = $form_state->getValue('username');
-    $creds['password'] = $form_state->getValue('password');
-    $this->state->set('dgi_actions_ark_ezid', $creds);
+    if ($form_state->getValue('password')) {
+      $creds = $this->state->get('dgi_actions_ark_ezid');
+      $creds['username'] = $form_state->getValue('username');
+      $creds['password'] = $form_state->getValue('password');
+      $this->state->set('dgi_actions_ark_ezid', $creds);
+    }
 
     $config = $this->config('dgi_actions.service_data.ark_ezid');
     $config->set('label', $form_state->getValue('label'));
