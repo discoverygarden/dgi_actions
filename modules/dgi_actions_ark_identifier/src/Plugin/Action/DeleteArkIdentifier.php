@@ -10,6 +10,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Response;
 use Drupal\Core\Config\ConfigFactory;
 use Psr\Log\LoggerInterface;
+use Drupal\Core\State\State;
 
 /**
  * Deletes an ARK Identifier Record on CDL EZID.
@@ -32,6 +33,13 @@ class DeleteArkIdentifier extends DeleteIdentifier {
   protected $ezidParser;
 
   /**
+   * State.
+   *
+   * @var \Drupal\Core\State\State
+   */
+  protected $state;
+
+  /**
    * Constructor.
    *
    * @param array $configuration
@@ -50,6 +58,8 @@ class DeleteArkIdentifier extends DeleteIdentifier {
    *   Identifier utils.
    * @param \Drupal\dgi_actions\Utilities\EzidTextParser $ezid_parser
    *   CDL EZID Text parser.
+   * @param \Drupal\Core\State\State $state
+   *   State API.
    */
   public function __construct(
     array $configuration,
@@ -59,10 +69,12 @@ class DeleteArkIdentifier extends DeleteIdentifier {
     LoggerInterface $logger,
     ConfigFactory $config_factory,
     IdentifierUtils $utils,
-    EzidTextParser $ezid_parser
+    EzidTextParser $ezid_parser,
+    State $state
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $client, $logger, $config_factory, $utils);
     $this->ezidParser = $ezid_parser;
+    $this->state = $state;
   }
 
   /**
@@ -77,7 +89,8 @@ class DeleteArkIdentifier extends DeleteIdentifier {
       $container->get('logger.channel.dgi_actions'),
       $container->get('config.factory'),
       $container->get('dgi_actions.utils'),
-      $container->get('dgi_actions.ezidtextparser')
+      $container->get('dgi_actions.ezidtextparser'),
+      $container->get('state')
     );
   }
 
@@ -103,10 +116,11 @@ class DeleteArkIdentifier extends DeleteIdentifier {
    * {@inheritdoc}
    */
   protected function getRequestParams() {
+    $creds = $this->state->get('dgi_actions_' . $this->serviceDataConfig->get('id'));
     $requestParams = [
       'auth' => [
-        $this->serviceDataConfig->get('data.username'),
-        $this->serviceDataConfig->get('data.password'),
+        $creds['username'],
+        $creds['password'],
       ],
     ];
 
