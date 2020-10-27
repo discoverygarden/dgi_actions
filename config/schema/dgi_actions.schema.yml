@@ -1,5 +1,5 @@
 dgi_actions.identifier.*:
-  type: config_object
+  type: config_entity
   label: 'Identifier'
   mapping:
     status:

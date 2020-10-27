@@ -42,3 +42,12 @@ dgi_actions.data_profile_config:
     _title: 'Data Profile Config Admin'
   requirements:
     _permission: 'access administration pages'
+
+# Identifiers Admin Page
+entity.identifiers_identifier.collection:
+  path: '/admin/config/dgi_actions/identifier_entities'
+  defaults:
+    _title: 'Identifier Entities'
+    _entity_list: 'identifiers_identifier'
+  requirements:
+    _entity_create_access: 'identifiers_identifier'

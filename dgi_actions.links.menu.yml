@@ -28,3 +28,10 @@ dgi_actions.data_profile_config:
   parent: dgi_actions.identifiers
   route_name: dgi_actions.data_profile_config
   description: 'Configuration for the Data Profile.'
+
+# Identifiers configuration collection page
+entity.identifiers_identifier.collection:
+  title: 'Identifier Entities'
+  parent: dgi_actions.admin
+  route_name: entity.identifiers_identifier.collection
+  description: 'Identifier Collection configuration page.'
