@@ -7,9 +7,9 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
 
 /**
- * Builds the form to delete Identifier setting entities.
+ * Builds the form to delete Data Profile setting entities.
  */
-class IdentifierDeleteForm extends EntityConfirmFormBase {
+class DataProfileDeleteForm extends EntityConfirmFormBase {
 
   /**
    * {@inheritdoc}

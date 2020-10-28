@@ -7,24 +7,24 @@ use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 
 /**
- * Defines the Identifier setting entity.
+ * Defines the Service Data setting entity.
  *
  * @ConfigEntityType(
- *   id = "identifiers_identifier",
- *   label = @Translation("Identifier"),
+ *   id = "servicedatas_servicedata",
+ *   label = @Translation("Service Data"),
  *   handlers = {
  *     "storage" = "Drupal\Core\Config\Entity\ConfigEntityStorage",
- *     "list_builder" = "Drupal\dgi_actions\IdentifierListBuilder",
+ *     "list_builder" = "Drupal\dgi_actions\ServiceDataListBuilder",
  *     "form" = {
- *       "add" = "Drupal\dgi_actions\Form\IdentifierForm",
- *       "edit" = "Drupal\dgi_actions\Form\IdentifierForm",
- *       "delete" = "Drupal\dgi_actions\Form\IdentifierDeleteForm"
+ *       "add" = "Drupal\dgi_actions\Form\ServiceDataForm",
+ *       "edit" = "Drupal\dgi_actions\Form\ServiceDataForm",
+ *       "delete" = "Drupal\dgi_actions\Form\ServiceDataDeleteForm"
  *     },
  *     "route_provider" = {
  *       "html" = "Drupal\dgi_actions\IdentifierHtmlRouteProvider",
  *     },
  *   },
- *   config_prefix = "identifier",
+ *   config_prefix = "service_data",
  *   admin_permission = "administer configuration split",
  *   entity_keys = {
  *     "id" = "id",
@@ -32,47 +32,41 @@ use Drupal\Core\Entity\EntityTypeInterface;
  *     "uuid" = "uuid"
  *   },
  *   links = {
- *     "add-form" = "/admin/config/dgi_actions/identifier/add",
- *     "edit-form" = "/admin/config/dgi_actions/identifier/{identifiers_identifier}/edit",
- *     "delete-form" = "/admin/config/dgi_actions/identifier/{identifiers_identifier}/delete",
- *     "collection" = "/admin/config/dgi_actions/identifier"
+ *     "add-form" = "/admin/config/dgi_actions/service_data/add",
+ *     "edit-form" = "/admin/config/dgi_actions/service_data/{servicedatas_servicedata}/edit",
+ *     "delete-form" = "/admin/config/dgi_actions/service_data/{servicedatas_servicedata}/delete",
+ *     "collection" = "/admin/config/dgi_actions/service_data"
  *   },
  *   config_export = {
  *     "id",
  *     "label",
- *     "field",
  *   }
  * )
  */
-class Identifier extends ConfigEntityBase implements IdentifierInterface {
+class ServiceData extends ConfigEntityBase implements ServiceDataInterface {
 
   /**
-   * The Identifier setting ID.
+   * The Service Data setting ID.
    *
    * @var string
    */
   protected $id;
 
   /**
-   * The Identifier setting label.
+   * The Service Data setting label.
    *
    * @var string
    */
   protected $label;
 
   /**
-   * The Identifier setting description.
+   * The Service Data setting description.
    *
    * @var string
    */
   protected $description = '';
 
-  /**
-   * The Identifier setting field.
-   *
-   * @var string
-   */
-  protected $field;
+  // Need to capture 1 to * pieces of data.
 
   /**
    * Gets the Description value.

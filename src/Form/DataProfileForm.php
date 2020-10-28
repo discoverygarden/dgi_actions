@@ -14,7 +14,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *
  * @package Drupal\dgi_actions\Form
  */
-class IdentifierForm extends EntityForm {
+class DataProfileForm extends EntityForm {
 
   /**
    * The drupal state.

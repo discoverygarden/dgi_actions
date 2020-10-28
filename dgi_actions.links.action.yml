@@ -3,3 +3,15 @@ entity.identifiers_identifier.add_form:
   title: 'Add Identifier'
   appears_on:
     - entity.identifiers_identifier.collection
+
+entity.dataprofiles_dataprofile.add_form:
+  route_name: entity.dataprofiles_dataprofile.add_form
+  title: 'Add Data Profile'
+  appears_on:
+    - entity.dataprofiles_dataprofile.collection
+
+entity.servicedatas_servicedata.add_form:
+  route_name: entity.servicedatas_servicedata.add_form
+  title: 'Add Service Data'
+  appears_on:
+    - entity.servicedatas_servicedata.collection

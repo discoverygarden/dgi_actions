@@ -12,7 +12,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * Provides a listing of Identifier setting entities.
  */
-class IdentifierListBuilder extends ConfigEntityListBuilder {
+class DataProfileListBuilder extends ConfigEntityListBuilder {
 
   /**
    * The config factory that knows what is overwritten.
@@ -53,7 +53,6 @@ class IdentifierListBuilder extends ConfigEntityListBuilder {
   public function buildHeader() {
     $header['label'] = $this->t('Identifier');
     $header['id'] = $this->t('Machine name');
-    $header['field'] = $this->t('Field');
     $header['description'] = $this->t('Description');
     return $header + parent::buildHeader();
   }
@@ -64,9 +63,8 @@ class IdentifierListBuilder extends ConfigEntityListBuilder {
   public function buildRow(EntityInterface $entity) {
     $row['label'] = $entity->label();
     $row['id'] = $entity->id();
-    $config = $this->configFactory->get('dgi_actions.identifier.' . $entity->id());
+    $config = $this->configFactory->get('dgi_actions.data_profile.' . $entity->id());
     $row['description'] = ($config->get('description')) ? $config->get('description') : '';
-    $row['field'] = ($config->get('field')) ? $config->get('field') : '';
 
     return $row + parent::buildRow($entity);
   }

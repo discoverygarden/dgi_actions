@@ -32,6 +32,20 @@ dgi_actions.data_profile_config:
 # Identifiers configuration collection page
 entity.identifiers_identifier.collection:
   title: 'Identifier Entities'
-  parent: dgi_actions.admin
+  parent: dgi_actions.identifiers
   route_name: entity.identifiers_identifier.collection
   description: 'Identifier Collection configuration page.'
+
+# Service Data configuration collection page
+entity.servicedatas_servicedata.collection:
+  title: 'Service Data Entities'
+  parent: dgi_actions.identifiers
+  route_name: entity.servicedatas_servicedata.collection
+  description: 'Service Data Collection configuration page.'
+
+# Data Profiles configuration collection page
+entity.dataprofiles_dataprofile.collection:
+  title: 'Data Profiles Entities'
+  parent: dgi_actions.identifiers
+  route_name: entity.dataprofiles_dataprofile.collection
+  description: 'Data Profile Collection configuration page.'

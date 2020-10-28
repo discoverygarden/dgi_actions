@@ -51,3 +51,21 @@ entity.identifiers_identifier.collection:
     _entity_list: 'identifiers_identifier'
   requirements:
     _entity_create_access: 'identifiers_identifier'
+
+# Service Data Admin Page
+entity.servicedatas_servicedata.collection:
+  path: '/admin/config/dgi_actions/service_data'
+  defaults:
+    _title: 'Service Data Entities'
+    _entity_list: 'servicedatas_servicedata'
+  requirements:
+    _entity_create_access: 'servicedatas_servicedata'
+
+# Data Profile Admin Page
+entity.dataprofiles_dataprofile.collection:
+  path: '/admin/config/dgi_actions/data_profile'
+  defaults:
+    _title: 'Data Prifile Entities'
+    _entity_list: 'dataprofiles_dataprofile'
+  requirements:
+    _entity_create_access: 'dataprofiles_dataprofile'

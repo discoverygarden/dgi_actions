@@ -7,24 +7,24 @@ use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 
 /**
- * Defines the Identifier setting entity.
+ * Defines the Data Profile setting entity.
  *
  * @ConfigEntityType(
- *   id = "identifiers_identifier",
- *   label = @Translation("Identifier"),
+ *   id = "dataprofiles_dataprofile",
+ *   label = @Translation("Data Profile"),
  *   handlers = {
  *     "storage" = "Drupal\Core\Config\Entity\ConfigEntityStorage",
- *     "list_builder" = "Drupal\dgi_actions\IdentifierListBuilder",
+ *     "list_builder" = "Drupal\dgi_actions\DataProfileListBuilder",
  *     "form" = {
- *       "add" = "Drupal\dgi_actions\Form\IdentifierForm",
- *       "edit" = "Drupal\dgi_actions\Form\IdentifierForm",
- *       "delete" = "Drupal\dgi_actions\Form\IdentifierDeleteForm"
+ *       "add" = "Drupal\dgi_actions\Form\DataProfileForm",
+ *       "edit" = "Drupal\dgi_actions\Form\DataProfileForm",
+ *       "delete" = "Drupal\dgi_actions\Form\DataProfileDeleteForm"
  *     },
  *     "route_provider" = {
  *       "html" = "Drupal\dgi_actions\IdentifierHtmlRouteProvider",
  *     },
  *   },
- *   config_prefix = "identifier",
+ *   config_prefix = "data_profile",
  *   admin_permission = "administer configuration split",
  *   entity_keys = {
  *     "id" = "id",
@@ -32,47 +32,41 @@ use Drupal\Core\Entity\EntityTypeInterface;
  *     "uuid" = "uuid"
  *   },
  *   links = {
- *     "add-form" = "/admin/config/dgi_actions/identifier/add",
- *     "edit-form" = "/admin/config/dgi_actions/identifier/{identifiers_identifier}/edit",
- *     "delete-form" = "/admin/config/dgi_actions/identifier/{identifiers_identifier}/delete",
- *     "collection" = "/admin/config/dgi_actions/identifier"
+ *     "add-form" = "/admin/config/dgi_actions/data_profile/add",
+ *     "edit-form" = "/admin/config/dgi_actions/data_profile/{dataprofiles_dataprofile}/edit",
+ *     "delete-form" = "/admin/config/dgi_actions/data_profile/{dataprofiles_dataprofile}/delete",
+ *     "collection" = "/admin/config/dgi_actions/data_profile"
  *   },
  *   config_export = {
  *     "id",
  *     "label",
- *     "field",
  *   }
  * )
  */
-class Identifier extends ConfigEntityBase implements IdentifierInterface {
+class DataProfile extends ConfigEntityBase implements DataProfileInterface {
 
   /**
-   * The Identifier setting ID.
+   * The Data Profile setting ID.
    *
    * @var string
    */
   protected $id;
 
   /**
-   * The Identifier setting label.
+   * The Data Profile setting label.
    *
    * @var string
    */
   protected $label;
 
   /**
-   * The Identifier setting description.
+   * The Data Profile setting description.
    *
    * @var string
    */
   protected $description = '';
 
-  /**
-   * The Identifier setting field.
-   *
-   * @var string
-   */
-  protected $field;
+  // Needs to somehow capture 1 to * values.
 
   /**
    * Gets the Description value.

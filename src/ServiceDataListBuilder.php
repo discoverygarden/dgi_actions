@@ -12,7 +12,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * Provides a listing of Identifier setting entities.
  */
-class IdentifierListBuilder extends ConfigEntityListBuilder {
+class ServiceDataListBuilder extends ConfigEntityListBuilder {
 
   /**
    * The config factory that knows what is overwritten.
