@@ -58,21 +58,43 @@ class DataProfileForm extends EntityForm {
    */
   public function form(array $form, FormStateInterface $form_state) {
     $form = parent::form($form, $form_state);
-    $field_map = \Drupal::entityManager()->getfieldMap();
 
-    $options_map = [];
-    foreach (array_keys($field_map) as $entity_type) {
-      $options_map = array_merge($options_map, $field_map[$entity_type]);
+    // Data Profile Types - Start
+    $config_factory = \Drupal::service('config.factory');
+    $list = $config_factory->listAll('dgi_actions.data_profile_type');
+    $data_profile_configs = [];
+    foreach($list as $config) {
+      $data_profile_configs[$config] = $config_factory->get($config);
     }
 
-    $pruned_options = [];
-    foreach ($options_map as $key => $value) {
-      if (strpos($key, 'field_') === 0) {
-        $pruned_options[$key] = $key;
-      }
+    $data_profile_options = [];
+    foreach($data_profile_configs as $config) {
+      $data_profile_options[$config->getName()] = $config->get('label');
     }
 
-    /** @var \Drupal\dgi_actions\Entity\IdentifierInterface $config */
+    $entity_array = static::entityDropdownList();
+    $entity_bundles = $entity_array['entity_bundles'];
+    $entity_options = $entity_array['entity_options'];
+
+    if (empty($form_state->getValue('entity'))) {
+      $selected_entity = '';
+    }
+    else {
+      $selected_entity = $form_state->getValue('entity');
+    }
+
+    $entity_bundle_array = static::bundleDropdownList($entity_bundles);
+    $entity_bundle_field = $entity_bundle_array['entity_bundle_fields'];
+    $bundle_options = $entity_bundle_array['bundle_options'];
+
+    if (empty($form_state->getValue('bundle'))) {
+      $selected_bundle = '';
+    }
+    else {
+      $selected_bundle = $form_state->getValue('bundle');
+    }
+
+    /** @var \Drupal\dgi_actions\Entity\DataProfileInterface $config */
     $config = $this->entity;
     $form['label'] = [
       '#type' => 'textfield',
@@ -86,40 +108,146 @@ class DataProfileForm extends EntityForm {
       '#type' => 'machine_name',
       '#default_value' => $config->id(),
       '#machine_name' => [
-        'exists' => '\Drupal\dgi_actions\Entity\Identifier::load',
+        'exists' => '\Drupal\dgi_actions\Entity\DataProfile::load',
       ],
     ];
-    $form['field'] = [
+    $form['entity_fieldset'] = [
+      '#type' => 'fieldset',
+      '#title' => $this->t('Entity Fieldset'),
+    ];
+    $form['entity_fieldset']['entity'] = [
       '#type' => 'select',
-      '#title' => $this->t('Entity Field'),
+      '#title' => $this->t('Entity'),
       '#empty_option' => $this->t('- None -'),
-      '#default_value' => ($config->get('field')) ?: $this->t('- None -'),
-      '#options' => $pruned_options,
-      '#description' => $this->t('The entity field that the identifier will be minted into.'),
+      '#default_value' => ($config->get('entity')) ?: $this->t('- None -'),
+      '#options' => $entity_options,
+      '#description' => $this->t('The entity that the data will be captured.'),
+      '#required' => TRUE,
+      '#ajax' => [
+        'callback' => '::entityDropdownCallback',
+        'wrapper' => 'bundle-fieldset-container',
+      ],
+    ];
+    $form['entity_fieldset']['choose_entity'] = [
+      '#type' => 'submit',
+      '#value' => $this->t('Choose'),
+      '#states' => [
+        'visible' => ['body' => ['value' => TRUE]],
+      ],
+    ];
+    $form['bundle_fieldset_container'] = [
+      '#type' => 'container',
+      '#attributes' => ['id' => 'bundle-fieldset-container'],
+    ];
+    $form['bundle_fieldset_container']['bundle_fieldset'] = [
+      '#type' => 'fieldset',
+      '#title' => $this->t('Choose a Bundle'),
+    ];
+    $form['bundle_fieldset_container']['bundle_fieldset']['bundle'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Bundle'),
+      '#empty_option' => $this->t('- None -'),
+      '#default_value' => ($config->get('bundle')) ?: $this->t('- None -'),
+      '#options' => (isset($bundle_options[$selected_entity])) ? $bundle_options[$selected_entity] : [],
+      '#description' => $this->t('The Bundle of the selected Entity Type.'),
+      '#required' => TRUE,
+      '#ajax' => [
+        'callback' => '::bundleDropdownCallback',
+        'wrapper' => 'dataprofile-fieldset-container',
+      ],
+    ];
+    $form['bundle_fieldset_container']['bundle_fieldset']['submit'] = [
+      '#type' => 'submit',
+      '#value' => $this->t('Submit'),
+      '#states' => [
+        'visible' => ['body' => ['value' => TRUE]],
+      ],
+    ];
+    $form['dataprofile_fieldset_container'] = [
+      '#type' => 'container',
+      '#attributes' => ['id' => 'dataprofile-fieldset-container'],
+    ];
+    $form['dataprofile_fieldset_container']['dataprofile_fieldset'] = [
+      '#type' => 'fieldset',
+      '#title' => $this->t('Data Profile Fieldset'),
+    ];
+    $form['dataprofile_fieldset_container']['dataprofile_fieldset']['dataprofile'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Data Profile Type'),
+      '#empty_option' => $this->t('- None -'),
+      '#default_value' => ($config->get('bundle')) ?: $this->t('- None -'),
+      '#options' => $data_profile_options,
+      '#description' => $this->t('The Data Profile type to be used for the Data Profile Config'),
       '#required' => TRUE,
     ];
-    $form['service_data'] = [
-      '#type' => 'textfield',
-      '#maxlength' => 255,
-      '#title' => $this->t('Service Data'),
-      '#description' => $this->t('Service Data.'),
-      '#default_value' => $config->get('service_data'),
-    ];
-    $form['data_profile'] = [
-      '#type' => 'textfield',
-      '#maxlength' => 255,
-      '#title' => $this->t('Data Profile'),
-      '#description' => $this->t('Data Profile.'),
-      '#default_value' => $config->get('data_profile'),
-    ];
-    $form['description'] = [
-      '#type' => 'textarea',
-      '#title' => $this->t('Description'),
-      '#description' => $this->t('Describe this Identifier setting. The text will be displayed on the <em>Identifier settings</em> list page.'),
-      '#default_value' => $config->get('description'),
+    $form['dataprofile_fieldset_container']['dataprofile_fieldset']['submit'] = [
+      '#type' => 'submit',
+      '#value' => $this->t('Submit'),
+      '#states' => [
+        'visible' => ['body' => ['value' => TRUE]],
+      ],
     ];
 
+    if (!$selected_entity) {
+      // Change the field title to provide user with some feedback on why the
+      // field is disabled.
+      $form['bundle_fieldset_container']['bundle_fieldset']['bundle']['#title'] = $this->t('You must choose an Entity first.');
+      $form['bundle_fieldset_container']['bundle_fieldset']['bundle']['#disabled'] = TRUE;
+      $form['bundle_fieldset_container']['bundle_fieldset']['submit']['#disabled'] = TRUE;
+    }
+
+    if (!$selected_bundle) {
+      // Change the field title to provide user with some feedback on why the
+      // field is disabled.
+      $form['dataprofile_fieldset_container']['dataprofile_fieldset']['dataprofile']['#title'] = $this->t('You must choose a Bundle first.');
+      $form['dataprofile_fieldset_container']['dataprofile_fieldset']['dataprofile']['#disabled'] = TRUE;
+      $form['dataprofile_fieldset_container']['dataprofile_fieldset']['submit']['#disabled'] = TRUE;
+    }
+
     return $form;
+  }
+
+  public function entityDropdownCallback(array $form, FormStateInterface $form_state) {
+    return $form['bundle_fieldset_container'];
+  }
+
+  public function bundleDropdownCallback(array $form, FormStateInterface $form_state) {
+    return $form['dataprofile_fieldset_container'];
+  }
+
+  public static function entityDropdownList() {
+    $entityFieldManager = \Drupal::service('entity_field.manager');
+    $field_map = $entityFieldManager->getFieldMap();
+    $bundle_info = \Drupal::service('entity_type.bundle.info');
+
+    // Building Entity Bundle List and Options.
+    $entity_bundles = [];
+    $entity_options = [];
+    foreach (array_keys($field_map) as $entity_key) {
+      $entity_bundles[$entity_key] = $bundle_info->getBundleInfo($entity_key);
+      $entity_options[$entity_key] = $entity_key;
+    }
+    $returns['entity_bundles'] = $entity_bundles;
+    $returns['entity_options'] = $entity_options;
+
+    return $returns;
+  }
+
+  public static function bundleDropdownList($entity_bundles = []) {
+    $entityFieldManager = \Drupal::service('entity_field.manager');
+    $entity_bundle_fields = [];
+    $bundle_options = [];
+    foreach ($entity_bundles as $entity => $bundles) {
+      foreach ($bundles as $bundle => $bundle_data) {
+        $entity_bundle_fields[$entity][$bundle] = $entityFieldManager->getFieldDefinitions($entity, $bundle);
+        $bundle_options[$entity][$bundle] = $bundle_data['label'];
+      }
+    }
+
+    $returns['entity_bundle_fields'] = $entity_bundle_fields;
+    $returns['bundle_options'] = $bundle_options;
+
+    return $returns;
   }
 
   /**
@@ -134,6 +262,18 @@ class DataProfileForm extends EntityForm {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     parent::submitForm($form, $form_state);
+
+    $trigger = (string) $form_state->getTriggeringElement()['#value'];
+    if (($trigger) == 'Submit') {
+      // Process submitted form data.
+      $this->messenger->addStatus($this->t('Your values have been submitted. Entity: @entity, Bundle: @bundle', [
+        '@entity' => $form_state->getValue('entity'),
+        '@bundle' => $form_state->getValue('bundle'),
+      ]));
+    }
+    else {
+      $form_state->setRebuild();
+    }
   }
 
   /**

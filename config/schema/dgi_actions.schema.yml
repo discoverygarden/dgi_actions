@@ -33,7 +33,7 @@ dgi_actions.identifier.*:
           type: string
 
 dgi_actions.data_profile.*:
-  type: config_object
+  type: config_entity
   label: 'Data Profile'
   mapping:
     label:
@@ -50,8 +50,28 @@ dgi_actions.data_profile.*:
           source_field:
             type: string
 
-dgi_actions.service_data.*:
+dgi_actions.data_profile_type.*:
   type: config_object
+  label: 'Data Profile Type'
+  mapping:
+    label:
+      type: string
+    id:
+      type: string
+    fields:
+      type: sequence
+      sequence:
+        type: mapping
+        mapping:
+          key:
+            type: string
+          label:
+            type: string
+          description:
+            type: string
+
+dgi_actions.service_data.*:
+  type: config_entity
   label: 'Service Data'
   mapping:
     label:
