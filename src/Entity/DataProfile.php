@@ -10,8 +10,8 @@ use Drupal\Core\Entity\EntityTypeInterface;
  * Defines the Data Profile setting entity.
  *
  * @ConfigEntityType(
- *   id = "dataprofiles_dataprofile",
- *   label = @Translation("Data Profile"),
+ *   id = "dgiactions_dataprofile",
+ *   label = @Translation("Data Profiles"),
  *   handlers = {
  *     "storage" = "Drupal\Core\Config\Entity\ConfigEntityStorage",
  *     "list_builder" = "Drupal\dgi_actions\DataProfileListBuilder",
@@ -25,7 +25,7 @@ use Drupal\Core\Entity\EntityTypeInterface;
  *     },
  *   },
  *   config_prefix = "data_profile",
- *   admin_permission = "administer configuration split",
+ *   admin_permission = "administer dgi_actions",
  *   entity_keys = {
  *     "id" = "id",
  *     "label" = "label",
@@ -33,13 +33,17 @@ use Drupal\Core\Entity\EntityTypeInterface;
  *   },
  *   links = {
  *     "add-form" = "/admin/config/dgi_actions/data_profile/add",
- *     "edit-form" = "/admin/config/dgi_actions/data_profile/{dataprofiles_dataprofile}/edit",
- *     "delete-form" = "/admin/config/dgi_actions/data_profile/{dataprofiles_dataprofile}/delete",
+ *     "edit-form" = "/admin/config/dgi_actions/data_profile/{dgiactions_dataprofile}/edit",
+ *     "delete-form" = "/admin/config/dgi_actions/data_profile/{dgiactions_dataprofile}/delete",
  *     "collection" = "/admin/config/dgi_actions/data_profile"
  *   },
  *   config_export = {
  *     "id",
  *     "label",
+ *     "entity",
+ *     "bundle",
+ *     "dataprofile",
+ *     "data",
  *   }
  * )
  */
@@ -66,7 +70,33 @@ class DataProfile extends ConfigEntityBase implements DataProfileInterface {
    */
   protected $description = '';
 
-  // Needs to somehow capture 1 to * values.
+  /**
+   * The Data Profile setting entity.
+   *
+   * @var string
+   */
+  protected $entity;
+
+  /**
+   * The Data Profile setting bundle.
+   *
+   * @var string
+   */
+  protected $bundle;
+
+  /**
+   * The Data Profile setting dataprofile.
+   *
+   * @var string
+   */
+  protected $dataprofile;
+
+  /**
+   * The Data Profile setting fields.
+   *
+   * @var array
+   */
+  protected $data;
 
   /**
    * Gets the Description value.
@@ -76,6 +106,41 @@ class DataProfile extends ConfigEntityBase implements DataProfileInterface {
    */
   public function getDescription() {
     return $this->description;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getEntity() {
+    return $this->entity;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getBundle() {
+    return $this->bundle;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getDataprofile() {
+    return $this->dataprofile;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getData() {
+    return $this->data;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setData(array $data) {
+    $this->data = $data;
   }
 
   /**

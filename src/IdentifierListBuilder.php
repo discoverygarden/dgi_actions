@@ -54,7 +54,8 @@ class IdentifierListBuilder extends ConfigEntityListBuilder {
     $header['label'] = $this->t('Identifier');
     $header['id'] = $this->t('Machine name');
     $header['field'] = $this->t('Field');
-    $header['description'] = $this->t('Description');
+    $header['service_data'] = $this->t('Service Data');
+    $header['data_profile'] = $this->t('Data Profile');
     return $header + parent::buildHeader();
   }
 
@@ -65,8 +66,11 @@ class IdentifierListBuilder extends ConfigEntityListBuilder {
     $row['label'] = $entity->label();
     $row['id'] = $entity->id();
     $config = $this->configFactory->get('dgi_actions.identifier.' . $entity->id());
-    $row['description'] = ($config->get('description')) ? $config->get('description') : '';
-    $row['field'] = ($config->get('field')) ? $config->get('field') : '';
+    $row['field'] = ($config->get('field')) ?: '';
+    $service_data_config = $this->configFactory->get($config->get('service_data'));
+    $row['service_data'] = ($service_data_config->get('label')) ?: '';
+    $data_profile_config = $this->configFactory->get($config->get('data_profile'));
+    $row['data_profile'] = ($data_profile_config->get('label')) ?: '';
 
     return $row + parent::buildRow($entity);
   }

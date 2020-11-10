@@ -58,22 +58,31 @@ class ServiceDataForm extends EntityForm {
    */
   public function form(array $form, FormStateInterface $form_state) {
     $form = parent::form($form, $form_state);
-    $field_map = \Drupal::entityManager()->getfieldMap();
 
-    $options_map = [];
-    foreach (array_keys($field_map) as $entity_type) {
-      $options_map = array_merge($options_map, $field_map[$entity_type]);
-    }
-
-    $pruned_options = [];
-    foreach ($options_map as $key => $value) {
-      if (strpos($key, 'field_') === 0) {
-        $pruned_options[$key] = $key;
-      }
-    }
+    $servicedata = static::servicedataLists();
+    $servicedata_configs =& $servicedata['servicedata_configs'];
+    $servicedata_options =& $servicedata['servicedata_options'];
 
     /** @var \Drupal\dgi_actions\Entity\IdentifierInterface $config */
     $config = $this->entity;
+
+    $state_key = 'dgi_actions.service_data.' . $config->id();
+    if ($this->state->get($state_key)) {
+      $state_creds = $this->state->get($state_key);
+    }
+
+    if (empty($form_state->getValue('service_data_type'))) {
+      if ($config->getServiceDataType()) {
+        $selected_servicedatatype = $config->getServiceDataType();
+      }
+      else {
+        $selected_servicedatatype = '';
+      }
+    }
+    else {
+      $selected_servicedatatype = $form_state->getValue('service_data_type');
+    }
+
     $form['label'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Label'),
@@ -86,40 +95,104 @@ class ServiceDataForm extends EntityForm {
       '#type' => 'machine_name',
       '#default_value' => $config->id(),
       '#machine_name' => [
-        'exists' => '\Drupal\dgi_actions\Entity\Identifier::load',
+        'exists' => '\Drupal\dgi_actions\Entity\ServiceData::load',
       ],
     ];
-    $form['field'] = [
+    $form['servicedata_fieldset'] = [
+      '#type' => 'fieldset',
+      '#title' => $this->t('Service Data Fieldset'),
+    ];
+    $form['servicedata_fieldset']['service_data_type'] = [
       '#type' => 'select',
-      '#title' => $this->t('Entity Field'),
+      '#title' => $this->t('Service Data Type'),
       '#empty_option' => $this->t('- None -'),
-      '#default_value' => ($config->get('field')) ?: $this->t('- None -'),
-      '#options' => $pruned_options,
-      '#description' => $this->t('The entity field that the identifier will be minted into.'),
+      '#default_value' => ($selected_servicedatatype) ?: $this->t('- None -'),
+      '#options' => $servicedata_options,
+      '#description' => $this->t('The entity that the data will be captured.'),
       '#required' => TRUE,
+      '#ajax' => [
+        'callback' => '::serviceDataTypeSelectionCallback',
+        'wrapper' => 'servicedata-fieldset-container',
+      ],
     ];
-    $form['service_data'] = [
-      '#type' => 'textfield',
-      '#maxlength' => 255,
-      '#title' => $this->t('Service Data'),
-      '#description' => $this->t('Service Data.'),
-      '#default_value' => $config->get('service_data'),
+    $form['servicedata_fieldset']['choose_servicedata'] = [
+      '#type' => 'submit',
+      '#value' => $this->t('Choose Service Data'),
+      '#states' => [
+        'visible' => ['body' => ['value' => TRUE]],
+      ],
     ];
-    $form['data_profile'] = [
-      '#type' => 'textfield',
-      '#maxlength' => 255,
-      '#title' => $this->t('Data Profile'),
-      '#description' => $this->t('Data Profile.'),
-      '#default_value' => $config->get('data_profile'),
+    $form['servicedata_fieldset']['servicedata_fieldset_container'] = [
+      '#type' => 'container',
+      '#attributes' => ['id' => 'servicedata-fieldset-container'],
     ];
-    $form['description'] = [
-      '#type' => 'textarea',
-      '#title' => $this->t('Description'),
-      '#description' => $this->t('Describe this Identifier setting. The text will be displayed on the <em>Identifier settings</em> list page.'),
-      '#default_value' => $config->get('description'),
+    $form['servicedata_fieldset']['servicedata_fieldset_container']['servicedata_fields_fieldset'] = [
+      '#type' => 'fieldset',
+      '#title' => $this->t('Service Data Fieldset'),
     ];
 
+    $fieldset =& $form['servicedata_fieldset']['servicedata_fieldset_container']['servicedata_fields_fieldset'];
+    if ($selected_servicedatatype) {
+      $fields = $servicedata_configs[$selected_servicedatatype]->get('data');
+      foreach ($fields as $field) {
+        $fieldset[$field['id']] = [
+          '#type' => 'textfield',
+          '#title' => $this->t($field['label']),
+          '#maxlength' => 255,
+          '#description' => $this->t($field['description']),
+          '#required' => TRUE,
+        ];
+
+        if ($field['id'] == 'password') {
+          $password_element =& $fieldset[$field['id']];
+          $password_element['#type'] = 'password';
+
+          if (isset($state_creds) && isset($state_creds['password'])) {
+            $password_element['#placeholder'] = '********';
+            unset($password_element['#required']);
+          }
+        }
+        else if (isset($state_creds[$field['id']])) {
+          $fieldset[$field['id']]['#default_value'] = $state_creds[$field['id']];
+        }
+        else {
+          $fieldset[$field['id']]['#default_value'] = (isset($config->get('data')[$field['id']])) ? $config->get('data')[$field['id']] : '';
+        }
+      }
+    }
+
+    if (!$selected_servicedatatype) {
+      $fieldset['#access'] = FALSE;
+      $fieldset['#disabled'] = TRUE;
+    }
+
     return $form;
+  }
+
+  /**
+   * Service Data AJAX Callback function.
+   */
+  public function serviceDataTypeSelectionCallback(array $form, FormStateInterface $form_state) {
+    return $form['servicedata_fieldset']['servicedata_fieldset_container'];
+  }
+
+  /**
+   * Helper function to build Service Data Lists.
+   *
+   * @return array
+   *   Returns Service Data configs and options lists.
+   */
+  public static function servicedataLists() {
+    // Data Profile Types - Start
+    $config_factory = \Drupal::service('config.factory');
+    $list = $config_factory->listAll('dgi_actions.service_data_type');
+    $returns = [];
+    foreach($list as $config_id) {
+      $config = $config_factory->get($config_id);
+      $returns['servicedata_configs'][$config_id] = $config;
+      $returns['servicedata_options'][$config->getName()] = $config->get('label');
+    }
+    return $returns;
   }
 
   /**
@@ -134,6 +207,49 @@ class ServiceDataForm extends EntityForm {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     parent::submitForm($form, $form_state);
+
+    $trigger = (string) $form_state->getTriggeringElement()['#value'];
+    if (($trigger) == 'Save') {
+      $this->setServiceData($form_state);
+    }
+    else {
+      $form_state->setRebuild();
+    }
+  }
+
+  /**
+   * A helper function to set the Service Data data.
+   *
+   * @param FormStateInterface $form_state
+   *    The FormState entity.
+   */
+  public function setServiceData($form_state) {
+    $service_data = static::servicedataLists();
+    $config =& $this->entity;
+
+    $fields = $service_data['servicedata_configs'][$config->getServiceDataType()]->get('data');
+    $data = [];
+    foreach ($fields as $field) {
+      $form_key = $field['id'];
+      if (!empty($form_state->getValue($form_key))) {
+        if ($form_key == 'username' || $form_key == 'password') {
+          $creds[$form_key] = $form_state->getValue($form_key);
+        }
+        else {
+          $data[$form_key] = $form_state->getValue($form_key);
+        }
+      }
+    }
+
+    if ($form_state->getValue('password')) {
+      $state_key = 'dgi_actions.service_data.' . $config->id();
+      $this->state->set($state_key, $creds);
+    }
+
+    // Clearing the data in case there was a different
+    // Data Profile with data set previously.
+    $config->setData([]);
+    $config->setData($data);
   }
 
   /**

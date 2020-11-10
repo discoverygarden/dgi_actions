@@ -40,6 +40,12 @@ dgi_actions.data_profile.*:
       type: string
     id:
       type: string
+    entity:
+      type: string
+    bundle:
+      type: string
+    dataprofile:
+      type: string
     data:
       type: sequence
       sequence:
@@ -82,3 +88,23 @@ dgi_actions.service_data.*:
       type: sequence
       sequence:
         type: string
+
+dgi_actions.service_data_type.*:
+  type: config_object
+  label: 'Service Data Type'
+  mapping:
+    label:
+      type: string
+    id:
+      type: string
+    data:
+      type: sequence
+      sequence:
+        type: mapping
+        mapping:
+          id:
+            type: string
+          label:
+            type: string
+          description:
+            type: string

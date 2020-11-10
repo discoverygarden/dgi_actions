@@ -11,41 +11,23 @@ dgi_actions.identifiers:
   route_name: dgi_actions.identifiers
   description: 'Configurations associated with Identifiers.'
 
-dgi_actions.identifier_service_config:
-  title: 'Identifier Config'
-  parent: dgi_actions.identifiers
-  route_name: dgi_actions.identifier_service_config
-  description: 'Configuration for the Identifier.'
-
-dgi_actions.service_config:
-  title: 'Service Data Config'
-  parent: dgi_actions.identifiers
-  route_name: dgi_actions.service_config
-  description: 'Configuration for the Identifier Service.'
-
-dgi_actions.data_profile_config:
-  title: 'Data Profile Config'
-  parent: dgi_actions.identifiers
-  route_name: dgi_actions.data_profile_config
-  description: 'Configuration for the Data Profile.'
-
 # Identifiers configuration collection page
-entity.identifiers_identifier.collection:
+entity.dgiactions_identifier.collection:
   title: 'Identifier Entities'
   parent: dgi_actions.identifiers
-  route_name: entity.identifiers_identifier.collection
+  route_name: entity.dgiactions_identifier.collection
   description: 'Identifier Collection configuration page.'
 
 # Service Data configuration collection page
-entity.servicedatas_servicedata.collection:
+entity.dgiactions_servicedata.collection:
   title: 'Service Data Entities'
   parent: dgi_actions.identifiers
-  route_name: entity.servicedatas_servicedata.collection
+  route_name: entity.dgiactions_servicedata.collection
   description: 'Service Data Collection configuration page.'
 
 # Data Profiles configuration collection page
-entity.dataprofiles_dataprofile.collection:
+entity.dgiactions_dataprofile.collection:
   title: 'Data Profiles Entities'
   parent: dgi_actions.identifiers
-  route_name: entity.dataprofiles_dataprofile.collection
+  route_name: entity.dgiactions_dataprofile.collection
   description: 'Data Profile Collection configuration page.'

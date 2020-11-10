@@ -22,7 +22,7 @@ class ServiceDataDeleteForm extends EntityConfirmFormBase {
    * {@inheritdoc}
    */
   public function getCancelUrl() {
-    return new Url('dgi_actions.entity.identifiers_identifier.collection');
+    return new Url('dgi_actions.entity.dgiactions_servicedata.collection');
   }
 
   /**

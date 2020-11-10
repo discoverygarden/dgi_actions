@@ -10,8 +10,8 @@ use Drupal\Core\Entity\EntityTypeInterface;
  * Defines the Identifier setting entity.
  *
  * @ConfigEntityType(
- *   id = "identifiers_identifier",
- *   label = @Translation("Identifier"),
+ *   id = "dgiactions_identifier",
+ *   label = @Translation("Identifiers"),
  *   handlers = {
  *     "storage" = "Drupal\Core\Config\Entity\ConfigEntityStorage",
  *     "list_builder" = "Drupal\dgi_actions\IdentifierListBuilder",
@@ -33,14 +33,16 @@ use Drupal\Core\Entity\EntityTypeInterface;
  *   },
  *   links = {
  *     "add-form" = "/admin/config/dgi_actions/identifier/add",
- *     "edit-form" = "/admin/config/dgi_actions/identifier/{identifiers_identifier}/edit",
- *     "delete-form" = "/admin/config/dgi_actions/identifier/{identifiers_identifier}/delete",
+ *     "edit-form" = "/admin/config/dgi_actions/identifier/{dgiactions_identifier}/edit",
+ *     "delete-form" = "/admin/config/dgi_actions/identifier/{dgiactions_identifier}/delete",
  *     "collection" = "/admin/config/dgi_actions/identifier"
  *   },
  *   config_export = {
  *     "id",
  *     "label",
  *     "field",
+ *     "service_data",
+ *     "data_profile",
  *   }
  * )
  */
@@ -61,18 +63,25 @@ class Identifier extends ConfigEntityBase implements IdentifierInterface {
   protected $label;
 
   /**
-   * The Identifier setting description.
-   *
-   * @var string
-   */
-  protected $description = '';
-
-  /**
    * The Identifier setting field.
    *
    * @var string
    */
   protected $field;
+
+  /**
+   * The Identifier setting Data Profile.
+   *
+   * @var string
+   */
+  protected $data_profile;
+
+  /**
+   * The Identifier setting Service Data.
+   *
+   * @var string
+   */
+  protected $service_data;
 
   /**
    * Gets the Description value.

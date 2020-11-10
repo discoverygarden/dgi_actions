@@ -16,56 +16,29 @@ dgi_actions.identifiers:
   requirements:
     _permission: 'access administration pages'
 
-# Identifier Config Admin Page
-dgi_actions.identifier_service_config:
-  path: '/admin/config/dgi_actions/identifiers/identifier_config'
-  defaults:
-    _form: '\Drupal\dgi_actions\Form\IdentifierConfigForm'
-    _title: 'Identifier Config Admin'
-  requirements:
-    _permission: 'access administration pages'
-
-# Service Data Config Admin Page
-dgi_actions.service_config:
-  path: '/admin/config/dgi_actions/identifiers/service_config'
-  defaults:
-    _form: '\Drupal\dgi_actions\Form\ServiceDataConfigForm'
-    _title: 'Service Data Config Admin'
-  requirements:
-    _permission: 'access administration pages'
-
-# Data Profile Config Admin Page
-dgi_actions.data_profile_config:
-  path: '/admin/config/dgi_actions/identifiers/data_profile_config'
-  defaults:
-    _form: '\Drupal\dgi_actions\Form\DataProfileConfigForm'
-    _title: 'Data Profile Config Admin'
-  requirements:
-    _permission: 'access administration pages'
-
 # Identifiers Admin Page
-entity.identifiers_identifier.collection:
+entity.dgiactions_identifier.collection:
   path: '/admin/config/dgi_actions/identifier_entities'
   defaults:
     _title: 'Identifier Entities'
-    _entity_list: 'identifiers_identifier'
+    _entity_list: 'dgiactions_identifier'
   requirements:
-    _entity_create_access: 'identifiers_identifier'
+    _entity_create_access: 'dgiactions_identifier'
 
 # Service Data Admin Page
-entity.servicedatas_servicedata.collection:
+entity.dgiactions_servicedata.collection:
   path: '/admin/config/dgi_actions/service_data'
   defaults:
     _title: 'Service Data Entities'
-    _entity_list: 'servicedatas_servicedata'
+    _entity_list: 'dgiactions_servicedata'
   requirements:
-    _entity_create_access: 'servicedatas_servicedata'
+    _entity_create_access: 'dgiactions_servicedata'
 
 # Data Profile Admin Page
-entity.dataprofiles_dataprofile.collection:
+entity.dgiactions_dataprofile.collection:
   path: '/admin/config/dgi_actions/data_profile'
   defaults:
-    _title: 'Data Prifile Entities'
-    _entity_list: 'dataprofiles_dataprofile'
+    _title: 'Data Profile Entities'
+    _entity_list: 'dgiactions_dataprofile'
   requirements:
-    _entity_create_access: 'dataprofiles_dataprofile'
+    _entity_create_access: 'dgiactions_dataprofile'

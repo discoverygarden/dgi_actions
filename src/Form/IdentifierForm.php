@@ -59,6 +59,8 @@ class IdentifierForm extends EntityForm {
   public function form(array $form, FormStateInterface $form_state) {
     $form = parent::form($form, $form_state);
     $field_map = \Drupal::entityManager()->getfieldMap();
+    $config_factory = \Drupal::service('config.factory');
+    $config = $this->entity;
 
     $options_map = [];
     foreach (array_keys($field_map) as $entity_type) {
@@ -72,8 +74,13 @@ class IdentifierForm extends EntityForm {
       }
     }
 
+    $data_profile_list = $config_factory->listAll('dgi_actions.data_profile.');
+    $service_data_list = $config_factory->listAll('dgi_actions.service_data.');
+
+    $data_profile_options = self::listOptionsBuilder($data_profile_list);
+    $service_data_options = self::listOptionsBuilder($service_data_list);
+
     /** @var \Drupal\dgi_actions\Entity\IdentifierInterface $config */
-    $config = $this->entity;
     $form['label'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Label'),
@@ -99,27 +106,44 @@ class IdentifierForm extends EntityForm {
       '#required' => TRUE,
     ];
     $form['service_data'] = [
-      '#type' => 'textfield',
-      '#maxlength' => 255,
-      '#title' => $this->t('Service Data'),
-      '#description' => $this->t('Service Data.'),
-      '#default_value' => $config->get('service_data'),
+      '#type' => 'select',
+      '#title' => $this->t('Service Data Profile'),
+      '#empty_option' => $this->t('- None -'),
+      '#options' => ($service_data_options) ?: [],
+      '#default_value' => ($config->get('service_data')) ?: $this->t('- None -'),
+      '#description' => $this->t('The Service Data service to be used with this Identifier. (IE. Controls what Service to perform CRUD operations with.'),
     ];
     $form['data_profile'] = [
-      '#type' => 'textfield',
-      '#maxlength' => 255,
+      '#type' => 'select',
       '#title' => $this->t('Data Profile'),
-      '#description' => $this->t('Data Profile.'),
-      '#default_value' => $config->get('data_profile'),
-    ];
-    $form['description'] = [
-      '#type' => 'textarea',
-      '#title' => $this->t('Description'),
-      '#description' => $this->t('Describe this Identifier setting. The text will be displayed on the <em>Identifier settings</em> list page.'),
-      '#default_value' => $config->get('description'),
+      '#empty_option' => $this->t('- None -'),
+      '#options' => ($data_profile_options) ?: [],
+      '#default_value' => ($config->get('data_profile')) ?: $this->t('- None -'),
+      '#description' => $this->t('The Data Profile to be used with this Identifier. (IE. Controls what Data is sent to the Identifier service.)'),
     ];
 
     return $form;
+  }
+
+  /**
+   * Helper function to build options lists.
+   *
+   * @param array $configs
+   *   An array of available config entity keys.
+   *
+   * @return array
+   *   An key value list of options.
+   */
+  protected function listOptionsBuilder(array $configs) {
+    $config_factory = \Drupal::service('config.factory');
+
+    $options = [];
+    foreach ($configs as $config_id) {
+      $config = $config_factory->get($config_id);
+      $options[$config_id] = $config->get('label');
+    }
+
+    return $options;
   }
 
   /**

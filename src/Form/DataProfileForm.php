@@ -59,43 +59,64 @@ class DataProfileForm extends EntityForm {
   public function form(array $form, FormStateInterface $form_state) {
     $form = parent::form($form, $form_state);
 
-    // Data Profile Types - Start
-    $config_factory = \Drupal::service('config.factory');
-    $list = $config_factory->listAll('dgi_actions.data_profile_type');
-    $data_profile_configs = [];
-    foreach($list as $config) {
-      $data_profile_configs[$config] = $config_factory->get($config);
-    }
+    /** @var \Drupal\dgi_actions\Entity\DataProfileInterface $config */
+    $config = $this->entity;
 
-    $data_profile_options = [];
-    foreach($data_profile_configs as $config) {
-      $data_profile_options[$config->getName()] = $config->get('label');
-    }
+    $data_profile_array = static::dataprofileLists();
+    $data_profile_configs = $data_profile_array['data_profile_configs'];
+    $data_profile_options = $data_profile_array['data_profile_options'];
 
     $entity_array = static::entityDropdownList();
     $entity_bundles = $entity_array['entity_bundles'];
     $entity_options = $entity_array['entity_options'];
 
+    $entity_bundle_array = static::bundleDropdownList($entity_bundles);
+    $entity_bundle_fields = $entity_bundle_array['entity_bundle_fields'];
+    $bundle_options = $entity_bundle_array['bundle_options'];
+
+    // Check if the previous/currently set Entity value is a valid selection
+    // If not, unset and make the user re-select.
     if (empty($form_state->getValue('entity'))) {
-      $selected_entity = '';
+      if ($config->getEntity()) {
+        $selected_entity = $config->getEntity();
+      }
+      else {
+        $selected_entity = '';
+      }
     }
     else {
       $selected_entity = $form_state->getValue('entity');
     }
 
-    $entity_bundle_array = static::bundleDropdownList($entity_bundles);
-    $entity_bundle_field = $entity_bundle_array['entity_bundle_fields'];
-    $bundle_options = $entity_bundle_array['bundle_options'];
-
+    // Check if the previous/currently set Bundle value is a valid selection
+    // If not, unset and make the user re-select.
     if (empty($form_state->getValue('bundle'))) {
-      $selected_bundle = '';
+      if ($config->getBundle()) {
+        $selected_bundle = $config->getBundle();
+      }
+      else {
+        $selected_bundle = '';
+      }
     }
     else {
-      $selected_bundle = $form_state->getValue('bundle');
+      $bundle_value = (string) $form_state->getValue('bundle');
+      $selected_bundle = (string) ($bundle_value && isset($bundle_options[$selected_entity][$bundle_value])) ? $bundle_value : '';
     }
 
-    /** @var \Drupal\dgi_actions\Entity\DataProfileInterface $config */
-    $config = $this->entity;
+    // Check if the previous/currently set DataProfile value is a valid selection
+    // If not, unset and make the user re-select.
+    if (empty($form_state->getValue('dataprofile'))) {
+      if ($config->getDataprofile()) {
+        $selected_dataprofile = $config->getDataprofile();
+      }
+      else {
+        $selected_dataprofile = '';
+      }
+    }
+    else {
+      $selected_dataprofile = (string) $form_state->getValue('dataprofile');
+    }
+
     $form['label'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Label'),
@@ -119,7 +140,7 @@ class DataProfileForm extends EntityForm {
       '#type' => 'select',
       '#title' => $this->t('Entity'),
       '#empty_option' => $this->t('- None -'),
-      '#default_value' => ($config->get('entity')) ?: $this->t('- None -'),
+      '#default_value' => ($selected_entity) ?: $this->t('- None -'),
       '#options' => $entity_options,
       '#description' => $this->t('The entity that the data will be captured.'),
       '#required' => TRUE,
@@ -130,7 +151,7 @@ class DataProfileForm extends EntityForm {
     ];
     $form['entity_fieldset']['choose_entity'] = [
       '#type' => 'submit',
-      '#value' => $this->t('Choose'),
+      '#value' => $this->t('Choose Entity'),
       '#states' => [
         'visible' => ['body' => ['value' => TRUE]],
       ],
@@ -141,13 +162,13 @@ class DataProfileForm extends EntityForm {
     ];
     $form['bundle_fieldset_container']['bundle_fieldset'] = [
       '#type' => 'fieldset',
-      '#title' => $this->t('Choose a Bundle'),
+      '#title' => $this->t('Bundle Fieldset'),
     ];
     $form['bundle_fieldset_container']['bundle_fieldset']['bundle'] = [
       '#type' => 'select',
       '#title' => $this->t('Bundle'),
       '#empty_option' => $this->t('- None -'),
-      '#default_value' => ($config->get('bundle')) ?: $this->t('- None -'),
+      '#default_value' => ($selected_bundle) ?: $this->t('- None -'),
       '#options' => (isset($bundle_options[$selected_entity])) ? $bundle_options[$selected_entity] : [],
       '#description' => $this->t('The Bundle of the selected Entity Type.'),
       '#required' => TRUE,
@@ -156,96 +177,164 @@ class DataProfileForm extends EntityForm {
         'wrapper' => 'dataprofile-fieldset-container',
       ],
     ];
-    $form['bundle_fieldset_container']['bundle_fieldset']['submit'] = [
+    $form['bundle_fieldset_container']['bundle_fieldset']['choose_bundle'] = [
       '#type' => 'submit',
-      '#value' => $this->t('Submit'),
+      '#value' => $this->t('Choose Bundle'),
       '#states' => [
-        'visible' => ['body' => ['value' => TRUE]],
+        'visible' => [':input[name="bundle"]' => ['value' => TRUE]],
       ],
     ];
-    $form['dataprofile_fieldset_container'] = [
+    $form['bundle_fieldset_container']['dataprofile_fieldset_container'] = [
       '#type' => 'container',
       '#attributes' => ['id' => 'dataprofile-fieldset-container'],
     ];
-    $form['dataprofile_fieldset_container']['dataprofile_fieldset'] = [
+    $form['bundle_fieldset_container']['dataprofile_fieldset_container']['dataprofile_fieldset'] = [
       '#type' => 'fieldset',
       '#title' => $this->t('Data Profile Fieldset'),
     ];
-    $form['dataprofile_fieldset_container']['dataprofile_fieldset']['dataprofile'] = [
+    $form['bundle_fieldset_container']['dataprofile_fieldset_container']['dataprofile_fieldset']['dataprofile'] = [
       '#type' => 'select',
       '#title' => $this->t('Data Profile Type'),
       '#empty_option' => $this->t('- None -'),
-      '#default_value' => ($config->get('bundle')) ?: $this->t('- None -'),
-      '#options' => $data_profile_options,
+      '#default_value' => ($selected_dataprofile) ?: $this->t('- None -'),
+      '#options' => ($selected_entity && $selected_bundle) ? $data_profile_options : [],
       '#description' => $this->t('The Data Profile type to be used for the Data Profile Config'),
       '#required' => TRUE,
-    ];
-    $form['dataprofile_fieldset_container']['dataprofile_fieldset']['submit'] = [
-      '#type' => 'submit',
-      '#value' => $this->t('Submit'),
-      '#states' => [
-        'visible' => ['body' => ['value' => TRUE]],
+      '#ajax' => [
+        'callback' => '::dataprofileFieldsDropdownCallback',
+        'wrapper' => 'dataprofile-fields-fieldset-container',
       ],
     ];
+    $form['bundle_fieldset_container']['dataprofile_fieldset_container']['dataprofile_fieldset']['choose_dataprofile'] = [
+      '#type' => 'submit',
+      '#value' => $this->t('Choose Data Profile'),
+      '#states' => [
+        'visible' => [':input[name="dataprofile"]' => ['value' => TRUE]],
+      ],
+    ];
+    $form['bundle_fieldset_container']['dataprofile_fieldset_container']['dataprofile_fieldset']['dataprofile_fields_fieldset_container'] = [
+      '#type' => 'container',
+      '#attributes' => ['id' => 'dataprofile-fields-fieldset-container'],
+    ];
+    $form['bundle_fieldset_container']['dataprofile_fieldset_container']['dataprofile_fieldset']['dataprofile_fields_fieldset_container']['dataprofile_fields_fieldset'] = [
+      '#type' => 'fieldset',
+      '#title' => $this->t('Data Profile Fields'),
+    ];
+    if (isset($data_profile_configs[$selected_dataprofile])) {
+      $fields = $data_profile_configs[$selected_dataprofile]->get('fields');
+      foreach ($fields as $field) {
+        $field_key = str_replace('.', '_', $field['key']);
+        $form['bundle_fieldset_container']['dataprofile_fieldset_container']['dataprofile_fieldset']['dataprofile_fields_fieldset_container']['dataprofile_fields_fieldset'][$field_key] = [
+          '#type' => 'select',
+          '#title' => $this->t($field['label']),
+          '#empty_option' => $this->t('- None -'),
+          '#default_value' => ($config->get('data')[$field_key]) ?: $this->t('- None -'),
+          '#options' => ($selected_entity && $selected_bundle) ? $entity_bundle_fields[$selected_entity][$selected_bundle] : [],
+          '#description' => $this->t($field['description']),
+        ];
+      }
+    }
 
     if (!$selected_entity) {
       // Change the field title to provide user with some feedback on why the
       // field is disabled.
       $form['bundle_fieldset_container']['bundle_fieldset']['bundle']['#title'] = $this->t('You must choose an Entity first.');
       $form['bundle_fieldset_container']['bundle_fieldset']['bundle']['#disabled'] = TRUE;
-      $form['bundle_fieldset_container']['bundle_fieldset']['submit']['#disabled'] = TRUE;
+      $form['bundle_fieldset_container']['bundle_fieldset']['choose_bundle']['#disabled'] = TRUE;
     }
 
     if (!$selected_bundle) {
       // Change the field title to provide user with some feedback on why the
       // field is disabled.
-      $form['dataprofile_fieldset_container']['dataprofile_fieldset']['dataprofile']['#title'] = $this->t('You must choose a Bundle first.');
-      $form['dataprofile_fieldset_container']['dataprofile_fieldset']['dataprofile']['#disabled'] = TRUE;
-      $form['dataprofile_fieldset_container']['dataprofile_fieldset']['submit']['#disabled'] = TRUE;
+      //$selected_bundle = $form_state->getValue('bundle');
+      $form['bundle_fieldset_container']['dataprofile_fieldset_container']['dataprofile_fieldset']['dataprofile']['#title'] = $this->t('You must choose a Bundle first.');
+      $form['bundle_fieldset_container']['dataprofile_fieldset_container']['dataprofile_fieldset']['dataprofile']['#disabled'] = TRUE;
+      $form['bundle_fieldset_container']['dataprofile_fieldset_container']['dataprofile_fieldset']['choose_dataprofile']['#disabled'] = TRUE;
     }
 
     return $form;
   }
 
+  /**
+   * Entity Dropdown AJAX Callback function.
+   */
   public function entityDropdownCallback(array $form, FormStateInterface $form_state) {
     return $form['bundle_fieldset_container'];
   }
 
+  /**
+   * Bundle Dropdown AJAX Callback function.
+   */
   public function bundleDropdownCallback(array $form, FormStateInterface $form_state) {
-    return $form['dataprofile_fieldset_container'];
+    return $form['bundle_fieldset_container']['dataprofile_fieldset_container'];
   }
 
+  /**
+   * Data Profile Dropdown AJAX Callback function.
+   */
+  public function dataprofileFieldsDropdownCallback(array $form, FormStateInterface $form_state) {
+    return $form['bundle_fieldset_container']['dataprofile_fieldset_container']['dataprofile_fieldset']['dataprofile_fields_fieldset_container'];
+  }
+
+  /**
+   * Helper function to build Data Profile Lists.
+   *
+   * @return array
+   *   Returns available Data Profile configs and options.
+   */
+  public static function dataprofileLists() {
+    // Data Profile Types - Start
+    $config_factory = \Drupal::service('config.factory');
+    $list = $config_factory->listAll('dgi_actions.data_profile_type');
+
+    $returns = [];
+    foreach($list as $config_id) {
+      $config = $config_factory->get($config_id);
+      $returns['data_profile_configs'][$config_id] = $config;
+      $returns['data_profile_options'][$config->getName()] = $config->get('label');
+    }
+
+    return $returns;
+  }
+
+  /**
+   * Helper function to build Entity Lists.
+   *
+   * @return array
+   *   Returns Entity bundles and options.
+   */
   public static function entityDropdownList() {
     $entityFieldManager = \Drupal::service('entity_field.manager');
     $field_map = $entityFieldManager->getFieldMap();
     $bundle_info = \Drupal::service('entity_type.bundle.info');
 
     // Building Entity Bundle List and Options.
-    $entity_bundles = [];
-    $entity_options = [];
+    $returns = [];
     foreach (array_keys($field_map) as $entity_key) {
-      $entity_bundles[$entity_key] = $bundle_info->getBundleInfo($entity_key);
-      $entity_options[$entity_key] = $entity_key;
+      $returns['entity_bundles'][$entity_key] = $bundle_info->getBundleInfo($entity_key);
+      $returns['entity_options'][$entity_key] = $entity_key;
     }
-    $returns['entity_bundles'] = $entity_bundles;
-    $returns['entity_options'] = $entity_options;
 
     return $returns;
   }
 
+  /**
+   * Helper function to build Bundle Lists.
+   *
+   * @return array
+   *   Returns bundle fields and options.
+   */
   public static function bundleDropdownList($entity_bundles = []) {
     $entityFieldManager = \Drupal::service('entity_field.manager');
-    $entity_bundle_fields = [];
-    $bundle_options = [];
+
+    $returns = [];
     foreach ($entity_bundles as $entity => $bundles) {
       foreach ($bundles as $bundle => $bundle_data) {
-        $entity_bundle_fields[$entity][$bundle] = $entityFieldManager->getFieldDefinitions($entity, $bundle);
-        $bundle_options[$entity][$bundle] = $bundle_data['label'];
+        $fields = $entityFieldManager->getFieldDefinitions($entity, $bundle);
+        $returns['entity_bundle_fields'][$entity][$bundle] = array_combine(array_keys($fields), array_keys($fields));
+        $returns['bundle_options'][$entity][$bundle] = $bundle_data['label'];
       }
     }
-
-    $returns['entity_bundle_fields'] = $entity_bundle_fields;
-    $returns['bundle_options'] = $bundle_options;
 
     return $returns;
   }
@@ -264,16 +353,40 @@ class DataProfileForm extends EntityForm {
     parent::submitForm($form, $form_state);
 
     $trigger = (string) $form_state->getTriggeringElement()['#value'];
-    if (($trigger) == 'Submit') {
-      // Process submitted form data.
-      $this->messenger->addStatus($this->t('Your values have been submitted. Entity: @entity, Bundle: @bundle', [
-        '@entity' => $form_state->getValue('entity'),
-        '@bundle' => $form_state->getValue('bundle'),
-      ]));
+    if (($trigger) == 'Save') {
+      $this->setDataprofileDataFields($form_state);
     }
     else {
       $form_state->setRebuild();
     }
+  }
+
+  /**
+   * A helper function to set the Data Profile fields.
+   *
+   * @param FormStateInterface $form_state
+   *    The FormState entity.
+   */
+  public function setDataprofileDataFields($form_state) {
+    $data_profile_data = static::dataprofileLists();
+    $config =& $this->entity;
+
+    $fields = $data_profile_data['data_profile_configs'][$config->getDataprofile()]->get('fields');
+    $data = [];
+    foreach ($fields as $field) {
+      $form_key = str_replace('.', '_', $field['key']);
+      if (!empty($form_state->getValue($form_key))) {
+        $data[$form_key] = [
+          'key' => $field['key'],
+          'source_field' => $form_state->getValue($form_key),
+        ];
+      }
+    }
+
+    // Clearing the data in case there was a different
+    // Data Profile with data set previously.
+    $config->setData([]);
+    $config->setData($data);
   }
 
   /**
@@ -302,22 +415,22 @@ class DataProfileForm extends EntityForm {
    * {@inheritdoc}
    */
   public function save(array $form, FormStateInterface $form_state) {
-    $identifier = $this->entity;
-    $status = $identifier->save();
+    $dataprofile = $this->entity;
+    $status = $dataprofile->save();
 
     switch ($status) {
       case SAVED_NEW:
-        $this->messenger()->addStatus($this->t('Created the %label Identifier setting.', [
-          '%label' => $identifier->label(),
+        $this->messenger()->addStatus($this->t('Created the %label Data Profile setting.', [
+          '%label' => $dataprofile->label(),
         ]));
         break;
 
       default:
-        $this->messenger()->addStatus($this->t('Saved the %label Identifier setting.', [
-          '%label' => $identifier->label(),
+        $this->messenger()->addStatus($this->t('Saved the %label Data Profile setting.', [
+          '%label' => $dataprofile->label(),
         ]));
     }
-    $form_state->setRedirectUrl($identifier->toUrl('collection'));
+    $form_state->setRedirectUrl($dataprofile->toUrl('collection'));
   }
 
 }

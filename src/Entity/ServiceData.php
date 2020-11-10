@@ -10,7 +10,7 @@ use Drupal\Core\Entity\EntityTypeInterface;
  * Defines the Service Data setting entity.
  *
  * @ConfigEntityType(
- *   id = "servicedatas_servicedata",
+ *   id = "dgiactions_servicedata",
  *   label = @Translation("Service Data"),
  *   handlers = {
  *     "storage" = "Drupal\Core\Config\Entity\ConfigEntityStorage",
@@ -40,6 +40,8 @@ use Drupal\Core\Entity\EntityTypeInterface;
  *   config_export = {
  *     "id",
  *     "label",
+ *     "service_data_type",
+ *     "data",
  *   }
  * )
  */
@@ -60,13 +62,18 @@ class ServiceData extends ConfigEntityBase implements ServiceDataInterface {
   protected $label;
 
   /**
-   * The Service Data setting description.
+   * The Service Data setting service data type.
    *
    * @var string
    */
-  protected $description = '';
+  protected $service_data_type;
 
-  // Need to capture 1 to * pieces of data.
+  /**
+   * The Service Data setting label.
+   *
+   * @var array
+   */
+  protected $data;
 
   /**
    * Gets the Description value.
@@ -76,6 +83,27 @@ class ServiceData extends ConfigEntityBase implements ServiceDataInterface {
    */
   public function getDescription() {
     return $this->description;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setData(array $data) {
+    $this->data = $data;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getData() {
+    return $this->data;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getServiceDataType() {
+    return $this->service_data_type;
   }
 
   /**
