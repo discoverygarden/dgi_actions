@@ -68,7 +68,10 @@ class DataProfileListBuilder extends ConfigEntityListBuilder {
     $config = $this->configFactory->get('dgi_actions.data_profile.' . $entity->id());
     $row['entity'] = ($config->get('entity')) ?: '';
     $row['bundle'] = ($config->get('bundle')) ?: '';
-    $row['dataprofile'] = ($config->get('dataprofile')) ?: '';
+    if ($config->get('dataprofile')) {
+      $data_profile_type = $this->configFactory->get($config->get('dataprofile'))->get('label');
+    }
+    $row['dataprofile'] = ($data_profile_type) ?: '';
 
     return $row + parent::buildRow($entity);
   }
