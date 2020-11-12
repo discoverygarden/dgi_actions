@@ -261,11 +261,11 @@ class DataProfileForm extends EntityForm {
         $field_key = str_replace('.', '_', $field['key']);
         $form['bundle_fieldset_container']['dataprofile_fieldset_container']['dataprofile_fieldset']['dataprofile_fields_fieldset_container']['dataprofile_fields_fieldset'][$field_key] = [
           '#type' => 'select',
-          '#title' => $this->t($field['label']),
+          '#title' => $field['label'],
           '#empty_option' => $this->t('- None -'),
           '#default_value' => ($config->get('data')[$field_key]) ?: $this->t('- None -'),
           '#options' => ($selected_entity && $selected_bundle) ? $entity_bundle_fields[$selected_entity][$selected_bundle] : [],
-          '#description' => $this->t($field['description']),
+          '#description' => $field['description'],
         ];
       }
     }

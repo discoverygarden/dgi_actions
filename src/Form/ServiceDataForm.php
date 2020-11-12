@@ -148,9 +148,9 @@ class ServiceDataForm extends EntityForm {
       foreach ($fields as $field) {
         $fieldset[$field['id']] = [
           '#type' => 'textfield',
-          '#title' => $this->t($field['label']),
+          '#title' => $field['label'],
           '#maxlength' => 255,
-          '#description' => $this->t($field['description']),
+          '#description' => $field['description'],
           '#required' => TRUE,
         ];
 
