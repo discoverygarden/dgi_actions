@@ -51,10 +51,9 @@ class ServiceDataListBuilder extends ConfigEntityListBuilder {
    * {@inheritdoc}
    */
   public function buildHeader() {
-    $header['label'] = $this->t('Identifier');
+    $header['label'] = $this->t('Service Data ID');
     $header['id'] = $this->t('Machine name');
-    $header['field'] = $this->t('Field');
-    $header['description'] = $this->t('Description');
+    $header['service_data_type'] = $this->t('Service Data Type');
     return $header + parent::buildHeader();
   }
 
@@ -64,9 +63,9 @@ class ServiceDataListBuilder extends ConfigEntityListBuilder {
   public function buildRow(EntityInterface $entity) {
     $row['label'] = $entity->label();
     $row['id'] = $entity->id();
-    $config = $this->configFactory->get('dgi_actions.identifier.' . $entity->id());
-    $row['description'] = ($config->get('description')) ? $config->get('description') : '';
-    $row['field'] = ($config->get('field')) ? $config->get('field') : '';
+    $config = $this->configFactory->get('dgi_actions.service_data.' . $entity->id());
+    $service_data_type = $this->configFactory->get($entity->get('service_data_type'));
+    $row['service_data_type'] = $service_data_type->get('label');
 
     return $row + parent::buildRow($entity);
   }

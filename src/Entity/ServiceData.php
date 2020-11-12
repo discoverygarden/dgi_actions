@@ -33,8 +33,8 @@ use Drupal\Core\Entity\EntityTypeInterface;
  *   },
  *   links = {
  *     "add-form" = "/admin/config/dgi_actions/service_data/add",
- *     "edit-form" = "/admin/config/dgi_actions/service_data/{servicedatas_servicedata}/edit",
- *     "delete-form" = "/admin/config/dgi_actions/service_data/{servicedatas_servicedata}/delete",
+ *     "edit-form" = "/admin/config/dgi_actions/service_data/{dgiactions_servicedata}/edit",
+ *     "delete-form" = "/admin/config/dgi_actions/service_data/{dgiactions_servicedata}/delete",
  *     "collection" = "/admin/config/dgi_actions/service_data"
  *   },
  *   config_export = {

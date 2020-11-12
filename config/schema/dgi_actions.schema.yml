@@ -20,17 +20,11 @@ dgi_actions.identifier.*:
       type: string
       label: 'Identifier Object Field'
     service_data:
-      type: mapping
+      type: string
       label: 'Service Data'
-      mapping:
-        id:
-          type: string
     data_profile:
-      type: mapping
+      type: string
       label: 'Data Profile'
-      mapping:
-        id:
-          type: string
 
 dgi_actions.data_profile.*:
   type: config_entity
@@ -96,6 +90,8 @@ dgi_actions.service_data_type.*:
     label:
       type: string
     id:
+      type: string
+    service_data_type:
       type: string
     data:
       type: sequence

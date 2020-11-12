@@ -3,6 +3,9 @@
 namespace Drupal\dgi_actions\Form;
 
 use Drupal\Core\Entity\EntityForm;
+use Drupal\Core\Entity\EntityFieldManager;
+use Drupal\Core\Entity\EntityTypeBundleInfo;
+use Drupal\Core\Config\ConfigFactory;
 use Drupal\Core\Extension\ThemeHandlerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Site\Settings;
@@ -31,6 +34,27 @@ class DataProfileForm extends EntityForm {
   protected $themeHandler;
 
   /**
+   * The Drupal Config Factory.
+   *
+   * @var \Drupal\Core\Config\ConfigFactory
+   */
+  protected $configFactory;
+
+  /**
+   * The Drupal Entity Field Manager.
+   *
+   * @var \Drupal\Core\Entity\EntityFieldManager
+   */
+  protected $entityFieldManager;
+
+  /**
+   * The Drupal Entity Type Bundle Info.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeBundleInfo
+   */
+  protected $entityTypeBundleInfo;
+
+  /**
    * Constructs a new class instance.
    *
    * @param \Drupal\Core\State\StateInterface $state
@@ -38,9 +62,12 @@ class DataProfileForm extends EntityForm {
    * @param \Drupal\Core\Extension\ThemeHandlerInterface $themeHandler
    *   The theme handler.
    */
-  public function __construct(StateInterface $state, ThemeHandlerInterface $themeHandler) {
+  public function __construct(StateInterface $state, ThemeHandlerInterface $themeHandler, ConfigFactory $configFactory, EntityFieldManager $entityFieldManager, EntityTypeBundleInfo $entityTypeBundleInfo) {
     $this->state = $state;
     $this->themeHandler = $themeHandler;
+    $this->configFactory = $configFactory;
+    $this->entityFieldManager = $entityFieldManager;
+    $this->entityTypeBundleInfo = $entityTypeBundleInfo;
   }
 
   /**
@@ -49,7 +76,10 @@ class DataProfileForm extends EntityForm {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('state'),
-      $container->get('theme_handler')
+      $container->get('theme_handler'),
+      $container->get('config.factory'),
+      $container->get('entity_field.manager'),
+      $container->get('entity_type.bundle.info')
     );
   }
 
@@ -62,15 +92,15 @@ class DataProfileForm extends EntityForm {
     /** @var \Drupal\dgi_actions\Entity\DataProfileInterface $config */
     $config = $this->entity;
 
-    $data_profile_array = static::dataprofileLists();
+    $data_profile_array = self::dataprofileLists();
     $data_profile_configs = $data_profile_array['data_profile_configs'];
     $data_profile_options = $data_profile_array['data_profile_options'];
 
-    $entity_array = static::entityDropdownList();
+    $entity_array = self::entityDropdownList();
     $entity_bundles = $entity_array['entity_bundles'];
     $entity_options = $entity_array['entity_options'];
 
-    $entity_bundle_array = static::bundleDropdownList($entity_bundles);
+    $entity_bundle_array = self::bundleDropdownList($entity_bundles);
     $entity_bundle_fields = $entity_bundle_array['entity_bundle_fields'];
     $bundle_options = $entity_bundle_array['bundle_options'];
 
@@ -282,14 +312,12 @@ class DataProfileForm extends EntityForm {
    * @return array
    *   Returns available Data Profile configs and options.
    */
-  public static function dataprofileLists() {
-    // Data Profile Types - Start
-    $config_factory = \Drupal::service('config.factory');
-    $list = $config_factory->listAll('dgi_actions.data_profile_type');
+  public function dataprofileLists() {
+    $list = $this->configFactory->listAll('dgi_actions.data_profile_type');
 
     $returns = [];
     foreach($list as $config_id) {
-      $config = $config_factory->get($config_id);
+      $config = $this->configFactory->get($config_id);
       $returns['data_profile_configs'][$config_id] = $config;
       $returns['data_profile_options'][$config->getName()] = $config->get('label');
     }
@@ -303,15 +331,13 @@ class DataProfileForm extends EntityForm {
    * @return array
    *   Returns Entity bundles and options.
    */
-  public static function entityDropdownList() {
-    $entityFieldManager = \Drupal::service('entity_field.manager');
-    $field_map = $entityFieldManager->getFieldMap();
-    $bundle_info = \Drupal::service('entity_type.bundle.info');
+  public function entityDropdownList() {
+    $field_map = $this->entityFieldManager->getFieldMap();
 
     // Building Entity Bundle List and Options.
     $returns = [];
     foreach (array_keys($field_map) as $entity_key) {
-      $returns['entity_bundles'][$entity_key] = $bundle_info->getBundleInfo($entity_key);
+      $returns['entity_bundles'][$entity_key] = $this->entityTypeBundleInfo->getBundleInfo($entity_key);
       $returns['entity_options'][$entity_key] = $entity_key;
     }
 
@@ -324,13 +350,11 @@ class DataProfileForm extends EntityForm {
    * @return array
    *   Returns bundle fields and options.
    */
-  public static function bundleDropdownList($entity_bundles = []) {
-    $entityFieldManager = \Drupal::service('entity_field.manager');
-
+  public function bundleDropdownList($entity_bundles = []) {
     $returns = [];
     foreach ($entity_bundles as $entity => $bundles) {
       foreach ($bundles as $bundle => $bundle_data) {
-        $fields = $entityFieldManager->getFieldDefinitions($entity, $bundle);
+        $fields = $this->entityFieldManager->getFieldDefinitions($entity, $bundle);
         $returns['entity_bundle_fields'][$entity][$bundle] = array_combine(array_keys($fields), array_keys($fields));
         $returns['bundle_options'][$entity][$bundle] = $bundle_data['label'];
       }
@@ -368,7 +392,7 @@ class DataProfileForm extends EntityForm {
    *    The FormState entity.
    */
   public function setDataprofileDataFields($form_state) {
-    $data_profile_data = static::dataprofileLists();
+    $data_profile_data = self::dataprofileLists();
     $config =& $this->entity;
 
     $fields = $data_profile_data['data_profile_configs'][$config->getDataprofile()]->get('fields');

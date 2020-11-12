@@ -121,7 +121,8 @@ class MintArkIdentifier extends MintIdentifier {
     );
 
     $output = $this->ezidParser->buildEzidRequestBody($data);
-
+    dsm($data, 'Data');
+    dsm($output, 'Output');
     return $output;
   }
 
@@ -162,7 +163,7 @@ class MintArkIdentifier extends MintIdentifier {
   protected function getRequestParams() {
     $fieldData = $this->getFieldData();
     $requestBody = $this->buildRequestBody($fieldData);
-    $creds = $this->state->get('dgi_actions_' . $this->serviceDataConfig->get('id'));
+    $creds = $this->state->get($this->serviceDataConfig->get('state_key'));
 
     $requestParams = [
       'auth' => [

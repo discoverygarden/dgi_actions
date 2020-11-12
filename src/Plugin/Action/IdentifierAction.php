@@ -281,8 +281,8 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
   public function setConfigs() {
     $this->identifierConfig = $this->configFactory->get($this->configuration['identifier_type']);
     if (!empty($this->identifierConfig->get())) {
-      $this->serviceDataConfig = $this->configFactory->get('dgi_actions.service_data.' . $this->identifierConfig->get('service_data.id'));
-      $this->dataProfileConfig = $this->configFactory->get('dgi_actions.data_profile.' . $this->identifierConfig->get('data_profile.id'));
+      $this->serviceDataConfig = $this->configFactory->get($this->identifierConfig->get('service_data'));
+      $this->dataProfileConfig = $this->configFactory->get($this->identifierConfig->get('data_profile'));
     }
   }
 

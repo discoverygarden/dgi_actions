@@ -3,6 +3,7 @@
 namespace Drupal\dgi_actions\Form;
 
 use Drupal\Core\Entity\EntityForm;
+use Drupal\Core\Config\ConfigFactory;
 use Drupal\Core\Extension\ThemeHandlerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Site\Settings;
@@ -31,6 +32,13 @@ class ServiceDataForm extends EntityForm {
   protected $themeHandler;
 
   /**
+   * The drupal config factory.
+   *
+   * @var \Drupal\Core\Config\ConfigFactory
+   */
+  protected $configFactory;
+
+  /**
    * Constructs a new class instance.
    *
    * @param \Drupal\Core\State\StateInterface $state
@@ -38,9 +46,10 @@ class ServiceDataForm extends EntityForm {
    * @param \Drupal\Core\Extension\ThemeHandlerInterface $themeHandler
    *   The theme handler.
    */
-  public function __construct(StateInterface $state, ThemeHandlerInterface $themeHandler) {
+  public function __construct(StateInterface $state, ThemeHandlerInterface $themeHandler, ConfigFactory $configFactory) {
     $this->state = $state;
     $this->themeHandler = $themeHandler;
+    $this->configFactory = $configFactory;
   }
 
   /**
@@ -49,7 +58,8 @@ class ServiceDataForm extends EntityForm {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('state'),
-      $container->get('theme_handler')
+      $container->get('theme_handler'),
+      $container->get('config.factory')
     );
   }
 
@@ -59,7 +69,7 @@ class ServiceDataForm extends EntityForm {
   public function form(array $form, FormStateInterface $form_state) {
     $form = parent::form($form, $form_state);
 
-    $servicedata = static::servicedataLists();
+    $servicedata = self::servicedataLists();
     $servicedata_configs =& $servicedata['servicedata_configs'];
     $servicedata_options =& $servicedata['servicedata_options'];
 
@@ -182,13 +192,11 @@ class ServiceDataForm extends EntityForm {
    * @return array
    *   Returns Service Data configs and options lists.
    */
-  public static function servicedataLists() {
-    // Data Profile Types - Start
-    $config_factory = \Drupal::service('config.factory');
-    $list = $config_factory->listAll('dgi_actions.service_data_type');
+  public function servicedataLists() {
+    $list = $this->configFactory->listAll('dgi_actions.service_data_type');
     $returns = [];
     foreach($list as $config_id) {
-      $config = $config_factory->get($config_id);
+      $config = $this->configFactory->get($config_id);
       $returns['servicedata_configs'][$config_id] = $config;
       $returns['servicedata_options'][$config->getName()] = $config->get('label');
     }
@@ -224,7 +232,7 @@ class ServiceDataForm extends EntityForm {
    *    The FormState entity.
    */
   public function setServiceData($form_state) {
-    $service_data = static::servicedataLists();
+    $service_data = $this->servicedataLists();
     $config =& $this->entity;
 
     $fields = $service_data['servicedata_configs'][$config->getServiceDataType()]->get('data');
@@ -244,6 +252,7 @@ class ServiceDataForm extends EntityForm {
     if ($form_state->getValue('password')) {
       $state_key = 'dgi_actions.service_data.' . $config->id();
       $this->state->set($state_key, $creds);
+      $data['state_key'] = $state_key;
     }
 
     // Clearing the data in case there was a different
@@ -278,22 +287,22 @@ class ServiceDataForm extends EntityForm {
    * {@inheritdoc}
    */
   public function save(array $form, FormStateInterface $form_state) {
-    $identifier = $this->entity;
-    $status = $identifier->save();
+    $service_data = $this->entity;
+    $status = $service_data->save();
 
     switch ($status) {
       case SAVED_NEW:
         $this->messenger()->addStatus($this->t('Created the %label Identifier setting.', [
-          '%label' => $identifier->label(),
+          '%label' => $service_data->label(),
         ]));
         break;
 
       default:
         $this->messenger()->addStatus($this->t('Saved the %label Identifier setting.', [
-          '%label' => $identifier->label(),
+          '%label' => $service_data->label(),
         ]));
     }
-    $form_state->setRedirectUrl($identifier->toUrl('collection'));
+    $form_state->setRedirectUrl($service_data->toUrl('collection'));
   }
 
 }

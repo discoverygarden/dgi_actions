@@ -3,6 +3,8 @@
 namespace Drupal\dgi_actions\Form;
 
 use Drupal\Core\Entity\EntityForm;
+use Drupal\Core\Entity\EntityFieldManager;
+use Drupal\Core\Config\ConfigFactory;
 use Drupal\Core\Extension\ThemeHandlerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Site\Settings;
@@ -31,6 +33,20 @@ class IdentifierForm extends EntityForm {
   protected $themeHandler;
 
   /**
+   * The drupal config factory.
+   *
+   * @var \Drupal\Core\Config\ConfigFactory
+   */
+  protected $configFactory;
+
+  /**
+   * The drupal Entity Field Manager.
+   *
+   * @var \Drupal\Core\Entity\EntityFieldManager
+   */
+  protected $entityFieldManager;
+
+  /**
    * Constructs a new class instance.
    *
    * @param \Drupal\Core\State\StateInterface $state
@@ -38,9 +54,11 @@ class IdentifierForm extends EntityForm {
    * @param \Drupal\Core\Extension\ThemeHandlerInterface $themeHandler
    *   The theme handler.
    */
-  public function __construct(StateInterface $state, ThemeHandlerInterface $themeHandler) {
+  public function __construct(StateInterface $state, ThemeHandlerInterface $themeHandler, ConfigFactory $configFactory, EntityFieldManager $entityFieldManager) {
     $this->state = $state;
     $this->themeHandler = $themeHandler;
+    $this->configFactory = $configFactory;
+    $this->entityFieldManager = $entityFieldManager;
   }
 
   /**
@@ -49,7 +67,9 @@ class IdentifierForm extends EntityForm {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('state'),
-      $container->get('theme_handler')
+      $container->get('theme_handler'),
+      $container->get('config.factory'),
+      $container->get('entity_field.manager')
     );
   }
 
@@ -58,8 +78,7 @@ class IdentifierForm extends EntityForm {
    */
   public function form(array $form, FormStateInterface $form_state) {
     $form = parent::form($form, $form_state);
-    $field_map = \Drupal::entityManager()->getfieldMap();
-    $config_factory = \Drupal::service('config.factory');
+    $field_map = $this->entityFieldManager->getfieldMap();
     $config = $this->entity;
 
     $options_map = [];
@@ -74,8 +93,8 @@ class IdentifierForm extends EntityForm {
       }
     }
 
-    $data_profile_list = $config_factory->listAll('dgi_actions.data_profile.');
-    $service_data_list = $config_factory->listAll('dgi_actions.service_data.');
+    $data_profile_list = $this->configFactory->listAll('dgi_actions.data_profile.');
+    $service_data_list = $this->configFactory->listAll('dgi_actions.service_data.');
 
     $data_profile_options = self::listOptionsBuilder($data_profile_list);
     $service_data_options = self::listOptionsBuilder($service_data_list);
@@ -135,11 +154,9 @@ class IdentifierForm extends EntityForm {
    *   An key value list of options.
    */
   protected function listOptionsBuilder(array $configs) {
-    $config_factory = \Drupal::service('config.factory');
-
     $options = [];
     foreach ($configs as $config_id) {
-      $config = $config_factory->get($config_id);
+      $config = $this->configFactory->get($config_id);
       $options[$config_id] = $config->get('label');
     }
 
