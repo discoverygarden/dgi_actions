@@ -3,7 +3,6 @@
 namespace Drupal\dgi_actions\Entity;
 
 use Drupal\Core\Config\Entity\ConfigEntityBase;
-use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 
 /**
@@ -87,7 +86,7 @@ class Identifier extends ConfigEntityBase implements IdentifierInterface {
    * Gets the Description value.
    *
    * @return string|null
-   *  Returns the description variable.
+   *   Returns the description variable.
    */
   public function getDescription() {
     return $this->description;

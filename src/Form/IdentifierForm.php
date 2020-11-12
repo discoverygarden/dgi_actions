@@ -7,7 +7,6 @@ use Drupal\Core\Entity\EntityFieldManager;
 use Drupal\Core\Config\ConfigFactory;
 use Drupal\Core\Extension\ThemeHandlerInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Site\Settings;
 use Drupal\Core\State\StateInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -53,6 +52,10 @@ class IdentifierForm extends EntityForm {
    *   The drupal state.
    * @param \Drupal\Core\Extension\ThemeHandlerInterface $themeHandler
    *   The theme handler.
+   * @param \Drupal\Core\Config\ConfigFactory $configFactory
+   *   The drupal core config factory.
+   * @param \Drupal\Core\Entity\EntityFieldManager $entityFieldManager
+   *   The drupal core entity field manager.
    */
   public function __construct(StateInterface $state, ThemeHandlerInterface $themeHandler, ConfigFactory $configFactory, EntityFieldManager $entityFieldManager) {
     $this->state = $state;
@@ -161,20 +164,6 @@ class IdentifierForm extends EntityForm {
     }
 
     return $options;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
-    parent::validateForm($form, $form_state);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function submitForm(array &$form, FormStateInterface $form_state) {
-    parent::submitForm($form, $form_state);
   }
 
   /**

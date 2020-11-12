@@ -6,7 +6,6 @@ use Drupal\Core\Entity\EntityForm;
 use Drupal\Core\Config\ConfigFactory;
 use Drupal\Core\Extension\ThemeHandlerInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Site\Settings;
 use Drupal\Core\State\StateInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -45,6 +44,8 @@ class ServiceDataForm extends EntityForm {
    *   The drupal state.
    * @param \Drupal\Core\Extension\ThemeHandlerInterface $themeHandler
    *   The theme handler.
+   * @param \Drupal\Core\Config\ConfigFactory $configFactory
+   *   The drupal core config factory.
    */
   public function __construct(StateInterface $state, ThemeHandlerInterface $themeHandler, ConfigFactory $configFactory) {
     $this->state = $state;
@@ -162,7 +163,7 @@ class ServiceDataForm extends EntityForm {
             unset($password_element['#required']);
           }
         }
-        else if (isset($state_creds[$field['id']])) {
+        elseif (isset($state_creds[$field['id']])) {
           $fieldset[$field['id']]['#default_value'] = $state_creds[$field['id']];
         }
         else {
@@ -195,19 +196,12 @@ class ServiceDataForm extends EntityForm {
   public function servicedataLists() {
     $list = $this->configFactory->listAll('dgi_actions.service_data_type');
     $returns = [];
-    foreach($list as $config_id) {
+    foreach ($list as $config_id) {
       $config = $this->configFactory->get($config_id);
       $returns['servicedata_configs'][$config_id] = $config;
       $returns['servicedata_options'][$config->getName()] = $config->get('label');
     }
     return $returns;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
-    parent::validateForm($form, $form_state);
   }
 
   /**
@@ -228,10 +222,10 @@ class ServiceDataForm extends EntityForm {
   /**
    * A helper function to set the Service Data data.
    *
-   * @param FormStateInterface $form_state
-   *    The FormState entity.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The FormState entity.
    */
-  public function setServiceData($form_state) {
+  public function setServiceData(FormStateInterface $form_state) {
     $service_data = $this->servicedataLists();
     $config =& $this->entity;
 

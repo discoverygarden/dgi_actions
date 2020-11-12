@@ -63,19 +63,10 @@ class ServiceDataListBuilder extends ConfigEntityListBuilder {
   public function buildRow(EntityInterface $entity) {
     $row['label'] = $entity->label();
     $row['id'] = $entity->id();
-    $config = $this->configFactory->get('dgi_actions.service_data.' . $entity->id());
     $service_data_type = $this->configFactory->get($entity->get('service_data_type'));
     $row['service_data_type'] = $service_data_type->get('label');
 
     return $row + parent::buildRow($entity);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getDefaultOperations(EntityInterface $entity) {
-    /** @var \Drupal\Core\Config\Entity\ConfigEntityInterface $entity */
-    return parent::getDefaultOperations($entity);
   }
 
 }

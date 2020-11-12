@@ -8,7 +8,6 @@ use Drupal\Core\Entity\EntityTypeBundleInfo;
 use Drupal\Core\Config\ConfigFactory;
 use Drupal\Core\Extension\ThemeHandlerInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Site\Settings;
 use Drupal\Core\State\StateInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -61,6 +60,12 @@ class DataProfileForm extends EntityForm {
    *   The drupal state.
    * @param \Drupal\Core\Extension\ThemeHandlerInterface $themeHandler
    *   The theme handler.
+   * @param \Drupal\Core\Config\ConfigFactory $configFactory
+   *   The drupal config factory.
+   * @param \Drupal\Core\Entity\EntityFieldManager $entityFieldManager
+   *   The drupal core entity field manager.
+   * @param \Drupal\Core\Entity\EntityTypeBundleInfo $entityTypeBundleInfo
+   *   The drupal core entity type bundle info.
    */
   public function __construct(StateInterface $state, ThemeHandlerInterface $themeHandler, ConfigFactory $configFactory, EntityFieldManager $entityFieldManager, EntityTypeBundleInfo $entityTypeBundleInfo) {
     $this->state = $state;
@@ -133,7 +138,7 @@ class DataProfileForm extends EntityForm {
       $selected_bundle = (string) ($bundle_value && isset($bundle_options[$selected_entity][$bundle_value])) ? $bundle_value : '';
     }
 
-    // Check if the previous/currently set DataProfile value is a valid selection
+    // Check if the previous/currently set value is a valid selection
     // If not, unset and make the user re-select.
     if (empty($form_state->getValue('dataprofile'))) {
       if ($config->getDataprofile()) {
@@ -276,7 +281,6 @@ class DataProfileForm extends EntityForm {
     if (!$selected_bundle) {
       // Change the field title to provide user with some feedback on why the
       // field is disabled.
-      //$selected_bundle = $form_state->getValue('bundle');
       $form['bundle_fieldset_container']['dataprofile_fieldset_container']['dataprofile_fieldset']['dataprofile']['#title'] = $this->t('You must choose a Bundle first.');
       $form['bundle_fieldset_container']['dataprofile_fieldset_container']['dataprofile_fieldset']['dataprofile']['#disabled'] = TRUE;
       $form['bundle_fieldset_container']['dataprofile_fieldset_container']['dataprofile_fieldset']['choose_dataprofile']['#disabled'] = TRUE;
@@ -316,7 +320,7 @@ class DataProfileForm extends EntityForm {
     $list = $this->configFactory->listAll('dgi_actions.data_profile_type');
 
     $returns = [];
-    foreach($list as $config_id) {
+    foreach ($list as $config_id) {
       $config = $this->configFactory->get($config_id);
       $returns['data_profile_configs'][$config_id] = $config;
       $returns['data_profile_options'][$config->getName()] = $config->get('label');
@@ -366,13 +370,6 @@ class DataProfileForm extends EntityForm {
   /**
    * {@inheritdoc}
    */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
-    parent::validateForm($form, $form_state);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     parent::submitForm($form, $form_state);
 
@@ -388,10 +385,10 @@ class DataProfileForm extends EntityForm {
   /**
    * A helper function to set the Data Profile fields.
    *
-   * @param FormStateInterface $form_state
-   *    The FormState entity.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The FormState entity.
    */
-  public function setDataprofileDataFields($form_state) {
+  public function setDataprofileDataFields(FormStateInterface $form_state) {
     $data_profile_data = self::dataprofileLists();
     $config =& $this->entity;
 

@@ -121,8 +121,7 @@ class MintArkIdentifier extends MintIdentifier {
     );
 
     $output = $this->ezidParser->buildEzidRequestBody($data);
-    dsm($data, 'Data');
-    dsm($output, 'Output');
+
     return $output;
   }
 

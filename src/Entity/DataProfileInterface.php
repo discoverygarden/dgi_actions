@@ -9,39 +9,44 @@ use Drupal\Core\Config\Entity\ConfigEntityInterface;
  */
 interface DataProfileInterface extends ConfigEntityInterface {
 
-    /**
-     * Gets the set Entity type.
-     *
-     * @return string
-     */
-    public function getEntity();
+  /**
+   * Gets the set Entity type.
+   *
+   * @return string
+   *   Returns entity type.
+   */
+  public function getEntity();
 
-    /**
-     * Gets the set Bundle type.
-     *
-     * @return string
-     */
-    public function getBundle();
+  /**
+   * Gets the set Bundle type.
+   *
+   * @return string
+   *   Returns bundle type.
+   */
+  public function getBundle();
 
-    /**
-     * Gets the set Data Profile Type.
-     *
-     * @return string
-     */
-    public function getDataprofile();
+  /**
+   * Gets the set Data Profile Type.
+   *
+   * @return string
+   *   Returns data profile type id.
+   */
+  public function getDataprofile();
 
-    /**
-     * Gets the set Data.
-     *
-     * @return array
-     */
-    public function getData();
+  /**
+   * Gets the set Data.
+   *
+   * @return array
+   *   Returns data array.
+   */
+  public function getData();
 
-    /**
-     * Sets the set Data.
-     *
-     * @param array
-     */
-    public function setData(array $data);
+  /**
+   * Sets the set Data.
+   *
+   * @param array $data
+   *   Data array to be written to the config.
+   */
+  public function setData(array $data);
 
 }
