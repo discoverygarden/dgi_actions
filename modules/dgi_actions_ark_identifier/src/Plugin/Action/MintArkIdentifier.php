@@ -151,7 +151,7 @@ class MintArkIdentifier extends MintIdentifier {
    * {@inheritdoc}
    */
   protected function getUri() {
-    $uri = $this->serviceDataConfig->get('data.host') . '/shoulder/' . $this->serviceDataConfig->get('data.shoulder');
+    $uri = $this->serviceDataConfig->get('data.host') . '/shoulder/' . $this->serviceDataConfig->get('data.namespace');
 
     return $uri;
   }
@@ -162,7 +162,7 @@ class MintArkIdentifier extends MintIdentifier {
   protected function getRequestParams() {
     $fieldData = $this->getFieldData();
     $requestBody = $this->buildRequestBody($fieldData);
-    $creds = $this->state->get($this->serviceDataConfig->get('state_key'));
+    $creds = $this->state->get($this->serviceDataConfig->get('data.state_key'));
 
     $requestParams = [
       'auth' => [
