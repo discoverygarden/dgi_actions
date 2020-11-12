@@ -116,7 +116,7 @@ class DeleteArkIdentifier extends DeleteIdentifier {
    * {@inheritdoc}
    */
   protected function getRequestParams() {
-    $creds = $this->state->get('dgi_actions_' . $this->serviceDataConfig->get('id'));
+    $creds = $this->state->get($this->serviceDataConfig->get('data.state_key'));
     $requestParams = [
       'auth' => [
         $creds['username'],
