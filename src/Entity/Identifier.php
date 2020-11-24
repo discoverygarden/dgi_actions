@@ -24,7 +24,7 @@ use Drupal\Core\Entity\EntityTypeInterface;
  *     },
  *   },
  *   config_prefix = "identifier",
- *   admin_permission = "administer configuration split",
+ *   admin_permission = "administer dgi_actions",
  *   entity_keys = {
  *     "id" = "id",
  *     "label" = "label",
@@ -39,6 +39,8 @@ use Drupal\Core\Entity\EntityTypeInterface;
  *   config_export = {
  *     "id",
  *     "label",
+ *     "entity",
+ *     "bundle",
  *     "field",
  *     "service_data",
  *     "data_profile",
@@ -60,6 +62,20 @@ class Identifier extends ConfigEntityBase implements IdentifierInterface {
    * @var string
    */
   protected $label;
+
+  /**
+   * The Identifier setting Entity.
+   *
+   * @var string
+   */
+  protected $entity;
+
+  /**
+   * The Identifier setting Bundle.
+   *
+   * @var string
+   */
+  protected $bundle;
 
   /**
    * The Identifier setting field.
@@ -90,6 +106,27 @@ class Identifier extends ConfigEntityBase implements IdentifierInterface {
    */
   public function getDescription() {
     return $this->description;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getEntity() {
+    return $this->entity;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getBundle() {
+    return $this->bundle;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getField() {
+    return $this->field;
   }
 
   /**

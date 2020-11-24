@@ -4,6 +4,7 @@ namespace Drupal\dgi_actions\Form;
 
 use Drupal\Core\Entity\EntityForm;
 use Drupal\Core\Entity\EntityFieldManager;
+use Drupal\Core\Entity\EntityTypeBundleInfo;
 use Drupal\Core\Config\ConfigFactory;
 use Drupal\Core\Extension\ThemeHandlerInterface;
 use Drupal\Core\Form\FormStateInterface;
@@ -46,6 +47,13 @@ class IdentifierForm extends EntityForm {
   protected $entityFieldManager;
 
   /**
+   * The Drupal Entity Type Bundle Info.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeBundleInfo
+   */
+  protected $entityTypeBundleInfo;
+
+  /**
    * Constructs a new class instance.
    *
    * @param \Drupal\Core\State\StateInterface $state
@@ -56,12 +64,15 @@ class IdentifierForm extends EntityForm {
    *   The drupal core config factory.
    * @param \Drupal\Core\Entity\EntityFieldManager $entityFieldManager
    *   The drupal core entity field manager.
+   * @param \Drupal\Core\Entity\EntityTypeBundleInfo $entityTypeBundleInfo
+   *   The drupal core entity type bundle info.
    */
-  public function __construct(StateInterface $state, ThemeHandlerInterface $themeHandler, ConfigFactory $configFactory, EntityFieldManager $entityFieldManager) {
+  public function __construct(StateInterface $state, ThemeHandlerInterface $themeHandler, ConfigFactory $configFactory, EntityFieldManager $entityFieldManager, EntityTypeBundleInfo $entityTypeBundleInfo) {
     $this->state = $state;
     $this->themeHandler = $themeHandler;
     $this->configFactory = $configFactory;
     $this->entityFieldManager = $entityFieldManager;
+    $this->entityTypeBundleInfo = $entityTypeBundleInfo;
   }
 
   /**
@@ -72,7 +83,8 @@ class IdentifierForm extends EntityForm {
       $container->get('state'),
       $container->get('theme_handler'),
       $container->get('config.factory'),
-      $container->get('entity_field.manager')
+      $container->get('entity_field.manager'),
+      $container->get('entity_type.bundle.info')
     );
   }
 
@@ -81,20 +93,9 @@ class IdentifierForm extends EntityForm {
    */
   public function form(array $form, FormStateInterface $form_state) {
     $form = parent::form($form, $form_state);
-    $field_map = $this->entityFieldManager->getfieldMap();
+
+    /** @var \Drupal\dgi_actions\Entity\IdentifierInterface $config */
     $config = $this->entity;
-
-    $options_map = [];
-    foreach (array_keys($field_map) as $entity_type) {
-      $options_map = array_merge($options_map, $field_map[$entity_type]);
-    }
-
-    $pruned_options = [];
-    foreach ($options_map as $key => $value) {
-      if (strpos($key, 'field_') === 0) {
-        $pruned_options[$key] = $key;
-      }
-    }
 
     $data_profile_list = $this->configFactory->listAll('dgi_actions.data_profile.');
     $service_data_list = $this->configFactory->listAll('dgi_actions.service_data.');
@@ -102,7 +103,57 @@ class IdentifierForm extends EntityForm {
     $data_profile_options = self::listOptionsBuilder($data_profile_list);
     $service_data_options = self::listOptionsBuilder($service_data_list);
 
-    /** @var \Drupal\dgi_actions\Entity\IdentifierInterface $config */
+    $entity_array = self::entityDropdownList();
+    $entity_bundles = $entity_array['entity_bundles'];
+    $entity_options = $entity_array['entity_options'];
+
+    $entity_bundle_array = self::bundleDropdownList($entity_bundles);
+    $entity_bundle_fields = $entity_bundle_array['entity_bundle_fields'];
+    $bundle_options = $entity_bundle_array['bundle_options'];
+
+    // Check if the previous/currently set Entity value is a valid selection
+    // If not, unset and make the user re-select.
+    if (empty($form_state->getValue('entity'))) {
+      if ($config->getEntity()) {
+        $selected_entity = $config->getEntity();
+      }
+      else {
+        $selected_entity = '';
+      }
+    }
+    else {
+      $selected_entity = $form_state->getValue('entity');
+    }
+
+    // Check if the previous/currently set Bundle value is a valid selection
+    // If not, unset and make the user re-select.
+    if (empty($form_state->getValue('bundle'))) {
+      if ($config->getBundle()) {
+        $selected_bundle = $config->getBundle();
+      }
+      else {
+        $selected_bundle = '';
+      }
+    }
+    else {
+      $bundle_value = (string) $form_state->getValue('bundle');
+      $selected_bundle = (string) ($bundle_value && isset($bundle_options[$selected_entity][$bundle_value])) ? $bundle_value : '';
+    }
+
+    // Check if the previous/currently set value is a valid selection
+    // If not, unset and make the user re-select.
+    if (empty($form_state->getValue('field'))) {
+      if ($config->getField()) {
+        $selected_field = $config->getField();
+      }
+      else {
+        $selected_field = '';
+      }
+    }
+    else {
+      $selected_field = (string) $form_state->getValue('field');
+    }
+
     $form['label'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Label'),
@@ -118,12 +169,87 @@ class IdentifierForm extends EntityForm {
         'exists' => '\Drupal\dgi_actions\Entity\Identifier::load',
       ],
     ];
-    $form['field'] = [
+
+    // Entity Fieldset.
+    $form['entity_fieldset'] = [
+      '#type' => 'fieldset',
+      '#title' => $this->t('Entity Selection'),
+    ];
+
+    // Entity Fieldset Reference.
+    $entity_fieldset =& $form['entity_fieldset'];
+    $entity_fieldset['entity'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Entity'),
+      '#empty_option' => $this->t('- None -'),
+      '#default_value' => ($selected_entity) ?: $this->t('- None -'),
+      '#options' => $entity_options,
+      '#description' => $this->t('The entity type that the Identifier will be minted.'),
+      '#required' => TRUE,
+      '#ajax' => [
+        'callback' => '::entityDropdownCallback',
+        'wrapper' => 'bundle-fieldset-container',
+      ],
+    ];
+    $entity_fieldset['choose_entity'] = [
+      '#type' => 'submit',
+      '#value' => $this->t('Choose Entity'),
+      '#states' => [
+        'visible' => ['body' => ['value' => TRUE]],
+      ],
+    ];
+
+    // Bundle Fieldset.
+    $entity_fieldset['bundle_fieldset_container'] = [
+      '#type' => 'container',
+      '#attributes' => ['id' => 'bundle-fieldset-container'],
+    ];
+    $entity_fieldset['bundle_fieldset_container']['bundle_fieldset'] = [
+      '#type' => 'fieldset',
+      '#title' => $this->t('Bundle Selection'),
+    ];
+
+    // Bundle Fieldset Reference.
+    $bundle_fieldset =& $entity_fieldset['bundle_fieldset_container']['bundle_fieldset'];
+    $bundle_fieldset['bundle'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Bundle'),
+      '#empty_option' => $this->t('- None -'),
+      '#default_value' => ($selected_bundle) ?: $this->t('- None -'),
+      '#options' => (isset($bundle_options[$selected_entity])) ? $bundle_options[$selected_entity] : [],
+      '#description' => $this->t('The Bundle of the selected Entity Type.'),
+      '#required' => TRUE,
+      '#ajax' => [
+        'callback' => '::bundleDropdownCallback',
+        'wrapper' => 'fields-fieldset-container',
+      ],
+    ];
+    $bundle_fieldset['choose_bundle'] = [
+      '#type' => 'submit',
+      '#value' => $this->t('Choose Bundle'),
+      '#states' => [
+        'visible' => [':input[name="bundle"]' => ['value' => TRUE]],
+      ],
+    ];
+
+    // Fields Fieldset.
+    $bundle_fieldset['fields_fieldset_container'] = [
+      '#type' => 'container',
+      '#attributes' => ['id' => 'fields-fieldset-container'],
+    ];
+    $bundle_fieldset['fields_fieldset_container']['fields_fieldset'] = [
+      '#type' => 'fieldset',
+      '#title' => $this->t('Field Selection'),
+    ];
+
+    // Fields Fieldset Reference.
+    $fields_fieldset =& $bundle_fieldset['fields_fieldset_container']['fields_fieldset'];
+    $fields_fieldset['field'] = [
       '#type' => 'select',
       '#title' => $this->t('Entity Field'),
       '#empty_option' => $this->t('- None -'),
-      '#default_value' => ($config->get('field')) ?: $this->t('- None -'),
-      '#options' => $pruned_options,
+      '#default_value' => $selected_field ?: $this->t('- None -'),
+      '#options' => ($selected_entity && $selected_bundle) ? $entity_bundle_fields[$selected_entity][$selected_bundle] : [],
       '#description' => $this->t('The entity field that the identifier will be minted into.'),
       '#required' => TRUE,
     ];
@@ -144,7 +270,77 @@ class IdentifierForm extends EntityForm {
       '#description' => $this->t('The Data Profile to be used with this Identifier. (IE. Controls what Data is sent to the Identifier service.)'),
     ];
 
+    if (!$selected_entity) {
+      // Change the field title to provide user with some feedback on why the
+      // field is disabled.
+      $bundle_fieldset['#access'] = FALSE;
+      $bundle_fieldset['#disabled'] = TRUE;
+      $bundle_fieldset['bundle']['#title'] = $this->t('You must choose an Entity first.');
+      $bundle_fieldset['bundle']['#disabled'] = TRUE;
+      $bundle_fieldset['choose_bundle']['#access'] = FALSE;
+      $bundle_fieldset['choose_bundle']['#disabled'] = TRUE;
+    }
+
+    if (!$selected_bundle) {
+      // Change the field title to provide user with some feedback on why the
+      // field is disabled.
+      $fields_fieldset['#access'] = FALSE;
+      $fields_fieldset['#disabled'] = TRUE;
+    }
+
     return $form;
+  }
+
+  /**
+   * Entity Dropdown AJAX Callback function.
+   */
+  public function entityDropdownCallback(array $form, FormStateInterface $form_state) {
+    return $form['entity_fieldset']['bundle_fieldset_container'];
+  }
+
+  /**
+   * Bundle Dropdown AJAX Callback function.
+   */
+  public function bundleDropdownCallback(array $form, FormStateInterface $form_state) {
+    return $form['entity_fieldset']['bundle_fieldset_container']['bundle_fieldset']['fields_fieldset_container'];
+  }
+
+  /**
+   * Helper function to build Entity Lists.
+   *
+   * @return array
+   *   Returns Entity bundles and options.
+   */
+  public function entityDropdownList() {
+    $field_map = $this->entityFieldManager->getFieldMap();
+
+    // Building Entity Bundle List and Options.
+    $returns = [];
+    foreach (array_keys($field_map) as $entity_key) {
+      $returns['entity_bundles'][$entity_key] = $this->entityTypeBundleInfo->getBundleInfo($entity_key);
+      $returns['entity_options'][$entity_key] = $entity_key;
+    }
+
+    return $returns;
+  }
+
+  /**
+   * Helper function to build Bundle Lists.
+   *
+   * @return array
+   *   Returns bundle fields and options.
+   */
+  public function bundleDropdownList($entity_bundles = []) {
+    $returns = [];
+    foreach ($entity_bundles as $entity => $bundles) {
+      foreach ($bundles as $bundle => $bundle_data) {
+        $fields = $this->entityFieldManager->getFieldDefinitions($entity, $bundle);
+        $returns['entity_bundle_fields'][$entity][$bundle] = array_combine(array_keys($fields), array_keys($fields));
+        $returns['bundle_options'][$entity][$bundle] = $bundle_data['label'];
+      }
+    }
+
+    return $returns;
   }
 
   /**

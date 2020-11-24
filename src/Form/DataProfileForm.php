@@ -171,7 +171,10 @@ class DataProfileForm extends EntityForm {
       '#type' => 'fieldset',
       '#title' => $this->t('Entity Fieldset'),
     ];
-    $form['entity_fieldset']['entity'] = [
+
+    // Entity Fieldset Reference.
+    $entity_fieldset =& $form['entity_fieldset'];
+    $entity_fieldset['entity'] = [
       '#type' => 'select',
       '#title' => $this->t('Entity'),
       '#empty_option' => $this->t('- None -'),
@@ -184,7 +187,7 @@ class DataProfileForm extends EntityForm {
         'wrapper' => 'bundle-fieldset-container',
       ],
     ];
-    $form['entity_fieldset']['choose_entity'] = [
+    $entity_fieldset['choose_entity'] = [
       '#type' => 'submit',
       '#value' => $this->t('Choose Entity'),
       '#states' => [
@@ -199,7 +202,10 @@ class DataProfileForm extends EntityForm {
       '#type' => 'fieldset',
       '#title' => $this->t('Bundle Fieldset'),
     ];
-    $form['bundle_fieldset_container']['bundle_fieldset']['bundle'] = [
+
+    // Bundle Fieldset Reference.
+    $bundle_fieldset =& $form['bundle_fieldset_container']['bundle_fieldset'];
+    $bundle_fieldset['bundle'] = [
       '#type' => 'select',
       '#title' => $this->t('Bundle'),
       '#empty_option' => $this->t('- None -'),
@@ -212,7 +218,7 @@ class DataProfileForm extends EntityForm {
         'wrapper' => 'dataprofile-fieldset-container',
       ],
     ];
-    $form['bundle_fieldset_container']['bundle_fieldset']['choose_bundle'] = [
+    $bundle_fieldset['choose_bundle'] = [
       '#type' => 'submit',
       '#value' => $this->t('Choose Bundle'),
       '#states' => [
@@ -227,7 +233,10 @@ class DataProfileForm extends EntityForm {
       '#type' => 'fieldset',
       '#title' => $this->t('Data Profile Fieldset'),
     ];
-    $form['bundle_fieldset_container']['dataprofile_fieldset_container']['dataprofile_fieldset']['dataprofile'] = [
+
+    // Data Profile Fieldset Reference.
+    $dataprofile_fieldset =& $form['bundle_fieldset_container']['dataprofile_fieldset_container']['dataprofile_fieldset'];
+    $dataprofile_fieldset['dataprofile'] = [
       '#type' => 'select',
       '#title' => $this->t('Data Profile Type'),
       '#empty_option' => $this->t('- None -'),
@@ -240,26 +249,32 @@ class DataProfileForm extends EntityForm {
         'wrapper' => 'dataprofile-fields-fieldset-container',
       ],
     ];
-    $form['bundle_fieldset_container']['dataprofile_fieldset_container']['dataprofile_fieldset']['choose_dataprofile'] = [
+    $dataprofile_fieldset['choose_dataprofile'] = [
       '#type' => 'submit',
       '#value' => $this->t('Choose Data Profile'),
       '#states' => [
         'visible' => [':input[name="dataprofile"]' => ['value' => TRUE]],
       ],
     ];
-    $form['bundle_fieldset_container']['dataprofile_fieldset_container']['dataprofile_fieldset']['dataprofile_fields_fieldset_container'] = [
+    $dataprofile_fieldset['dataprofile_fields_fieldset_container'] = [
       '#type' => 'container',
       '#attributes' => ['id' => 'dataprofile-fields-fieldset-container'],
     ];
-    $form['bundle_fieldset_container']['dataprofile_fieldset_container']['dataprofile_fieldset']['dataprofile_fields_fieldset_container']['dataprofile_fields_fieldset'] = [
+    $dataprofile_fieldset['dataprofile_fields_fieldset_container']['dataprofile_fields_fieldset'] = [
       '#type' => 'fieldset',
       '#title' => $this->t('Data Profile Fields'),
+      '#states' => [
+        'visible' => [':input[name="dataprofile"]' => ['value' => TRUE]],
+      ],
     ];
+
+    // Data Profile Fields Fieldset Reference.
+    $dataprofile_fields_fieldset =& $dataprofile_fieldset['dataprofile_fields_fieldset_container']['dataprofile_fields_fieldset'];
     if (isset($data_profile_configs[$selected_dataprofile])) {
       $fields = $data_profile_configs[$selected_dataprofile]->get('fields');
       foreach ($fields as $field) {
         $field_key = str_replace('.', '_', $field['key']);
-        $form['bundle_fieldset_container']['dataprofile_fieldset_container']['dataprofile_fieldset']['dataprofile_fields_fieldset_container']['dataprofile_fields_fieldset'][$field_key] = [
+        $dataprofile_fields_fieldset[$field_key] = [
           '#type' => 'select',
           '#title' => $field['label'],
           '#empty_option' => $this->t('- None -'),
@@ -273,17 +288,27 @@ class DataProfileForm extends EntityForm {
     if (!$selected_entity) {
       // Change the field title to provide user with some feedback on why the
       // field is disabled.
-      $form['bundle_fieldset_container']['bundle_fieldset']['bundle']['#title'] = $this->t('You must choose an Entity first.');
-      $form['bundle_fieldset_container']['bundle_fieldset']['bundle']['#disabled'] = TRUE;
-      $form['bundle_fieldset_container']['bundle_fieldset']['choose_bundle']['#disabled'] = TRUE;
+      $bundle_fieldset['#access'] = FALSE;
+      $bundle_fieldset['#disabled'] = TRUE;
+      $bundle_fieldset['bundle']['#title'] = $this->t('You must choose an Entity first.');
+      $bundle_fieldset['bundle']['#disabled'] = TRUE;
+      $bundle_fieldset['choose_bundle']['#access'] = FALSE;
+      $bundle_fieldset['choose_bundle']['#disabled'] = TRUE;
     }
 
     if (!$selected_bundle) {
       // Change the field title to provide user with some feedback on why the
       // field is disabled.
-      $form['bundle_fieldset_container']['dataprofile_fieldset_container']['dataprofile_fieldset']['dataprofile']['#title'] = $this->t('You must choose a Bundle first.');
-      $form['bundle_fieldset_container']['dataprofile_fieldset_container']['dataprofile_fieldset']['dataprofile']['#disabled'] = TRUE;
-      $form['bundle_fieldset_container']['dataprofile_fieldset_container']['dataprofile_fieldset']['choose_dataprofile']['#disabled'] = TRUE;
+      $dataprofile_fieldset['#access'] = FALSE;
+      $dataprofile_fieldset['#disabled'] = TRUE;
+      $dataprofile_fieldset['dataprofile']['#title'] = $this->t('You must choose a Bundle first.');
+      $dataprofile_fieldset['dataprofile']['#disabled'] = TRUE;
+      $dataprofile_fieldset['choose_dataprofile']['#disabled'] = TRUE;
+    }
+
+    if (!$selected_dataprofile) {
+      $dataprofile_fields_fieldset['#access'] = FALSE;
+      $dataprofile_fields_fieldset['#disabled'] = TRUE;
     }
 
     return $form;

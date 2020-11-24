@@ -16,6 +16,12 @@ dgi_actions.identifier.*:
     label:
       type: string
       label: 'Identifier Label'
+    entity:
+      type: string
+      label: 'Entity Type'
+    bundle:
+      type: string
+      label: 'Bundle Type'
     field:
       type: string
       label: 'Identifier Object Field'
@@ -78,6 +84,8 @@ dgi_actions.service_data.*:
       type: string
     id:
       type: string
+    service_data_type:
+      type: string
     data:
       type: sequence
       sequence:
@@ -90,8 +98,6 @@ dgi_actions.service_data_type.*:
     label:
       type: string
     id:
-      type: string
-    service_data_type:
       type: string
     data:
       type: sequence

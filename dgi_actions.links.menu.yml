@@ -27,7 +27,7 @@ entity.dgiactions_servicedata.collection:
 
 # Data Profiles configuration collection page
 entity.dgiactions_dataprofile.collection:
-  title: 'Data Profiles Entities'
+  title: 'Data Profile Entities'
   parent: dgi_actions.identifiers
   route_name: entity.dgiactions_dataprofile.collection
   description: 'Data Profile Collection configuration page.'
