@@ -111,47 +111,33 @@ class IdentifierForm extends EntityForm {
     $entity_bundle_fields = $entity_bundle_array['entity_bundle_fields'];
     $bundle_options = $entity_bundle_array['bundle_options'];
 
-    // Check if the previous/currently set Entity value is a valid selection
-    // If not, unset and make the user re-select.
-    if (empty($form_state->getValue('entity'))) {
-      if ($config->getEntity()) {
-        $selected_entity = $config->getEntity();
-      }
-      else {
-        $selected_entity = '';
-      }
-    }
-    else {
-      $selected_entity = $form_state->getValue('entity');
-    }
+    $selected = [
+      'entity' => '',
+      'bundle' => '',
+      'field' => '',
+      'data_profile' => '',
+    ];
 
-    // Check if the previous/currently set Bundle value is a valid selection
-    // If not, unset and make the user re-select.
-    if (empty($form_state->getValue('bundle'))) {
-      if ($config->getBundle()) {
-        $selected_bundle = $config->getBundle();
+    foreach ($selected as $selected_key => $selected_value) {
+      // Check if the previous/currently set Entity value is a valid selection
+      // If not, unset and make the user re-select.
+      if (empty($form_state->getValue($selected_key))) {
+        if ($config->get($selected_key)) {
+          $selected[$selected_key] = $config->get($selected_key);
+        }
+        else {
+          $selected[$selected_key] = '';
+        }
       }
       else {
-        $selected_bundle = '';
+        if ($selected_key == 'bundle') {
+          $bundle_value = (string) $form_state->getValue('bundle');
+          $selected['bundle'] = (string) ($bundle_value && isset($bundle_options[$selected['entity']][$bundle_value])) ? $bundle_value : '';
+        }
+        else {
+          $selected[$selected_key] = (string) $form_state->getValue($selected_key);
+        }
       }
-    }
-    else {
-      $bundle_value = (string) $form_state->getValue('bundle');
-      $selected_bundle = (string) ($bundle_value && isset($bundle_options[$selected_entity][$bundle_value])) ? $bundle_value : '';
-    }
-
-    // Check if the previous/currently set value is a valid selection
-    // If not, unset and make the user re-select.
-    if (empty($form_state->getValue('field'))) {
-      if ($config->getField()) {
-        $selected_field = $config->getField();
-      }
-      else {
-        $selected_field = '';
-      }
-    }
-    else {
-      $selected_field = (string) $form_state->getValue('field');
     }
 
     $form['label'] = [
@@ -182,7 +168,7 @@ class IdentifierForm extends EntityForm {
       '#type' => 'select',
       '#title' => $this->t('Entity'),
       '#empty_option' => $this->t('- None -'),
-      '#default_value' => ($selected_entity) ?: $this->t('- None -'),
+      '#default_value' => ($selected['entity']) ?: $this->t('- None -'),
       '#options' => $entity_options,
       '#description' => $this->t('The entity type that the Identifier will be minted.'),
       '#required' => TRUE,
@@ -215,8 +201,8 @@ class IdentifierForm extends EntityForm {
       '#type' => 'select',
       '#title' => $this->t('Bundle'),
       '#empty_option' => $this->t('- None -'),
-      '#default_value' => ($selected_bundle) ?: $this->t('- None -'),
-      '#options' => (isset($bundle_options[$selected_entity])) ? $bundle_options[$selected_entity] : [],
+      '#default_value' => ($selected['bundle']) ?: $this->t('- None -'),
+      '#options' => (isset($bundle_options[$selected['entity']])) ? $bundle_options[$selected['entity']] : [],
       '#description' => $this->t('The Bundle of the selected Entity Type.'),
       '#required' => TRUE,
       '#ajax' => [
@@ -248,8 +234,8 @@ class IdentifierForm extends EntityForm {
       '#type' => 'select',
       '#title' => $this->t('Entity Field'),
       '#empty_option' => $this->t('- None -'),
-      '#default_value' => $selected_field ?: $this->t('- None -'),
-      '#options' => ($selected_entity && $selected_bundle) ? $entity_bundle_fields[$selected_entity][$selected_bundle] : [],
+      '#default_value' => $selected['field'] ?: $this->t('- None -'),
+      '#options' => ($selected['entity'] && $selected['bundle']) ? $entity_bundle_fields[$selected['entity']][$selected['bundle']] : [],
       '#description' => $this->t('The entity field that the identifier will be minted into.'),
       '#required' => TRUE,
     ];
@@ -259,18 +245,50 @@ class IdentifierForm extends EntityForm {
       '#empty_option' => $this->t('- None -'),
       '#options' => ($service_data_options) ?: [],
       '#default_value' => ($config->get('service_data')) ?: $this->t('- None -'),
-      '#description' => $this->t('The Service Data service to be used with this Identifier. (IE. Controls what Service to perform CRUD operations with.'),
+      '#description' => $this->t('The Service Data service to be used with this Identifier. (IE. Controls what Service to perform CRUD operations with.)'),
     ];
-    $form['data_profile'] = [
+    $form['dataprofile_fieldset_container'] = [
+      '#type' => 'container',
+      '#attributes' => ['id' => 'dataprofile-fieldset-container'],
+    ];
+    $form['dataprofile_fieldset_container']['data_profile'] = [
       '#type' => 'select',
       '#title' => $this->t('Data Profile'),
       '#empty_option' => $this->t('- None -'),
       '#options' => ($data_profile_options) ?: [],
-      '#default_value' => ($config->get('data_profile')) ?: $this->t('- None -'),
+      '#default_value' => ($selected['data_profile']) ?: $this->t('- None -'),
       '#description' => $this->t('The Data Profile to be used with this Identifier. (IE. Controls what Data is sent to the Identifier service.)'),
+      '#ajax' => [
+        'callback' => '::dataprofileDropdownCallback',
+        'wrapper' => 'dataprofile-fieldset-container',
+      ],
     ];
 
-    if (!$selected_entity) {
+    if ($selected['data_profile']) {
+      $selected_dataprofile_config = $this->configFactory->get($selected['data_profile']);
+      $form['dataprofile_fieldset_container']['dataprofile_fieldset'] = [
+        '#type' => 'fieldset',
+        '#title' => $this->t('Data Profile Configuration'),
+      ];
+      $form['dataprofile_fieldset_container']['dataprofile_fieldset']['dataprofile_entity_type'] = [
+        '#type' => 'textfield',
+        '#title' => $this->t('Entity Type'),
+        '#maxlength' => 255,
+        '#default_value' => ($selected_dataprofile_config->get('entity')) ?: '',
+        '#description' => $this->t('The Entity Type configured in the selected Data Profile config.'),
+        '#disabled' => TRUE,
+      ];
+      $form['dataprofile_fieldset_container']['dataprofile_fieldset']['dataprofile_bundle_type'] = [
+        '#type' => 'textfield',
+        '#title' => $this->t('Bundle Type'),
+        '#maxlength' => 255,
+        '#default_value' => ($selected_dataprofile_config->get('bundle')) ?: '',
+        '#description' => $this->t('The Bundle Type configured in the selected Data Profile config.'),
+        '#disabled' => TRUE,
+      ];
+    }
+
+    if (!$selected['entity']) {
       // Change the field title to provide user with some feedback on why the
       // field is disabled.
       $bundle_fieldset['#access'] = FALSE;
@@ -281,7 +299,14 @@ class IdentifierForm extends EntityForm {
       $bundle_fieldset['choose_bundle']['#disabled'] = TRUE;
     }
 
-    if (!$selected_bundle) {
+    if (!$selected['bundle']) {
+      // Change the field title to provide user with some feedback on why the
+      // field is disabled.
+      $fields_fieldset['#access'] = FALSE;
+      $fields_fieldset['#disabled'] = TRUE;
+    }
+
+    if (!$selected['data_profile']) {
       // Change the field title to provide user with some feedback on why the
       // field is disabled.
       $fields_fieldset['#access'] = FALSE;
@@ -303,6 +328,13 @@ class IdentifierForm extends EntityForm {
    */
   public function bundleDropdownCallback(array $form, FormStateInterface $form_state) {
     return $form['entity_fieldset']['bundle_fieldset_container']['bundle_fieldset']['fields_fieldset_container'];
+  }
+
+  /**
+   * DataProfile Dropdown AJAX Callback function.
+   */
+  public function dataprofileDropdownCallback(array $form, FormStateInterface $form_state) {
+    return $form['dataprofile_fieldset_container'];
   }
 
   /**

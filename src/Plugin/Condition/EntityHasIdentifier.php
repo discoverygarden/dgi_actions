@@ -103,8 +103,10 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
     if ($entity instanceof FieldableEntityInterface) {
       $identifier_config = $this->configFactory->get($this->configuration['identifier']);
       $field = $identifier_config->get('field');
+      $entity_type = $identifier_config->get('entity');
+      $bundle = $identifier_config->get('bundle');
 
-      if (!empty($field) && $entity->hasField($field)) {
+      if (!empty($field) && $entity->hasField($field) && $entity->getEntityTypeId() == $entity_type && $entity->bundle() == $bundle) {
         return !$entity->get($field)->isEmpty();
       }
       else {

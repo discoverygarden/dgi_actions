@@ -132,6 +132,20 @@ class Identifier extends ConfigEntityBase implements IdentifierInterface {
   /**
    * {@inheritdoc}
    */
+  public function getServiceData() {
+    return $this->service_data;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getDataProfile() {
+    return $this->data_profile;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   protected function invalidateTagsOnSave($update) {
     parent::invalidateTagsOnSave($update);
     // Clear the config_filter plugin cache.

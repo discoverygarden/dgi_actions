@@ -109,47 +109,32 @@ class DataProfileForm extends EntityForm {
     $entity_bundle_fields = $entity_bundle_array['entity_bundle_fields'];
     $bundle_options = $entity_bundle_array['bundle_options'];
 
-    // Check if the previous/currently set Entity value is a valid selection
-    // If not, unset and make the user re-select.
-    if (empty($form_state->getValue('entity'))) {
-      if ($config->getEntity()) {
-        $selected_entity = $config->getEntity();
-      }
-      else {
-        $selected_entity = '';
-      }
-    }
-    else {
-      $selected_entity = $form_state->getValue('entity');
-    }
+    $selected = [
+      'entity' => '',
+      'bundle' => '',
+      'dataprofile' => '',
+    ];
 
-    // Check if the previous/currently set Bundle value is a valid selection
-    // If not, unset and make the user re-select.
-    if (empty($form_state->getValue('bundle'))) {
-      if ($config->getBundle()) {
-        $selected_bundle = $config->getBundle();
+    foreach ($selected as $selected_key => $selected_value) {
+      // Check if the previous/currently set Entity value is a valid selection
+      // If not, unset and make the user re-select.
+      if (empty($form_state->getValue($selected_key))) {
+        if ($config->get($selected_key)) {
+          $selected[$selected_key] = $config->get($selected_key);
+        }
+        else {
+          $selected[$selected_key] = '';
+        }
       }
       else {
-        $selected_bundle = '';
+        if ($selected_key == 'bundle') {
+          $bundle_value = (string) $form_state->getValue('bundle');
+          $selected['bundle'] = (string) ($bundle_value && isset($bundle_options[$selected['entity']][$bundle_value])) ? $bundle_value : '';
+        }
+        else {
+          $selected[$selected_key] = (string) $form_state->getValue($selected_key);
+        }
       }
-    }
-    else {
-      $bundle_value = (string) $form_state->getValue('bundle');
-      $selected_bundle = (string) ($bundle_value && isset($bundle_options[$selected_entity][$bundle_value])) ? $bundle_value : '';
-    }
-
-    // Check if the previous/currently set value is a valid selection
-    // If not, unset and make the user re-select.
-    if (empty($form_state->getValue('dataprofile'))) {
-      if ($config->getDataprofile()) {
-        $selected_dataprofile = $config->getDataprofile();
-      }
-      else {
-        $selected_dataprofile = '';
-      }
-    }
-    else {
-      $selected_dataprofile = (string) $form_state->getValue('dataprofile');
     }
 
     $form['label'] = [
@@ -169,7 +154,7 @@ class DataProfileForm extends EntityForm {
     ];
     $form['entity_fieldset'] = [
       '#type' => 'fieldset',
-      '#title' => $this->t('Entity Fieldset'),
+      '#title' => $this->t('Entity Selection'),
     ];
 
     // Entity Fieldset Reference.
@@ -178,7 +163,7 @@ class DataProfileForm extends EntityForm {
       '#type' => 'select',
       '#title' => $this->t('Entity'),
       '#empty_option' => $this->t('- None -'),
-      '#default_value' => ($selected_entity) ?: $this->t('- None -'),
+      '#default_value' => ($selected['entity']) ?: $this->t('- None -'),
       '#options' => $entity_options,
       '#description' => $this->t('The entity that the data will be captured.'),
       '#required' => TRUE,
@@ -200,7 +185,7 @@ class DataProfileForm extends EntityForm {
     ];
     $form['bundle_fieldset_container']['bundle_fieldset'] = [
       '#type' => 'fieldset',
-      '#title' => $this->t('Bundle Fieldset'),
+      '#title' => $this->t('Bundle Selection'),
     ];
 
     // Bundle Fieldset Reference.
@@ -209,8 +194,8 @@ class DataProfileForm extends EntityForm {
       '#type' => 'select',
       '#title' => $this->t('Bundle'),
       '#empty_option' => $this->t('- None -'),
-      '#default_value' => ($selected_bundle) ?: $this->t('- None -'),
-      '#options' => (isset($bundle_options[$selected_entity])) ? $bundle_options[$selected_entity] : [],
+      '#default_value' => ($selected['bundle']) ?: $this->t('- None -'),
+      '#options' => (isset($bundle_options[$selected['entity']])) ? $bundle_options[$selected['entity']] : [],
       '#description' => $this->t('The Bundle of the selected Entity Type.'),
       '#required' => TRUE,
       '#ajax' => [
@@ -231,7 +216,7 @@ class DataProfileForm extends EntityForm {
     ];
     $form['bundle_fieldset_container']['dataprofile_fieldset_container']['dataprofile_fieldset'] = [
       '#type' => 'fieldset',
-      '#title' => $this->t('Data Profile Fieldset'),
+      '#title' => $this->t('Data Profile Selection'),
     ];
 
     // Data Profile Fieldset Reference.
@@ -240,8 +225,8 @@ class DataProfileForm extends EntityForm {
       '#type' => 'select',
       '#title' => $this->t('Data Profile Type'),
       '#empty_option' => $this->t('- None -'),
-      '#default_value' => ($selected_dataprofile) ?: $this->t('- None -'),
-      '#options' => ($selected_entity && $selected_bundle) ? $data_profile_options : [],
+      '#default_value' => ($selected['dataprofile']) ?: $this->t('- None -'),
+      '#options' => ($selected['entity'] && $selected['bundle']) ? $data_profile_options : [],
       '#description' => $this->t('The Data Profile type to be used for the Data Profile Config'),
       '#required' => TRUE,
       '#ajax' => [
@@ -260,18 +245,16 @@ class DataProfileForm extends EntityForm {
       '#type' => 'container',
       '#attributes' => ['id' => 'dataprofile-fields-fieldset-container'],
     ];
-    $dataprofile_fieldset['dataprofile_fields_fieldset_container']['dataprofile_fields_fieldset'] = [
-      '#type' => 'fieldset',
-      '#title' => $this->t('Data Profile Fields'),
-      '#states' => [
-        'visible' => [':input[name="dataprofile"]' => ['value' => TRUE]],
-      ],
-    ];
 
-    // Data Profile Fields Fieldset Reference.
-    $dataprofile_fields_fieldset =& $dataprofile_fieldset['dataprofile_fields_fieldset_container']['dataprofile_fields_fieldset'];
-    if (isset($data_profile_configs[$selected_dataprofile])) {
-      $fields = $data_profile_configs[$selected_dataprofile]->get('fields');
+    if (isset($data_profile_configs[$selected['dataprofile']])) {
+      $dataprofile_fieldset['dataprofile_fields_fieldset_container']['dataprofile_fields_fieldset'] = [
+        '#type' => 'fieldset',
+        '#title' => $this->t('Data Profile Fields'),
+      ];
+
+      // Data Profile Fields Fieldset Reference.
+      $dataprofile_fields_fieldset =& $dataprofile_fieldset['dataprofile_fields_fieldset_container']['dataprofile_fields_fieldset'];
+      $fields = $data_profile_configs[$selected['dataprofile']]->get('fields');
       foreach ($fields as $field) {
         $field_key = str_replace('.', '_', $field['key']);
         $dataprofile_fields_fieldset[$field_key] = [
@@ -279,13 +262,13 @@ class DataProfileForm extends EntityForm {
           '#title' => $field['label'],
           '#empty_option' => $this->t('- None -'),
           '#default_value' => ($config->get('data')[$field_key]) ?: $this->t('- None -'),
-          '#options' => ($selected_entity && $selected_bundle) ? $entity_bundle_fields[$selected_entity][$selected_bundle] : [],
+          '#options' => ($selected['entity'] && $selected['bundle']) ? $entity_bundle_fields[$selected['entity']][$selected['bundle']] : [],
           '#description' => $field['description'],
         ];
       }
     }
 
-    if (!$selected_entity) {
+    if (!$selected['entity']) {
       // Change the field title to provide user with some feedback on why the
       // field is disabled.
       $bundle_fieldset['#access'] = FALSE;
@@ -296,7 +279,7 @@ class DataProfileForm extends EntityForm {
       $bundle_fieldset['choose_bundle']['#disabled'] = TRUE;
     }
 
-    if (!$selected_bundle) {
+    if (!$selected['bundle']) {
       // Change the field title to provide user with some feedback on why the
       // field is disabled.
       $dataprofile_fieldset['#access'] = FALSE;
@@ -306,7 +289,7 @@ class DataProfileForm extends EntityForm {
       $dataprofile_fieldset['choose_dataprofile']['#disabled'] = TRUE;
     }
 
-    if (!$selected_dataprofile) {
+    if (!$selected['dataprofile']) {
       $dataprofile_fields_fieldset['#access'] = FALSE;
       $dataprofile_fields_fieldset['#disabled'] = TRUE;
     }

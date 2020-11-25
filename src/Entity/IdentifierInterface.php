@@ -33,4 +33,20 @@ interface IdentifierInterface extends ConfigEntityInterface {
    */
   public function getField();
 
+  /**
+   * Gets the set Service Data ID.
+   *
+   * @return string
+   *   Returns Service Data ID type.
+   */
+  public function getServiceData();
+
+  /**
+   * Gets the set Data Profile ID.
+   *
+   * @return string
+   *   Returns Data Profile ID type.
+   */
+  public function getDataProfile();
+
 }
