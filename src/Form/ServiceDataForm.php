@@ -243,11 +243,11 @@ class ServiceDataForm extends EntityForm {
       }
     }
 
+    $state_key = 'dgi_actions.service_data.' . $config->id();
     if ($form_state->getValue('password')) {
-      $state_key = 'dgi_actions.service_data.' . $config->id();
       $this->state->set($state_key, $creds);
-      $data['state_key'] = $state_key;
     }
+    $data['state_key'] = $state_key;
 
     // Clearing the data in case there was a different
     // Data Profile with data set previously.
