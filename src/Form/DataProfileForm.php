@@ -97,15 +97,15 @@ class DataProfileForm extends EntityForm {
     /** @var \Drupal\dgi_actions\Entity\DataProfileInterface $config */
     $config = $this->entity;
 
-    $data_profile_array = self::dataprofileLists();
+    $data_profile_array = $this->dataprofileLists();
     $data_profile_configs = $data_profile_array['data_profile_configs'];
     $data_profile_options = $data_profile_array['data_profile_options'];
 
-    $entity_array = self::entityDropdownList();
+    $entity_array = $this->entityDropdownList();
     $entity_bundles = $entity_array['entity_bundles'];
     $entity_options = $entity_array['entity_options'];
 
-    $entity_bundle_array = self::bundleDropdownList($entity_bundles);
+    $entity_bundle_array = $this->bundleDropdownList($entity_bundles);
     $entity_bundle_fields = $entity_bundle_array['entity_bundle_fields'];
     $bundle_options = $entity_bundle_array['bundle_options'];
 
@@ -128,11 +128,11 @@ class DataProfileForm extends EntityForm {
       }
       else {
         if ($selected_key == 'bundle') {
-          $bundle_value = (string) $form_state->getValue('bundle');
-          $selected['bundle'] = (string) ($bundle_value && isset($bundle_options[$selected['entity']][$bundle_value])) ? $bundle_value : '';
+          $bundle_value = $form_state->getValue('bundle');
+          $selected['bundle'] = ($bundle_value && isset($bundle_options[$selected['entity']][$bundle_value])) ? $bundle_value : '';
         }
         else {
-          $selected[$selected_key] = (string) $form_state->getValue($selected_key);
+          $selected[$selected_key] = $form_state->getValue($selected_key);
         }
       }
     }
@@ -163,7 +163,7 @@ class DataProfileForm extends EntityForm {
       '#type' => 'select',
       '#title' => $this->t('Entity'),
       '#empty_option' => $this->t('- None -'),
-      '#default_value' => ($selected['entity']) ?: $this->t('- None -'),
+      '#default_value' => ($selected['entity']) ?: NULL,
       '#options' => $entity_options,
       '#description' => $this->t('The entity that the data will be captured.'),
       '#required' => TRUE,
@@ -194,7 +194,7 @@ class DataProfileForm extends EntityForm {
       '#type' => 'select',
       '#title' => $this->t('Bundle'),
       '#empty_option' => $this->t('- None -'),
-      '#default_value' => ($selected['bundle']) ?: $this->t('- None -'),
+      '#default_value' => ($selected['bundle']) ?: NULL,
       '#options' => (isset($bundle_options[$selected['entity']])) ? $bundle_options[$selected['entity']] : [],
       '#description' => $this->t('The Bundle of the selected Entity Type.'),
       '#required' => TRUE,
@@ -225,7 +225,7 @@ class DataProfileForm extends EntityForm {
       '#type' => 'select',
       '#title' => $this->t('Data Profile Type'),
       '#empty_option' => $this->t('- None -'),
-      '#default_value' => ($selected['dataprofile']) ?: $this->t('- None -'),
+      '#default_value' => ($selected['dataprofile']) ?: NULL,
       '#options' => ($selected['entity'] && $selected['bundle']) ? $data_profile_options : [],
       '#description' => $this->t('The Data Profile type to be used for the Data Profile Config'),
       '#required' => TRUE,
@@ -261,7 +261,7 @@ class DataProfileForm extends EntityForm {
           '#type' => 'select',
           '#title' => $field['label'],
           '#empty_option' => $this->t('- None -'),
-          '#default_value' => ($config->get('data')[$field_key]) ?: $this->t('- None -'),
+          '#default_value' => ($config->get('data')[$field_key]) ?: NULL,
           '#options' => ($selected['entity'] && $selected['bundle']) ? $entity_bundle_fields[$selected['entity']][$selected['bundle']] : [],
           '#description' => $field['description'],
         ];

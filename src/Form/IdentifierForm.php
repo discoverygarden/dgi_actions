@@ -131,11 +131,11 @@ class IdentifierForm extends EntityForm {
       }
       else {
         if ($selected_key == 'bundle') {
-          $bundle_value = (string) $form_state->getValue('bundle');
-          $selected['bundle'] = (string) ($bundle_value && isset($bundle_options[$selected['entity']][$bundle_value])) ? $bundle_value : '';
+          $bundle_value = $form_state->getValue('bundle');
+          $selected['bundle'] = ($bundle_value && isset($bundle_options[$selected['entity']][$bundle_value])) ? $bundle_value : '';
         }
         else {
-          $selected[$selected_key] = (string) $form_state->getValue($selected_key);
+          $selected[$selected_key] = $form_state->getValue($selected_key);
         }
       }
     }
@@ -168,7 +168,7 @@ class IdentifierForm extends EntityForm {
       '#type' => 'select',
       '#title' => $this->t('Entity'),
       '#empty_option' => $this->t('- None -'),
-      '#default_value' => ($selected['entity']) ?: $this->t('- None -'),
+      '#default_value' => ($selected['entity']) ?: NULL,
       '#options' => $entity_options,
       '#description' => $this->t('The entity type that the Identifier will be minted.'),
       '#required' => TRUE,
@@ -201,7 +201,7 @@ class IdentifierForm extends EntityForm {
       '#type' => 'select',
       '#title' => $this->t('Bundle'),
       '#empty_option' => $this->t('- None -'),
-      '#default_value' => ($selected['bundle']) ?: $this->t('- None -'),
+      '#default_value' => ($selected['bundle']) ?: NULL,
       '#options' => (isset($bundle_options[$selected['entity']])) ? $bundle_options[$selected['entity']] : [],
       '#description' => $this->t('The Bundle of the selected Entity Type.'),
       '#required' => TRUE,
@@ -234,7 +234,7 @@ class IdentifierForm extends EntityForm {
       '#type' => 'select',
       '#title' => $this->t('Entity Field'),
       '#empty_option' => $this->t('- None -'),
-      '#default_value' => $selected['field'] ?: $this->t('- None -'),
+      '#default_value' => $selected['field'] ?: NULL,
       '#options' => ($selected['entity'] && $selected['bundle']) ? $entity_bundle_fields[$selected['entity']][$selected['bundle']] : [],
       '#description' => $this->t('The entity field that the identifier will be minted into.'),
       '#required' => TRUE,
@@ -244,7 +244,7 @@ class IdentifierForm extends EntityForm {
       '#title' => $this->t('Service Data Profile'),
       '#empty_option' => $this->t('- None -'),
       '#options' => ($service_data_options) ?: [],
-      '#default_value' => ($config->get('service_data')) ?: $this->t('- None -'),
+      '#default_value' => ($config->get('service_data')) ?: NULL,
       '#description' => $this->t('The Service Data service to be used with this Identifier. (IE. Controls what Service to perform CRUD operations with.)'),
     ];
     $form['dataprofile_fieldset_container'] = [
@@ -256,7 +256,7 @@ class IdentifierForm extends EntityForm {
       '#title' => $this->t('Data Profile'),
       '#empty_option' => $this->t('- None -'),
       '#options' => ($data_profile_options) ?: [],
-      '#default_value' => ($selected['data_profile']) ?: $this->t('- None -'),
+      '#default_value' => ($selected['data_profile']) ?: NULL,
       '#description' => $this->t('The Data Profile to be used with this Identifier. (IE. Controls what Data is sent to the Identifier service.)'),
       '#ajax' => [
         'callback' => '::dataprofileDropdownCallback',

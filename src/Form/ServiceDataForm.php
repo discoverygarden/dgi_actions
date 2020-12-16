@@ -117,7 +117,7 @@ class ServiceDataForm extends EntityForm {
       '#type' => 'select',
       '#title' => $this->t('Service Data Type'),
       '#empty_option' => $this->t('- None -'),
-      '#default_value' => ($selected_servicedatatype) ?: $this->t('- None -'),
+      '#default_value' => ($selected_servicedatatype) ?: NULL,
       '#options' => $servicedata_options,
       '#description' => $this->t('The entity that the data will be captured.'),
       '#required' => TRUE,
