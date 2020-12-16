@@ -10,7 +10,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Response;
 use Drupal\Core\Config\ConfigFactory;
 use Psr\Log\LoggerInterface;
-use Drupal\Core\State\State;
+use Drupal\Core\State\StateInterface;
 
 /**
  * Deletes an ARK Identifier Record on CDL EZID.
@@ -35,7 +35,7 @@ class DeleteArkIdentifier extends DeleteIdentifier {
   /**
    * State.
    *
-   * @var \Drupal\Core\State\State
+   * @var \Drupal\Core\State\StateInterface
    */
   protected $state;
 
@@ -58,7 +58,7 @@ class DeleteArkIdentifier extends DeleteIdentifier {
    *   Identifier utils.
    * @param \Drupal\dgi_actions\Utilities\EzidTextParser $ezid_parser
    *   CDL EZID Text parser.
-   * @param \Drupal\Core\State\State $state
+   * @param \Drupal\Core\State\StateInterface $state
    *   State API.
    */
   public function __construct(
@@ -70,7 +70,7 @@ class DeleteArkIdentifier extends DeleteIdentifier {
     ConfigFactory $config_factory,
     IdentifierUtils $utils,
     EzidTextParser $ezid_parser,
-    State $state
+    StateInterface $state
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $client, $logger, $config_factory, $utils);
     $this->ezidParser = $ezid_parser;
