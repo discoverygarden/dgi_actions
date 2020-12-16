@@ -128,7 +128,7 @@ class MintArkIdentifier extends MintIdentifier {
   /**
    * {@inheritdoc}
    */
-  protected function getIdentifierFromResponse($response) {
+  protected function getIdentifierFromResponse(Response $response) {
     $contents = $response->getBody()->getContents();
     $responseArray = $this->ezidParser->parseEzidResponse($contents);
     if (array_key_exists('success', $responseArray)) {
@@ -177,14 +177,6 @@ class MintArkIdentifier extends MintIdentifier {
     ];
 
     return $requestParams;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function handleResponse(Response $response) {
-    $identifier = $this->getIdentifierFromResponse($response);
-    $this->setIdentifierField($identifier);
   }
 
 }

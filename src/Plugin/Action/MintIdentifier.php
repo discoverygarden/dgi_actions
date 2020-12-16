@@ -7,6 +7,7 @@ use Drupal\Core\Entity\Exception\UndefinedLinkTemplateException;
 use Drupal\rules\Exception\InvalidArgumentException;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Exception\BadResponseException;
+use GuzzleHttp\Psr7\Response;
 
 /**
  * Basic implementation for minting an identifier.
@@ -52,25 +53,25 @@ abstract class MintIdentifier extends IdentifierAction {
   /**
    * Gets the Identifier from the service API response.
    *
-   * @param mixed $response
+   * @param \GuzzleHttp\Psr7\Response $response
    *   Response from the service API.
    *
    * @return string
    *   The identifier returned in the API response.
    */
-  abstract protected function getIdentifierFromResponse($response);
+  abstract protected function getIdentifierFromResponse(Response $response);
 
   /**
    * Sets the Entity field with the Identifier.
    *
-   * @param string $identifier
+   * @param string $identifier_uri
    *   The identifier formatted as a URL.
    */
-  protected function setIdentifierField(string $identifier) {
-    if ($identifier) {
+  protected function setIdentifierField(string $identifier_uri) {
+    if ($identifier_uri) {
       $field = $this->identifierConfig->get('field');
       if (!empty($field) && $this->entity->hasField($field)) {
-        $this->entity->set($field, $identifier);
+        $this->entity->set($field, $identifier_uri);
         $this->entity->save();
       }
       else {
@@ -92,7 +93,8 @@ abstract class MintIdentifier extends IdentifierAction {
         $this->setConfigs();
         if ($this->entity && $this->identifierConfig) {
           $response = $this->mint();
-          $this->handleResponse($response);
+          $identifier_uri = $this->getIdentifierFromResponse($response);
+          $this->setIdentifierField($identifier_uri);
         }
         else {
           $this->logger->error('Entity or Configs were not properly set.');

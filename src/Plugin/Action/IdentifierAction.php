@@ -10,7 +10,6 @@ use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Request;
-use GuzzleHttp\Psr7\Response;
 use Psr\Log\LoggerInterface;
 use Drupal\Core\Config\ConfigFactory;
 use Drupal\Core\Session\AccountInterface;
@@ -224,14 +223,6 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
 
     return $response;
   }
-
-  /**
-   * Handles the Response.
-   *
-   * @param GuzzleHttp\Psr7\Response $response
-   *   Handles the Guzzle Response as needed.
-   */
-  abstract protected function handleResponse(Response $response);
 
   /**
    * {@inheritdoc}
