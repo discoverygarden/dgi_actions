@@ -10,7 +10,6 @@ use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Request;
-use GuzzleHttp\Psr7\Response;
 use Psr\Log\LoggerInterface;
 use Drupal\Core\Config\ConfigFactory;
 use Drupal\Core\Session\AccountInterface;
@@ -226,14 +225,6 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
   }
 
   /**
-   * Handles the Response.
-   *
-   * @param GuzzleHttp\Psr7\Response $response
-   *   Handles the Guzzle Response as needed.
-   */
-  abstract protected function handleResponse(Response $response);
-
-  /**
    * {@inheritdoc}
    */
   abstract public function execute($entity = NULL);
@@ -281,8 +272,8 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
   public function setConfigs() {
     $this->identifierConfig = $this->configFactory->get($this->configuration['identifier_type']);
     if (!empty($this->identifierConfig->get())) {
-      $this->serviceDataConfig = $this->configFactory->get('dgi_actions.service_data.' . $this->identifierConfig->get('service_data.id'));
-      $this->dataProfileConfig = $this->configFactory->get('dgi_actions.data_profile.' . $this->identifierConfig->get('data_profile.id'));
+      $this->serviceDataConfig = $this->configFactory->get($this->identifierConfig->get('service_data'));
+      $this->dataProfileConfig = $this->configFactory->get($this->identifierConfig->get('data_profile'));
     }
   }
 

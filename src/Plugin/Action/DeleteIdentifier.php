@@ -6,6 +6,7 @@ use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\rules\Exception\InvalidArgumentException;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Exception\BadResponseException;
+use GuzzleHttp\Psr7\Response;
 
 /**
  * Basic implementation for deleting an identifier.
@@ -30,6 +31,14 @@ abstract class DeleteIdentifier extends IdentifierAction {
 
     return $identifier;
   }
+
+  /**
+   * Handles identifier specific actions for response.
+   *
+   * @param GuzzleHttp\Psr7\Response $response
+   *   The Guzzle HTTP Response Object.
+   */
+  abstract protected function handleResponse(Response $response);
 
   /**
    * Delete's the identifier from the service.

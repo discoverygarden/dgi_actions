@@ -1,5 +1,5 @@
 dgi_actions.identifier.*:
-  type: config_object
+  type: config_entity
   label: 'Identifier'
   mapping:
     status:
@@ -8,32 +8,44 @@ dgi_actions.identifier.*:
     dependencies:
       type: sequence
       label: 'Dependencies'
+      sequence:
+        type: string
     id:
       type: string
       label: 'Identifier ID'
     label:
       type: string
       label: 'Identifier Label'
+    entity:
+      type: string
+      label: 'Entity Type'
+    bundle:
+      type: string
+      label: 'Bundle Type'
     field:
       type: string
       label: 'Identifier Object Field'
     service_data:
-      type: mapping
+      type: string
       label: 'Service Data'
-      mapping:
-        id:
-          type: string
     data_profile:
-      type: mapping
+      type: string
       label: 'Data Profile'
-      mapping:
-        id:
-          type: string
 
 dgi_actions.data_profile.*:
-  type: config_object
+  type: config_entity
   label: 'Data Profile'
   mapping:
+    label:
+      type: string
+    id:
+      type: string
+    entity:
+      type: string
+    bundle:
+      type: string
+    dataprofile:
+      type: string
     data:
       type: sequence
       sequence:
@@ -44,11 +56,57 @@ dgi_actions.data_profile.*:
           source_field:
             type: string
 
-dgi_actions.service_data.*:
+dgi_actions.data_profile_type.*:
   type: config_object
+  label: 'Data Profile Type'
+  mapping:
+    label:
+      type: string
+    id:
+      type: string
+    fields:
+      type: sequence
+      sequence:
+        type: mapping
+        mapping:
+          key:
+            type: string
+          label:
+            type: string
+          description:
+            type: string
+
+dgi_actions.service_data.*:
+  type: config_entity
   label: 'Service Data'
   mapping:
+    label:
+      type: string
+    id:
+      type: string
+    service_data_type:
+      type: string
     data:
       type: sequence
       sequence:
         type: string
+
+dgi_actions.service_data_type.*:
+  type: config_object
+  label: 'Service Data Type'
+  mapping:
+    label:
+      type: string
+    id:
+      type: string
+    data:
+      type: sequence
+      sequence:
+        type: mapping
+        mapping:
+          id:
+            type: string
+          label:
+            type: string
+          description:
+            type: string

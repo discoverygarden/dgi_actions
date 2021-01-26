@@ -1,0 +1,44 @@
+# Menu list of DGI Actions configuration forms
+dgi_actions.admin:
+  path: '/admin/config/dgi_actions'
+  defaults:
+    _controller: '\Drupal\system\Controller\SystemController::systemAdminMenuBlockPage'
+    _title: 'DGI Actions'
+  requirements:
+    _permission: 'access administration pages'
+
+# Menu list of Identifiers configuration forms
+dgi_actions.identifiers:
+  path: '/admin/config/dgi_actions/identifiers'
+  defaults:
+    _controller: '\Drupal\system\Controller\SystemController::systemAdminMenuBlockPage'
+    _title: 'Identifiers'
+  requirements:
+    _permission: 'access administration pages'
+
+# Identifiers Admin Page
+entity.dgiactions_identifier.collection:
+  path: '/admin/config/dgi_actions/identifier_entities'
+  defaults:
+    _title: 'Identifier Entities'
+    _entity_list: 'dgiactions_identifier'
+  requirements:
+    _entity_create_access: 'dgiactions_identifier'
+
+# Service Data Admin Page
+entity.dgiactions_servicedata.collection:
+  path: '/admin/config/dgi_actions/service_data'
+  defaults:
+    _title: 'Service Data Entities'
+    _entity_list: 'dgiactions_servicedata'
+  requirements:
+    _entity_create_access: 'dgiactions_servicedata'
+
+# Data Profile Admin Page
+entity.dgiactions_dataprofile.collection:
+  path: '/admin/config/dgi_actions/data_profile'
+  defaults:
+    _title: 'Data Profile Entities'
+    _entity_list: 'dgiactions_dataprofile'
+  requirements:
+    _entity_create_access: 'dgiactions_dataprofile'

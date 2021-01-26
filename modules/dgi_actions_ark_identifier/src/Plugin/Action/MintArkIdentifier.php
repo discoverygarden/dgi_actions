@@ -10,6 +10,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Response;
 use Drupal\Core\Config\ConfigFactory;
 use Psr\Log\LoggerInterface;
+use Drupal\Core\State\StateInterface;
 
 /**
  * Mints an ARK Identifier Record on CDL EZID.
@@ -32,6 +33,13 @@ class MintArkIdentifier extends MintIdentifier {
   protected $ezidParser;
 
   /**
+   * State API.
+   *
+   * @var \Drupal\Core\State\StateInterface
+   */
+  protected $state;
+
+  /**
    * Constructor.
    *
    * @param array $configuration
@@ -50,6 +58,8 @@ class MintArkIdentifier extends MintIdentifier {
    *   Identifier utils.
    * @param \Drupal\dgi_actions\Utilities\EzidTextParser $ezid_parser
    *   CDL EZID Text parser.
+   * @param \Drupal\Core\State\StateInterface $state
+   *   State API.
    */
   public function __construct(
     array $configuration,
@@ -59,10 +69,12 @@ class MintArkIdentifier extends MintIdentifier {
     LoggerInterface $logger,
     ConfigFactory $config_factory,
     IdentifierUtils $utils,
-    EzidTextParser $ezid_parser
+    EzidTextParser $ezid_parser,
+    StateInterface $state
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $client, $logger, $config_factory, $utils);
     $this->ezidParser = $ezid_parser;
+    $this->state = $state;
   }
 
   /**
@@ -77,7 +89,8 @@ class MintArkIdentifier extends MintIdentifier {
       $container->get('logger.channel.dgi_actions'),
       $container->get('config.factory'),
       $container->get('dgi_actions.utils'),
-      $container->get('dgi_actions.ezidtextparser')
+      $container->get('dgi_actions.ezidtextparser'),
+      $container->get('state')
     );
   }
   // @codingStandardsIgnoreEnd
@@ -115,7 +128,7 @@ class MintArkIdentifier extends MintIdentifier {
   /**
    * {@inheritdoc}
    */
-  protected function getIdentifierFromResponse($response) {
+  protected function getIdentifierFromResponse(Response $response) {
     $contents = $response->getBody()->getContents();
     $responseArray = $this->ezidParser->parseEzidResponse($contents);
     if (array_key_exists('success', $responseArray)) {
@@ -138,7 +151,7 @@ class MintArkIdentifier extends MintIdentifier {
    * {@inheritdoc}
    */
   protected function getUri() {
-    $uri = $this->serviceDataConfig->get('data.host') . '/shoulder/' . $this->serviceDataConfig->get('data.shoulder');
+    $uri = $this->serviceDataConfig->get('data.host') . '/shoulder/' . $this->serviceDataConfig->get('data.namespace');
 
     return $uri;
   }
@@ -149,10 +162,12 @@ class MintArkIdentifier extends MintIdentifier {
   protected function getRequestParams() {
     $fieldData = $this->getFieldData();
     $requestBody = $this->buildRequestBody($fieldData);
+    $creds = $this->state->get($this->serviceDataConfig->get('data.state_key'));
+
     $requestParams = [
       'auth' => [
-        $this->serviceDataConfig->get('data.username'),
-        $this->serviceDataConfig->get('data.password'),
+        $creds['username'],
+        $creds['password'],
       ],
       'headers' => [
         'Content-Type' => 'text/plain; charset=UTF-8',
@@ -162,14 +177,6 @@ class MintArkIdentifier extends MintIdentifier {
     ];
 
     return $requestParams;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function handleResponse(Response $response) {
-    $identifier = $this->getIdentifierFromResponse($response);
-    $this->setIdentifierField($identifier);
   }
 
 }
