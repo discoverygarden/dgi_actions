@@ -1,0 +1,17 @@
+entity.dgiactions_identifier.add_form:
+  route_name: entity.dgiactions_identifier.add_form
+  title: 'Add Identifier'
+  appears_on:
+    - entity.dgiactions_identifier.collection
+
+entity.dgiactions_dataprofile.add_form:
+  route_name: entity.dgiactions_dataprofile.add_form
+  title: 'Add Data Profile'
+  appears_on:
+    - entity.dgiactions_dataprofile.collection
+
+entity.dgiactions_servicedata.add_form:
+  route_name: entity.dgiactions_servicedata.add_form
+  title: 'Add Service Data'
+  appears_on:
+    - entity.dgiactions_servicedata.collection

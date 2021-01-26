@@ -1,0 +1,33 @@
+# Menu list of DGI Actions configuration forms
+dgi_actions.admin:
+  title: 'DGI Actions'
+  parent: system.admin_config
+  route_name: dgi_actions.admin
+  weight: 100
+
+dgi_actions.identifiers:
+  title: 'Identifiers'
+  parent: dgi_actions.admin
+  route_name: dgi_actions.identifiers
+  description: 'Configurations associated with Identifiers.'
+
+# Identifiers configuration collection page
+entity.dgiactions_identifier.collection:
+  title: 'Identifier Entities'
+  parent: dgi_actions.identifiers
+  route_name: entity.dgiactions_identifier.collection
+  description: 'Identifier Collection configuration page.'
+
+# Service Data configuration collection page
+entity.dgiactions_servicedata.collection:
+  title: 'Service Data Entities'
+  parent: dgi_actions.identifiers
+  route_name: entity.dgiactions_servicedata.collection
+  description: 'Service Data Collection configuration page.'
+
+# Data Profiles configuration collection page
+entity.dgiactions_dataprofile.collection:
+  title: 'Data Profile Entities'
+  parent: dgi_actions.identifiers
+  route_name: entity.dgiactions_dataprofile.collection
+  description: 'Data Profile Collection configuration page.'

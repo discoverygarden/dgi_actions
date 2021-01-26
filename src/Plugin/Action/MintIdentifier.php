@@ -1,0 +1,118 @@
+<?php
+
+namespace Drupal\dgi_actions\Plugin\Action;
+
+use Drupal\Core\Entity\FieldableEntityInterface;
+use Drupal\Core\Entity\Exception\UndefinedLinkTemplateException;
+use Drupal\rules\Exception\InvalidArgumentException;
+use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Exception\BadResponseException;
+use GuzzleHttp\Psr7\Response;
+
+/**
+ * Basic implementation for minting an identifier.
+ */
+abstract class MintIdentifier extends IdentifierAction {
+
+  /**
+   * Gets the data of the fields provided by the data_profile config.
+   *
+   * @throws \Drupal\rules\Exception\InvalidArgumentException
+   *   If the Entity doesn't have the configured identifier field.
+   *
+   * @return array
+   *   The returned data structured in a key value pair
+   *   based on the configured data_profile.
+   */
+  protected function getFieldData() {
+    $data = [];
+    if ($this->dataProfileConfig) {
+      foreach ($this->dataProfileConfig->get('data') as $value) {
+        if ($this->entity->hasField($value['source_field'])) {
+          $data[$value['key']] = $this->entity->get($value['source_field'])->getString();
+        }
+      }
+    }
+
+    return $data;
+  }
+
+  /**
+   * Mints the identifier to the service.
+   *
+   * @return mixed
+   *   The request response returned by the service.
+   */
+  protected function mint() {
+    $request = $this->buildRequest();
+    $response = $this->sendRequest($request);
+
+    return $response;
+  }
+
+  /**
+   * Gets the Identifier from the service API response.
+   *
+   * @param \GuzzleHttp\Psr7\Response $response
+   *   Response from the service API.
+   *
+   * @return string
+   *   The identifier returned in the API response.
+   */
+  abstract protected function getIdentifierFromResponse(Response $response);
+
+  /**
+   * Sets the Entity field with the Identifier.
+   *
+   * @param string $identifier_uri
+   *   The identifier formatted as a URL.
+   */
+  protected function setIdentifierField(string $identifier_uri) {
+    if ($identifier_uri) {
+      $field = $this->identifierConfig->get('field');
+      if (!empty($field) && $this->entity->hasField($field)) {
+        $this->entity->set($field, $identifier_uri);
+        $this->entity->save();
+      }
+      else {
+        $this->logger->error('Error with Entity Identifier field. The identifier was not set to the entity.');
+      }
+    }
+    else {
+      $this->logger->error('The identifier is missing and was not set to the entity.');
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function execute($entity = NULL) {
+    if ($entity instanceof FieldableEntityInterface) {
+      try {
+        $this->entity = $entity;
+        $this->setConfigs();
+        if ($this->entity && $this->identifierConfig) {
+          $response = $this->mint();
+          $identifier_uri = $this->getIdentifierFromResponse($response);
+          $this->setIdentifierField($identifier_uri);
+        }
+        else {
+          $this->logger->error('Entity or Configs were not properly set.');
+        }
+      }
+      catch (UndefinedLinkTemplateException $ulte) {
+        $this->logger->warning('Error retrieving Entity URL: @errorMessage', ['@errorMessage' => $ulte->getMessage()]);
+      }
+      catch (InvalidArgumentException $iae) {
+        $this->logger->error('Configured field not found on Entity: @iae', ['@iae' => $iae->getMessage()]);
+      }
+      catch (RequestException $re) {
+        $this->logger->error('Bad Request: @badrequest', ['@badrequest' => $re->getMessage()]);
+      }
+      catch (BadResponseException $bre) {
+        $this->logger->error('Error in response from service: @response', ['@response' => $bre->getMessage()]);
+      }
+    }
+  }
+
+}

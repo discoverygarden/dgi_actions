@@ -1,0 +1,28 @@
+<?php
+
+/**
+ * @file
+ * Contains dgi_actions.module.
+ */
+
+use Drupal\Core\Entity\EntityInterface;
+
+/**
+ * Implements hook_entity_insert().
+ */
+function dgi_actions_entity_insert(EntityInterface $entity) {
+  $utils = \Drupal::service('dgi_actions.dgiutils');
+
+  // Execute index reactions.
+  $utils->executeEntityReactions('\Drupal\dgi_actions\Plugin\ContextReaction\EntityInsertReaction', $entity);
+}
+
+/**
+ * Implements hook_entity_delete().
+ */
+function dgi_actions_entity_delete(EntityInterface $entity) {
+  $utils = \Drupal::service('dgi_actions.dgiutils');
+
+  // Execute index reactions.
+  $utils->executeEntityReactions('\Drupal\dgi_actions\Plugin\ContextReaction\EntityDeleteReaction', $entity);
+}
