@@ -19,7 +19,7 @@ use Psr\Log\LoggerInterface;
  *   id = "dgi_actions_entity_persistent_identifier_populated",
  *   label = @Translation("Entity has persistent identifier"),
  *   context_definitions = {
- *     "entity" = @ContextDefinition("entity", required = TRUE, label = @Translation("Entity"))
+ *     "entity" = @ContextDefinition("entity", required = FALSE, label = @Translation("Entity"))
  *   }
  * )
  */
@@ -157,7 +157,6 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
         'callback' => [$this, 'identifierDropdownCallback'],
         'wrapper' => 'identifier-container',
       ],
-      '#required' => TRUE,
     ];
     $entity_fieldset['choose_entity'] = [
       '#type' => 'submit',
