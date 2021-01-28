@@ -14,7 +14,7 @@ function dgi_actions_entity_insert(EntityInterface $entity) {
   $utils = \Drupal::service('dgi_actions.dgiutils');
 
   // Execute index reactions.
-  $utils->executeEntityReactions('\Drupal\dgi_actions\Plugin\ContextReaction\EntityInsertReaction', $entity);
+  $utils->executeEntityReactions('\Drupal\dgi_actions\Plugin\ContextReaction\EntityIdentifierInsertReaction', $entity);
 }
 
 /**
@@ -24,5 +24,5 @@ function dgi_actions_entity_delete(EntityInterface $entity) {
   $utils = \Drupal::service('dgi_actions.dgiutils');
 
   // Execute index reactions.
-  $utils->executeEntityReactions('\Drupal\dgi_actions\Plugin\ContextReaction\EntityDeleteReaction', $entity);
+  $utils->executeEntityReactions('\Drupal\dgi_actions\Plugin\ContextReaction\EntityIdentifierDeleteReaction', $entity);
 }
