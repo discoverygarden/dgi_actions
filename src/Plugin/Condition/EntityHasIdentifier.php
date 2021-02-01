@@ -100,16 +100,13 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
    */
   public function evaluate() {
     $entity = $this->getContextValue('entity');
-    \Drupal::logger('Entity Missing Identifier')->notice('Is Negated as: @val', ['@val' => ($this->isNegated() ? 'true' : 'false')]);
     if ($entity instanceof FieldableEntityInterface) {
       $identifier_config = $this->configFactory->get($this->configuration['identifier']);
       $field = $identifier_config->get('field');
       $entity_type = $identifier_config->get('entity');
       $bundle = $identifier_config->get('bundle');
-      \Drupal::logger('Entity Missing Identifier')->notice('Is a Fieldable Entity');
 
       if (!empty($field) && $entity->hasField($field) && $entity->getEntityTypeId() == $entity_type && $entity->bundle() == $bundle) {
-        \Drupal::logger('Entity Missing Identifier')->notice('Field is Empty: @val', ['@val' => ($entity->get($field)->isEmpty() ? 'Empty' : 'Not Empty')]);
         return $entity->get($field)->isEmpty();
       }
       else {

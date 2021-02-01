@@ -2,7 +2,6 @@
 
 namespace Drupal\dgi_actions\Plugin\ContextReaction;
 
-use Drupal\islandora\PresetReaction\PresetReaction;
 use Drupal\context\ContextReactionPluginBase;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityStorageInterface;
