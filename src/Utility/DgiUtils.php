@@ -43,7 +43,6 @@ class DgiUtils {
     $provided = $provider->getRuntimeContexts([]);
     $this->contextManager->evaluateContexts($provided);
 
-    // Fire off index reactions.
     foreach ($this->contextManager->getActiveReactions($reaction_type) as $reaction) {
       $reaction->execute($entity);
     }
