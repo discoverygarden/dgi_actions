@@ -4,7 +4,6 @@
     "type": "drupal-module",
     "license": "GPL-3.0-only",
     "require": {
-      "islandora/islandora": "^1",
-      "drupal/entity_route_context": "^1.1"
+      "islandora/islandora": "^1"
     }
 }
