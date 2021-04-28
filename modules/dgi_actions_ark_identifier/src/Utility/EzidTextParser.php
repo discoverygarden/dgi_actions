@@ -2,13 +2,14 @@
 
 namespace Drupal\dgi_actions_ark_identifier\Utility;
 
+use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Psr\Log\LoggerInterface;
 
 /**
  * Text parser for CDL EZID Requests and Responses.
  */
-class EzidTextParser {
+class EzidTextParser implements ContainerInjectionInterface {
 
   /**
    * Logger.
@@ -32,7 +33,7 @@ class EzidTextParser {
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): EzidTextParser {
     return new static(
        $container->get('logger.channel.dgi_actions')
     );
@@ -47,7 +48,7 @@ class EzidTextParser {
    * @return array
    *   Response body reorganized into a key-value array.
    */
-  public function parseEzidResponse(string $response) {
+  public function parseEzidResponse(string $response): array {
     $responseArray = preg_split('/\r\n|\r|\n/', trim($response));
     $assocArray = [];
     foreach ($responseArray as $res_line) {
@@ -69,7 +70,7 @@ class EzidTextParser {
    * @return string
    *   The request content body.
    */
-  public function buildEzidRequestBody(array $data) {
+  public function buildEzidRequestBody(array $data): string {
     $output = "";
     foreach ($data as $key => $val) {
       $output .= $key . ": " . $val . "\r\n";

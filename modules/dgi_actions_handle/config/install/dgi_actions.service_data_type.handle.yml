@@ -1,0 +1,23 @@
+id: handle
+label: 'Handle.net Service Data'
+data:
+  -
+    id: host
+    type: uri
+    label: 'Host'
+    description: 'Host address for the Handle.net endpoint.'
+  -
+    id: username
+    label: 'Username'
+    type: string
+    description: 'Username of the Handle administrator.'
+  -
+    id: password
+    label: 'Password'
+    type: string
+    description: 'Password of the Handle administrator.'
+  -
+    id: prefix
+    label: 'Prefix'
+    type: string
+    description: 'Handle prefix as specified from Handle.net.'

@@ -4,9 +4,7 @@ namespace Drupal\dgi_actions\Plugin\Action;
 
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Entity\Exception\UndefinedLinkTemplateException;
-use Drupal\rules\Exception\InvalidArgumentException;
 use GuzzleHttp\Exception\RequestException;
-use GuzzleHttp\Exception\BadResponseException;
 use GuzzleHttp\Psr7\Response;
 
 /**
@@ -17,14 +15,14 @@ abstract class MintIdentifier extends IdentifierAction {
   /**
    * Gets the data of the fields provided by the data_profile config.
    *
-   * @throws \Drupal\rules\Exception\InvalidArgumentException
+   * @throws \InvalidArgumentException
    *   If the Entity doesn't have the configured identifier field.
    *
    * @return array
    *   The returned data structured in a key value pair
    *   based on the configured data_profile.
    */
-  protected function getFieldData() {
+  protected function getFieldData(): array {
     $data = [];
     if ($this->dataProfileConfig) {
       foreach ($this->dataProfileConfig->get('data') as $value) {
@@ -45,9 +43,7 @@ abstract class MintIdentifier extends IdentifierAction {
    */
   protected function mint() {
     $request = $this->buildRequest();
-    $response = $this->sendRequest($request);
-
-    return $response;
+    return $this->sendRequest($request);
   }
 
   /**
@@ -59,7 +55,7 @@ abstract class MintIdentifier extends IdentifierAction {
    * @return string
    *   The identifier returned in the API response.
    */
-  abstract protected function getIdentifierFromResponse(Response $response);
+  abstract protected function getIdentifierFromResponse(Response $response): string;
 
   /**
    * Sets the Entity field with the Identifier.
@@ -86,7 +82,7 @@ abstract class MintIdentifier extends IdentifierAction {
   /**
    * {@inheritdoc}
    */
-  public function execute($entity = NULL) {
+  public function execute($entity = NULL): void {
     if ($entity instanceof FieldableEntityInterface) {
       try {
         $this->entity = $entity;
@@ -97,20 +93,32 @@ abstract class MintIdentifier extends IdentifierAction {
           $this->setIdentifierField($identifier_uri);
         }
         else {
-          $this->logger->error('Entity or Configs were not properly set.');
+          $this->logger->error('Minting failed for @entity: Entity or Configs were not properly set.', ['@entity' => $this->getEntity()->uuid()]);
         }
       }
       catch (UndefinedLinkTemplateException $ulte) {
-        $this->logger->warning('Error retrieving Entity URL: @errorMessage', ['@errorMessage' => $ulte->getMessage()]);
+        $this->logger->warning('Minting failed for @entity: Error retrieving Entity URL: @errorMessage', [
+          '@entity' => $this->getEntity()->uuid(),
+          '@errorMessage' => $ulte->getMessage(),
+        ]);
       }
-      catch (InvalidArgumentException $iae) {
-        $this->logger->error('Configured field not found on Entity: @iae', ['@iae' => $iae->getMessage()]);
+      catch (\InvalidArgumentException $iae) {
+        $this->logger->error('Minting failed for @entity: Configured field not found on Entity: @iae', [
+          '@entity' => $this->getEntity()->uuid(),
+          '@iae' => $iae->getMessage(),
+        ]);
       }
       catch (RequestException $re) {
-        $this->logger->error('Bad Request: @badrequest', ['@badrequest' => $re->getMessage()]);
+        $this->logger->error('Minting failed for @entity: Bad Request: @badrequest', [
+          '@entity' => $this->getEntity()->uuid(),
+          '@badrequest' => $re->getMessage(),
+        ]);
       }
-      catch (BadResponseException $bre) {
-        $this->logger->error('Error in response from service: @response', ['@response' => $bre->getMessage()]);
+      catch (\Exception $e) {
+        $this->logger->error('Minting failed for @entity: Error: @exception', [
+          '@entity' => $this->getEntity()->uuid(),
+          '@exception' => $e->getMessage(),
+        ]);
       }
     }
   }

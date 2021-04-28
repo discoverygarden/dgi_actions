@@ -8,10 +8,11 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use GuzzleHttp\Client;
+use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Psr7\Request;
+use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerInterface;
-use Drupal\Core\Config\ConfigFactory;
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Session\AccountInterface;
 
 /**
@@ -22,28 +23,28 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
   /**
    * Config Factory.
    *
-   * @var \Drupal\Core\Config\ConfigFactory
+   * @var \Drupal\Core\Config\ConfigFactoryInterface
    */
   protected $configFactory;
 
   /**
    * Identifier config.
    *
-   * @var array
+   * @var \Drupal\Core\Config\ImmutableConfig
    */
   protected $identifierConfig;
 
   /**
    * Service Data config.
    *
-   * @var array
+   * @var \Drupal\Core\Config\ImmutableConfig
    */
   protected $serviceDataConfig;
 
   /**
    * Data Profile config.
    *
-   * @var array
+   * @var \Drupal\Core\Config\ImmutableConfig
    */
   protected $dataProfileConfig;
 
@@ -64,14 +65,14 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
   /**
    * Http Client connection.
    *
-   * @var \GuzzleHttp\Client
+   * @var \GuzzleHttp\ClientInterface
    */
   protected $client;
 
   /**
    * Identifier Utils.
    *
-   * @var \Drupal\dgi_actions\Utilities\IdentifierUtils
+   * @var \Drupal\dgi_actions\Utility\IdentifierUtils
    */
   protected $utils;
 
@@ -84,22 +85,22 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
    *   The plugin ID for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
-   * @param \GuzzleHttp\Client $client
+   * @param \GuzzleHttp\ClientInterface $client
    *   Http Client connection.
    * @param \Psr\Log\LoggerInterface $logger
    *   Logger.
-   * @param \Drupal\Core\Config\ConfigFactory $config_factory
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   Config Factory.
-   * @param \Drupal\dgi_actions\Utilities\IdentifierUtils $utils
+   * @param \Drupal\dgi_actions\Utility\IdentifierUtils $utils
    *   Identifier utils.
    */
   public function __construct(
     array $configuration,
     $plugin_id,
     $plugin_definition,
-    Client $client,
+    ClientInterface $client,
     LoggerInterface $logger,
-    ConfigFactory $config_factory,
+    ConfigFactoryInterface $config_factory,
     IdentifierUtils $utils
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
@@ -128,26 +129,26 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
    * {@inheritdoc}
    */
   public function access($object, AccountInterface $account = NULL, $return_as_object = FALSE) {
-    $result = $object->access('read', $account, $return_as_object);
-    return $result;
+    return $object->access('read', $account, $return_as_object);
   }
 
   /**
    * Gets the External URL of the Entity.
    *
-   * @throws UndefinedLinkTemplateException
-   *
    * @return string
-   *   Entitiy's external URL as a string.
+   *   Entity's external URL as a string.
+   *
+   * @throws \Drupal\Core\Entity\EntityMalformedException
+   * @throws \Drupal\Core\Entity\Exception\UndefinedLinkTemplateException
    */
-  public function getexternalurl() {
-    return $this->entity->tourl('canonical', ['absolute' => TRUE])->tostring(TRUE)->getgeneratedurl();
+  public function getExternalUrl(): string {
+    return $this->entity->toUrl('canonical', ['absolute' => TRUE])->toString(TRUE)->getGeneratedUrl();
   }
 
   /**
    * Sets the entity value.
    *
-   * @param Drupal\Core\Entity\EntityInterface $entity
+   * @param \Drupal\Core\Entity\EntityInterface $entity
    *   Sets the object's $entity value.
    */
   public function setEntity(EntityInterface $entity) {
@@ -157,10 +158,10 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
   /**
    * Gets the entity value.
    *
-   * @return Drupal\Core\Entity\EntityInterface
+   * @return \Drupal\Core\Entity\EntityInterface
    *   Returns the EntityInterface value of entity.
    */
-  public function getEntity() {
+  public function getEntity(): EntityInterface {
     return $this->entity;
   }
 
@@ -170,7 +171,7 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
    * @return string
    *   Request type. (IE. POST, GET, DELETE, etc).
    */
-  abstract protected function getRequestType();
+  abstract protected function getRequestType(): string;
 
   /**
    * Gets the URI end-point for the request.
@@ -178,23 +179,21 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
    * @return string
    *   URI end-point for the request.
    */
-  abstract protected function getUri();
+  abstract protected function getUri(): string;
 
   /**
    * Builds the Guzzle HTTP Request.
    *
-   * @throws GuzzleHttp\Exception\RequestException
+   * @throws \GuzzleHttp\Exception\RequestException
    *   Thrown by Guzzle when creating an invalid Request.
    *
-   * @return GuzzleHttp\Psr7\Request
+   * @return \GuzzleHttp\Psr7\Request
    *   The Guzzle HTTP Request Object.
    */
-  protected function buildRequest() {
+  protected function buildRequest(): Request {
     $requestType = $this->getRequestType();
     $uri = $this->getUri();
-    $request = new Request($requestType, $uri);
-
-    return $request;
+    return new Request($requestType, $uri);
   }
 
   /**
@@ -203,36 +202,34 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
    * @return array
    *   Required params for the applicable service.
    */
-  abstract protected function getRequestParams();
+  abstract protected function getRequestParams(): array;
 
   /**
    * Sends the Request and Request Body.
    *
-   * @param GuzzleHttp\Psr7\Request $request
+   * @param \GuzzleHttp\Psr7\Request $request
    *   The Guzzle HTTP Request Object.
    *
-   * @throws GuzzleHttp\Exception\BadResponseException
-   *   Thrown when receiving 4XX or 5XX error.
-   *
-   * @return GuzzleHttp\Psr7\Response
+   * @return \Psr\Http\Message\ResponseInterface
    *   The Guzzle HTTP Response Object.
+   *
+   * @throws \GuzzleHttp\Exception\BadResponseException
+   *   Thrown when receiving 4XX or 5XX error.
    */
-  protected function sendRequest(Request $request) {
+  protected function sendRequest(Request $request): ResponseInterface {
     $requestParams = $this->getRequestParams();
-    $response = $this->client->send($request, $requestParams);
-
-    return $response;
+    return $this->client->send($request, $requestParams);
   }
 
   /**
    * {@inheritdoc}
    */
-  abstract public function execute($entity = NULL);
+  abstract public function execute($entity = NULL): void;
 
   /**
    * {@inheritdoc}
    */
-  public function defaultConfiguration() {
+  public function defaultConfiguration(): array {
     return [
       'identifier_type' => '',
     ];
@@ -241,7 +238,7 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
   /**
    * {@inheritdoc}
    */
-  public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
+  public function buildConfigurationForm(array $form, FormStateInterface $form_state): array {
     $form['identifier_type'] = [
       '#type' => 'select',
       '#title' => $this->t('Identifier Type'),
@@ -257,7 +254,7 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
   /**
    * {@inheritdoc}
    */
-  public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
+  public function submitConfigurationForm(array &$form, FormStateInterface $form_state): void {
     $this->configuration = $form_state->getValues();
     $this->setConfigs();
   }
@@ -269,7 +266,7 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
    * dataProfileConfig variables to their corresponding
    * config data based on the currently selected identifier.
    */
-  public function setConfigs() {
+  public function setConfigs(): void {
     $this->identifierConfig = $this->configFactory->get($this->configuration['identifier_type']);
     if (!empty($this->identifierConfig->get())) {
       $this->serviceDataConfig = $this->configFactory->get($this->identifierConfig->get('service_data'));

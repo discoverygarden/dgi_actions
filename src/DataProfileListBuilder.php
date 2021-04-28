@@ -50,7 +50,7 @@ class DataProfileListBuilder extends ConfigEntityListBuilder {
   /**
    * {@inheritdoc}
    */
-  public function buildHeader() {
+  public function buildHeader(): array {
     $header['label'] = $this->t('Profile Label');
     $header['id'] = $this->t('Machine name');
     $header['entity'] = $this->t('Entity');
@@ -62,16 +62,17 @@ class DataProfileListBuilder extends ConfigEntityListBuilder {
   /**
    * {@inheritdoc}
    */
-  public function buildRow(EntityInterface $entity) {
+  public function buildRow(EntityInterface $entity): array {
     $row['label'] = $entity->label();
     $row['id'] = $entity->id();
     $config = $this->configFactory->get('dgi_actions.data_profile.' . $entity->id());
     $row['entity'] = $config->get('entity');
     $row['bundle'] = $config->get('bundle');
+    $data_profile_type = '';
     if ($config->get('dataprofile')) {
       $data_profile_type = $this->configFactory->get($config->get('dataprofile'))->get('label');
     }
-    $row['dataprofile'] = ($data_profile_type) ?: '';
+    $row['dataprofile'] = $data_profile_type;
 
     return $row + parent::buildRow($entity);
   }

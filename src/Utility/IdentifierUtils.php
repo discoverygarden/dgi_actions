@@ -2,6 +2,7 @@
 
 namespace Drupal\dgi_actions\Utility;
 
+use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Config\ConfigFactory;
 use Psr\Log\LoggerInterface;
@@ -9,7 +10,7 @@ use Psr\Log\LoggerInterface;
 /**
  * DGI Actions Identifier Utils.
  */
-class IdentifierUtils {
+class IdentifierUtils implements ContainerInjectionInterface {
 
   /**
    * Config Factory.
@@ -44,7 +45,7 @@ class IdentifierUtils {
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): IdentifierUtils {
     return new static(
       $container->get('config.factory'),
       $container->get('logger.channel.dgi_actions')
@@ -57,7 +58,7 @@ class IdentifierUtils {
    * @return array
    *   Returns list of configured DGI Actions Identifiers.
    */
-  public function getIdentifiers() {
+  public function getIdentifiers(): array {
     $configs = $this->configFactory->listAll('dgi_actions.identifier');
     $config_options = [];
     if (!empty($configs)) {

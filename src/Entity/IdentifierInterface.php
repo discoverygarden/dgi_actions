@@ -15,7 +15,7 @@ interface IdentifierInterface extends ConfigEntityInterface {
    * @return string
    *   Returns entity type.
    */
-  public function getEntity();
+  public function getEntity(): string;
 
   /**
    * Gets the set Bundle type.
@@ -23,7 +23,7 @@ interface IdentifierInterface extends ConfigEntityInterface {
    * @return string
    *   Returns bundle type.
    */
-  public function getBundle();
+  public function getBundle(): string;
 
   /**
    * Gets the set Field.
@@ -31,7 +31,7 @@ interface IdentifierInterface extends ConfigEntityInterface {
    * @return string
    *   Returns field type.
    */
-  public function getField();
+  public function getField(): string;
 
   /**
    * Gets the set Service Data ID.
@@ -39,7 +39,7 @@ interface IdentifierInterface extends ConfigEntityInterface {
    * @return string
    *   Returns Service Data ID type.
    */
-  public function getServiceData();
+  public function getServiceData(): string;
 
   /**
    * Gets the set Data Profile ID.
@@ -47,6 +47,6 @@ interface IdentifierInterface extends ConfigEntityInterface {
    * @return string
    *   Returns Data Profile ID type.
    */
-  public function getDataProfile();
+  public function getDataProfile(): string;
 
 }

@@ -15,7 +15,7 @@ interface DataProfileInterface extends ConfigEntityInterface {
    * @return string
    *   Returns entity type.
    */
-  public function getEntity();
+  public function getEntity(): string;
 
   /**
    * Gets the set Bundle type.
@@ -23,7 +23,7 @@ interface DataProfileInterface extends ConfigEntityInterface {
    * @return string
    *   Returns bundle type.
    */
-  public function getBundle();
+  public function getBundle(): string;
 
   /**
    * Gets the set Data Profile Type.
@@ -31,7 +31,7 @@ interface DataProfileInterface extends ConfigEntityInterface {
    * @return string
    *   Returns data profile type id.
    */
-  public function getDataprofile();
+  public function getDataprofile(): string;
 
   /**
    * Gets the set Data.
@@ -39,7 +39,7 @@ interface DataProfileInterface extends ConfigEntityInterface {
    * @return array
    *   Returns data array.
    */
-  public function getData();
+  public function getData(): array;
 
   /**
    * Sets the set Data.

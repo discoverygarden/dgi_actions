@@ -99,47 +99,37 @@ class Identifier extends ConfigEntityBase implements IdentifierInterface {
   protected $service_data;
 
   /**
-   * Gets the Description value.
-   *
-   * @return string|null
-   *   Returns the description variable.
-   */
-  public function getDescription() {
-    return $this->description;
-  }
-
-  /**
    * {@inheritdoc}
    */
-  public function getEntity() {
+  public function getEntity(): string {
     return $this->entity;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getBundle() {
+  public function getBundle(): string {
     return $this->bundle;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getField() {
+  public function getField(): string {
     return $this->field;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getServiceData() {
+  public function getServiceData(): string {
     return $this->service_data;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getDataProfile() {
+  public function getDataProfile(): string {
     return $this->data_profile;
   }
 

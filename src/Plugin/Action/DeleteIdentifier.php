@@ -3,10 +3,8 @@
 namespace Drupal\dgi_actions\Plugin\Action;
 
 use Drupal\Core\Entity\FieldableEntityInterface;
-use Drupal\rules\Exception\InvalidArgumentException;
 use GuzzleHttp\Exception\RequestException;
-use GuzzleHttp\Exception\BadResponseException;
-use GuzzleHttp\Psr7\Response;
+use Psr\Http\Message\ResponseInterface;
 
 /**
  * Basic implementation for deleting an identifier.
@@ -16,13 +14,13 @@ abstract class DeleteIdentifier extends IdentifierAction {
   /**
    * Gets the Identifier from the entity's field.
    *
-   * @throws \Drupal\rules\Exception\InvalidArgumentException
+   * @throws \InvalidArgumentException
    *   If the Entity doesn't have the configured identifier field.
    *
    * @return string
    *   Returns the value stored in the identifier field as a string.
    */
-  public function getIdentifierFromEntity() {
+  public function getIdentifierFromEntity(): string {
     $field = $this->identifierConfig->get('field');
     $identifier = $this->entity->get($field)->getString();
     if (empty($identifier)) {
@@ -35,10 +33,10 @@ abstract class DeleteIdentifier extends IdentifierAction {
   /**
    * Handles identifier specific actions for response.
    *
-   * @param GuzzleHttp\Psr7\Response $response
+   * @param \Psr\Http\Message\ResponseInterface $response
    *   The Guzzle HTTP Response Object.
    */
-  abstract protected function handleResponse(Response $response);
+  abstract protected function handleResponse(ResponseInterface $response);
 
   /**
    * Delete's the identifier from the service.
@@ -52,7 +50,7 @@ abstract class DeleteIdentifier extends IdentifierAction {
   /**
    * {@inheritdoc}
    */
-  public function execute($entity = NULL) {
+  public function execute($entity = NULL): void {
     if ($entity instanceof FieldableEntityInterface) {
       try {
         $this->entity = $entity;
@@ -61,14 +59,23 @@ abstract class DeleteIdentifier extends IdentifierAction {
           $this->delete();
         }
       }
-      catch (InvalidArgumentException $iae) {
-        $this->logger->error('Configured field not found on Entity: @iae', ['@iae' => $iae->getMessage()]);
+      catch (\InvalidArgumentException $iae) {
+        $this->logger->error('Deleting failed for @entity: Configured field not found on Entity: @iae', [
+          '@entity' => $this->getEntity()->uuid(),
+          '@iae' => $iae->getMessage(),
+        ]);
       }
       catch (RequestException $re) {
-        $this->logger->error('Invalid Request: @re', ['@re' => $re->getMessage()]);
+        $this->logger->error('Deleting failed for @entity: Bad Request: @re', [
+          '@entity' => $this->getEntity()->uuid(),
+          '@re' => $re->getMessage(),
+        ]);
       }
-      catch (BadResponseException $bre) {
-        $this->logger->error('Bad Response: @bre', ['@bre' => $bre->getMessage()]);
+      catch (\Exception $e) {
+        $this->logger->error('Deleting failed for @entity: Error: @exception', [
+          '@entity' => $this->getEntity()->uuid(),
+          '@exception' => $e->getMessage(),
+        ]);
       }
     }
   }

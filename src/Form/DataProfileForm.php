@@ -78,7 +78,7 @@ class DataProfileForm extends EntityForm {
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): DataProfileForm {
     return new static(
       $container->get('state'),
       $container->get('theme_handler'),
@@ -91,10 +91,9 @@ class DataProfileForm extends EntityForm {
   /**
    * {@inheritdoc}
    */
-  public function form(array $form, FormStateInterface $form_state) {
+  public function form(array $form, FormStateInterface $form_state): array {
     $form = parent::form($form, $form_state);
 
-    /** @var \Drupal\dgi_actions\Entity\DataProfileInterface $config */
     $config = $this->entity;
 
     $data_profile_array = $this->dataprofileLists();
@@ -324,7 +323,7 @@ class DataProfileForm extends EntityForm {
    * @return array
    *   Returns available Data Profile configs and options.
    */
-  public function dataprofileLists() {
+  public function dataprofileLists(): array {
     $list = $this->configFactory->listAll('dgi_actions.data_profile_type');
 
     $returns = [];
@@ -343,7 +342,7 @@ class DataProfileForm extends EntityForm {
    * @return array
    *   Returns Entity bundles and options.
    */
-  public function entityDropdownList() {
+  public function entityDropdownList(): array {
     $field_map = $this->entityFieldManager->getFieldMap();
 
     // Building Entity Bundle List and Options.
@@ -362,7 +361,7 @@ class DataProfileForm extends EntityForm {
    * @return array
    *   Returns bundle fields and options.
    */
-  public function bundleDropdownList($entity_bundles = []) {
+  public function bundleDropdownList($entity_bundles = []): array {
     $returns = [];
     foreach ($entity_bundles as $entity => $bundles) {
       foreach ($bundles as $bundle => $bundle_data) {
@@ -427,7 +426,7 @@ class DataProfileForm extends EntityForm {
    * @return string[]
    *   The array of configuration names.
    */
-  protected function filterConfigNames($text) {
+  protected function filterConfigNames($text): array {
     if (!is_array($text)) {
       $text = explode("\n", $text);
     }

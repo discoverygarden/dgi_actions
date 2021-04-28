@@ -1,5 +1,6 @@
 {
     "name": "discoverygarden/dgi_actions",
+    "description": "Integration with external identifier service providers.",
     "type": "drupal-module",
     "license": "GPL-3.0-only",
     "require": {

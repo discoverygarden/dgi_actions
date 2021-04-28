@@ -4,6 +4,7 @@ namespace Drupal\dgi_actions\Form;
 
 use Drupal\Core\Entity\EntityConfirmFormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Url;
 
 /**
@@ -14,21 +15,21 @@ class ServiceDataDeleteForm extends EntityConfirmFormBase {
   /**
    * {@inheritdoc}
    */
-  public function getQuestion() {
+  public function getQuestion(): TranslatableMarkup {
     return $this->t('Are you sure you want to delete %name?', ['%name' => $this->entity->label()]);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getCancelUrl() {
-    return new Url('dgi_actions.entity.dgiactions_servicedata.collection');
+  public function getCancelUrl(): Url {
+    return new Url('entity.dgiactions_servicedata.collection');
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getConfirmText() {
+  public function getConfirmText(): TranslatableMarkup {
     return $this->t('Delete');
   }
 

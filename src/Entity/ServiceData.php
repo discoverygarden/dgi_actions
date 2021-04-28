@@ -75,33 +75,23 @@ class ServiceData extends ConfigEntityBase implements ServiceDataInterface {
   protected $data;
 
   /**
-   * Gets the Description value.
-   *
-   * @return string|null
-   *   Returns the description variable.
-   */
-  public function getDescription() {
-    return $this->description;
-  }
-
-  /**
    * {@inheritdoc}
    */
-  public function setData(array $data) {
+  public function setData(array $data): void {
     $this->data = $data;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getData() {
+  public function getData(): array {
     return $this->data;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getServiceDataType() {
+  public function getServiceDataType(): ?string {
     return $this->service_data_type;
   }
 

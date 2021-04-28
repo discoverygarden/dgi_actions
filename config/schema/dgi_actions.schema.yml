@@ -87,9 +87,8 @@ dgi_actions.service_data.*:
     service_data_type:
       type: string
     data:
-      type: sequence
-      sequence:
-        type: string
+      type: dgi_actions.service_data_type.[service_data_type]
+
 
 dgi_actions.service_data_type.*:
   type: config_object
@@ -99,14 +98,21 @@ dgi_actions.service_data_type.*:
       type: string
     id:
       type: string
+    state_key:
+      type: string
     data:
       type: sequence
       sequence:
         type: mapping
         mapping:
+          type:
+            type: string
+          data:
+            type: "[%parent.type]"
           id:
             type: string
           label:
             type: string
           description:
             type: string
+

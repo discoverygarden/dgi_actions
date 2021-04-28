@@ -7,8 +7,8 @@ use Drupal\dgi_actions\Plugin\Action\DeleteIdentifier;
 use Drupal\dgi_actions\Utility\IdentifierUtils;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use GuzzleHttp\Client;
-use GuzzleHttp\Psr7\Response;
 use Drupal\Core\Config\ConfigFactory;
+use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerInterface;
 use Drupal\Core\State\StateInterface;
 
@@ -28,7 +28,7 @@ class DeleteArkIdentifier extends DeleteIdentifier {
   /**
    * CDL EZID Text Parser.
    *
-   * @var \Drupal\dgi_actions\Utilities\EzidTextParser
+   * @var \Drupal\dgi_actions_ark_identifier\Utility\EzidTextParser
    */
   protected $ezidParser;
 
@@ -54,9 +54,9 @@ class DeleteArkIdentifier extends DeleteIdentifier {
    *   Logger.
    * @param \Drupal\Core\Config\ConfigFactory $config_factory
    *   Config Factory.
-   * @param \Drupal\dgi_actions\Utilities\IdentifierUtils $utils
+   * @param \Drupal\dgi_actions\Utility\IdentifierUtils $utils
    *   Identifier utils.
-   * @param \Drupal\dgi_actions\Utilities\EzidTextParser $ezid_parser
+   * @param \Drupal\dgi_actions_ark_identifier\Utility\EzidTextParser $ezid_parser
    *   CDL EZID Text parser.
    * @param \Drupal\Core\State\StateInterface $state
    *   State API.
@@ -80,7 +80,7 @@ class DeleteArkIdentifier extends DeleteIdentifier {
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): DeleteArkIdentifier {
     return new static(
       $configuration,
       $plugin_id,
@@ -99,38 +99,34 @@ class DeleteArkIdentifier extends DeleteIdentifier {
   /**
    * {@inheritdoc}
    */
-  protected function getRequestType() {
+  protected function getRequestType(): string {
     return 'DELETE';
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function getUri() {
-    $identifier = $this->getIdentifierFromEntity();
-
-    return $identifier;
+  protected function getUri(): string {
+    return $this->getIdentifierFromEntity();
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function getRequestParams() {
+  protected function getRequestParams(): array {
     $creds = $this->state->get($this->serviceDataConfig->get('data.state_key'));
-    $requestParams = [
+    return [
       'auth' => [
         $creds['username'],
         $creds['password'],
       ],
     ];
-
-    return $requestParams;
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function handleResponse(Response $response) {
+  protected function handleResponse(ResponseInterface $response): void {
     $contents = $response->getBody()->getContents();
     $filteredResponse = $this->ezidParser->parseEzidResponse($contents);
 

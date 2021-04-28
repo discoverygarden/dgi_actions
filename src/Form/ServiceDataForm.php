@@ -56,7 +56,7 @@ class ServiceDataForm extends EntityForm {
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): ServiceDataForm {
     return new static(
       $container->get('state'),
       $container->get('theme_handler'),
@@ -67,14 +67,13 @@ class ServiceDataForm extends EntityForm {
   /**
    * {@inheritdoc}
    */
-  public function form(array $form, FormStateInterface $form_state) {
+  public function form(array $form, FormStateInterface $form_state): array {
     $form = parent::form($form, $form_state);
 
     $servicedata = self::servicedataLists();
     $servicedata_configs =& $servicedata['servicedata_configs'];
     $servicedata_options =& $servicedata['servicedata_options'];
 
-    /** @var \Drupal\dgi_actions\Entity\IdentifierInterface $config */
     $config = $this->entity;
 
     $state_key = 'dgi_actions.service_data.' . $config->id();
@@ -145,6 +144,7 @@ class ServiceDataForm extends EntityForm {
     $fieldset =& $form['servicedata_fieldset']['servicedata_fieldset_container']['servicedata_fields_fieldset'];
     if ($selected_servicedatatype) {
       $fields = $servicedata_configs[$selected_servicedatatype]->get('data');
+      // @todo This should really be re-worked to utilize https://www.drupal.org/docs/8/modules/typed-data-api-enhancements/typeddata-form-widgets.
       foreach ($fields as $field) {
         $fieldset[$field['id']] = [
           '#type' => 'textfield',
@@ -176,7 +176,6 @@ class ServiceDataForm extends EntityForm {
       $fieldset['#access'] = FALSE;
       $fieldset['#disabled'] = TRUE;
     }
-
     return $form;
   }
 
@@ -193,13 +192,13 @@ class ServiceDataForm extends EntityForm {
    * @return array
    *   Returns Service Data configs and options lists.
    */
-  public function servicedataLists() {
+  public function servicedataLists(): array {
     $list = $this->configFactory->listAll('dgi_actions.service_data_type');
     $returns = [];
     foreach ($list as $config_id) {
       $config = $this->configFactory->get($config_id);
-      $returns['servicedata_configs'][$config_id] = $config;
-      $returns['servicedata_options'][$config->getName()] = $config->get('label');
+      $returns['servicedata_configs'][$config->get('id')] = $config;
+      $returns['servicedata_options'][$config->get('id')] = $config->get('label');
     }
     return $returns;
   }
@@ -231,6 +230,7 @@ class ServiceDataForm extends EntityForm {
 
     $fields = $service_data['servicedata_configs'][$config->getServiceDataType()]->get('data');
     $data = [];
+    $creds = [];
     foreach ($fields as $field) {
       $form_key = $field['id'];
       if (!empty($form_state->getValue($form_key))) {
@@ -238,17 +238,16 @@ class ServiceDataForm extends EntityForm {
           $creds[$form_key] = $form_state->getValue($form_key);
         }
         else {
-          $data[$form_key] = $form_state->getValue($form_key);
+          $data['data'][$form_key]['data'] = $form_state->getValue($form_key);
+          $data['data'][$form_key]['type'] = $field['type'] ?? 'string';
         }
       }
     }
-
     $state_key = 'dgi_actions.service_data.' . $config->id();
     if ($form_state->getValue('password')) {
       $this->state->set($state_key, $creds);
     }
     $data['state_key'] = $state_key;
-
     // Clearing the data in case there was a different
     // Data Profile with data set previously.
     $config->setData([]);
@@ -264,7 +263,7 @@ class ServiceDataForm extends EntityForm {
    * @return string[]
    *   The array of configuration names.
    */
-  protected function filterConfigNames($text) {
+  protected function filterConfigNames($text): array {
     if (!is_array($text)) {
       $text = explode("\n", $text);
     }

@@ -78,7 +78,7 @@ class IdentifierForm extends EntityForm {
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): IdentifierForm {
     return new static(
       $container->get('state'),
       $container->get('theme_handler'),
@@ -91,10 +91,9 @@ class IdentifierForm extends EntityForm {
   /**
    * {@inheritdoc}
    */
-  public function form(array $form, FormStateInterface $form_state) {
+  public function form(array $form, FormStateInterface $form_state): array {
     $form = parent::form($form, $form_state);
 
-    /** @var \Drupal\dgi_actions\Entity\IdentifierInterface $config */
     $config = $this->entity;
 
     $data_profile_list = $this->configFactory->listAll('dgi_actions.data_profile.');
@@ -226,6 +225,8 @@ class IdentifierForm extends EntityForm {
     $bundle_fieldset['fields_fieldset_container']['fields_fieldset'] = [
       '#type' => 'fieldset',
       '#title' => $this->t('Field Selection'),
+      '#access' => (bool) $selected['bundle'],
+      '#disabled' => !$selected['bundle'],
     ];
 
     // Fields Fieldset Reference.
@@ -287,7 +288,6 @@ class IdentifierForm extends EntityForm {
         '#disabled' => TRUE,
       ];
     }
-
     if (!$selected['entity']) {
       // Change the field title to provide user with some feedback on why the
       // field is disabled.
@@ -297,20 +297,6 @@ class IdentifierForm extends EntityForm {
       $bundle_fieldset['bundle']['#disabled'] = TRUE;
       $bundle_fieldset['choose_bundle']['#access'] = FALSE;
       $bundle_fieldset['choose_bundle']['#disabled'] = TRUE;
-    }
-
-    if (!$selected['bundle']) {
-      // Change the field title to provide user with some feedback on why the
-      // field is disabled.
-      $fields_fieldset['#access'] = FALSE;
-      $fields_fieldset['#disabled'] = TRUE;
-    }
-
-    if (!$selected['data_profile']) {
-      // Change the field title to provide user with some feedback on why the
-      // field is disabled.
-      $fields_fieldset['#access'] = FALSE;
-      $fields_fieldset['#disabled'] = TRUE;
     }
 
     return $form;
@@ -343,7 +329,7 @@ class IdentifierForm extends EntityForm {
    * @return array
    *   Returns Entity bundles and options.
    */
-  public function entityDropdownList() {
+  public function entityDropdownList(): array {
     $field_map = $this->entityFieldManager->getFieldMap();
 
     // Building Entity Bundle List and Options.
@@ -362,7 +348,7 @@ class IdentifierForm extends EntityForm {
    * @return array
    *   Returns bundle fields and options.
    */
-  public function bundleDropdownList($entity_bundles = []) {
+  public function bundleDropdownList($entity_bundles = []): array {
     $returns = [];
     foreach ($entity_bundles as $entity => $bundles) {
       foreach ($bundles as $bundle => $bundle_data) {
@@ -384,7 +370,7 @@ class IdentifierForm extends EntityForm {
    * @return array
    *   An key value list of options.
    */
-  protected function listOptionsBuilder(array $configs) {
+  protected function listOptionsBuilder(array $configs): array {
     $options = [];
     foreach ($configs as $config_id) {
       $config = $this->configFactory->get($config_id);
@@ -403,7 +389,7 @@ class IdentifierForm extends EntityForm {
    * @return string[]
    *   The array of configuration names.
    */
-  protected function filterConfigNames($text) {
+  protected function filterConfigNames($text): array {
     if (!is_array($text)) {
       $text = explode("\n", $text);
     }

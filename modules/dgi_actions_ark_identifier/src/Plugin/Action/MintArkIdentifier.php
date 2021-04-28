@@ -28,7 +28,7 @@ class MintArkIdentifier extends MintIdentifier {
   /**
    * CDL EZID Text Parser.
    *
-   * @var \Drupal\dgi_actions\Utilities\EzidTextParser
+   * @var \Drupal\dgi_actions_ark_identifier\Utility\EzidTextParser
    */
   protected $ezidParser;
 
@@ -54,9 +54,9 @@ class MintArkIdentifier extends MintIdentifier {
    *   Logger.
    * @param \Drupal\Core\Config\ConfigFactory $config_factory
    *   Config Factory.
-   * @param \Drupal\dgi_actions\Utilities\IdentifierUtils $utils
+   * @param \Drupal\dgi_actions\Utility\IdentifierUtils $utils
    *   Identifier utils.
-   * @param \Drupal\dgi_actions\Utilities\EzidTextParser $ezid_parser
+   * @param \Drupal\dgi_actions_ark_identifier\Utility\EzidTextParser $ezid_parser
    *   CDL EZID Text parser.
    * @param \Drupal\Core\State\StateInterface $state
    *   State API.
@@ -80,7 +80,7 @@ class MintArkIdentifier extends MintIdentifier {
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): MintArkIdentifier {
     return new static(
       $configuration,
       $plugin_id,
@@ -108,7 +108,7 @@ class MintArkIdentifier extends MintIdentifier {
    *   Returns the stringified version of the key-value
    *   pairs else returns an empty string if $data is empty or null.
    */
-  protected function buildRequestBody(array $data) {
+  protected function buildRequestBody(array $data): string {
     // Setting custom values for the identifiers internal metadata.
     // Adding External URL to the Data Array under the EZID _target key.
     // Also setting _status as reserved. Else identifier cannot be deleted.
@@ -120,15 +120,13 @@ class MintArkIdentifier extends MintIdentifier {
       ], $data
     );
 
-    $output = $this->ezidParser->buildEzidRequestBody($data);
-
-    return $output;
+    return $this->ezidParser->buildEzidRequestBody($data);
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function getIdentifierFromResponse(Response $response) {
+  protected function getIdentifierFromResponse(Response $response): string {
     $contents = $response->getBody()->getContents();
     $responseArray = $this->ezidParser->parseEzidResponse($contents);
     if (array_key_exists('success', $responseArray)) {
@@ -143,28 +141,26 @@ class MintArkIdentifier extends MintIdentifier {
   /**
    * {@inheritdoc}
    */
-  protected function getRequestType() {
+  protected function getRequestType(): string {
     return 'POST';
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function getUri() {
-    $uri = $this->serviceDataConfig->get('data.host') . '/shoulder/' . $this->serviceDataConfig->get('data.namespace');
-
-    return $uri;
+  protected function getUri(): string {
+    return $this->serviceDataConfig->get('data.host') . '/shoulder/' . $this->serviceDataConfig->get('data.namespace');
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function getRequestParams() {
+  protected function getRequestParams(): array {
     $fieldData = $this->getFieldData();
     $requestBody = $this->buildRequestBody($fieldData);
     $creds = $this->state->get($this->serviceDataConfig->get('data.state_key'));
 
-    $requestParams = [
+    return [
       'auth' => [
         $creds['username'],
         $creds['password'],
@@ -175,8 +171,6 @@ class MintArkIdentifier extends MintIdentifier {
       ],
       'body' => $requestBody,
     ];
-
-    return $requestParams;
   }
 
 }

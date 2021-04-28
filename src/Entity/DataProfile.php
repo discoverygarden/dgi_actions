@@ -63,13 +63,6 @@ class DataProfile extends ConfigEntityBase implements DataProfileInterface {
   protected $label;
 
   /**
-   * The Data Profile setting description.
-   *
-   * @var string
-   */
-  protected $description = '';
-
-  /**
    * The Data Profile setting entity.
    *
    * @var string
@@ -98,40 +91,30 @@ class DataProfile extends ConfigEntityBase implements DataProfileInterface {
   protected $data;
 
   /**
-   * Gets the Description value.
-   *
-   * @return string|null
-   *   Returns the description variable.
-   */
-  public function getDescription() {
-    return $this->description;
-  }
-
-  /**
    * {@inheritdoc}
    */
-  public function getEntity() {
+  public function getEntity(): string {
     return $this->entity;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getBundle() {
+  public function getBundle(): string {
     return $this->bundle;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getDataprofile() {
+  public function getDataprofile(): string {
     return $this->dataprofile;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getData() {
+  public function getData(): array {
     return $this->data;
   }
 
