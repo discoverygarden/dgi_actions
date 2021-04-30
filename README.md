@@ -5,6 +5,8 @@
 DGI Action Utilities, including:
 * Actions to Mint/Delete Persistent Identifiers.
 * Context Condition for if an Identifier field is or is not populated.
+* Context Reactions for Entity Insert and Entity Delete.
+* Method to execute Entity Reactions.
 * Utility functions to get a list of configured identifiers.
 
 ## Requirements
