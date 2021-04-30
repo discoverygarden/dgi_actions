@@ -131,7 +131,7 @@ class MintArkIdentifier extends MintIdentifier {
     $responseArray = $this->ezidParser->parseEzidResponse($contents);
     if (array_key_exists('success', $responseArray)) {
       $this->logger->info('ARK Identifier Minted: @contents', ['@contents' => $contents]);
-      return $this->serviceDataConfig->get('data.host') . '/id/' . $responseArray['success'];
+      return $this->serviceDataConfig->get('data.data.host.data') . '/id/' . $responseArray['success'];
     }
 
     $this->logger->error('There was an issue minting the ARK Identifier: @contents', ['@contents' => $contents]);
@@ -149,7 +149,7 @@ class MintArkIdentifier extends MintIdentifier {
    * {@inheritdoc}
    */
   protected function getUri(): string {
-    return $this->serviceDataConfig->get('data.host') . '/shoulder/' . $this->serviceDataConfig->get('data.namespace');
+    return $this->serviceDataConfig->get('data.data.host.data') . '/shoulder/' . $this->serviceDataConfig->get('data.data.namespace.data');
   }
 
   /**

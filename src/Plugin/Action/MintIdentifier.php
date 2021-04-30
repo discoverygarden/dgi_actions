@@ -68,7 +68,6 @@ abstract class MintIdentifier extends IdentifierAction {
       $field = $this->identifierConfig->get('field');
       if (!empty($field) && $this->entity->hasField($field)) {
         $this->entity->set($field, $identifier_uri);
-        $this->entity->save();
       }
       else {
         $this->logger->error('Error with Entity Identifier field. The identifier was not set to the entity.');

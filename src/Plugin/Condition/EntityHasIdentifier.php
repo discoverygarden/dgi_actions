@@ -99,7 +99,7 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
   /**
    * {@inheritdoc}
    */
-  public function evaluate() {
+  public function evaluate(): bool {
     $entity = $this->getContextValue('entity');
     if ($entity instanceof FieldableEntityInterface) {
       $identifier_config = $this->configFactory->get($this->configuration['identifier']);

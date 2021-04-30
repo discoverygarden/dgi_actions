@@ -8,3 +8,13 @@ services:
     arguments:
       - '@config.factory'
       - '@logger.channel.dgi_actions'
+  dgi_actions.dgiutils:
+    class: Drupal\dgi_actions\Utility\DgiUtils
+    arguments:
+      - '@context.manager'
+      - '@dgi_actions.entity_hook_context'
+  dgi_actions.entity_hook_context:
+    class: Drupal\dgi_actions\ContextProvider\EntityContextProvider
+    arguments: ['@entity_type.manager']
+    tags:
+      - { name: 'context_provider' }
