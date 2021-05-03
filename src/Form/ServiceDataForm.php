@@ -167,7 +167,7 @@ class ServiceDataForm extends EntityForm {
           $fieldset[$field['id']]['#default_value'] = $state_creds[$field['id']];
         }
         else {
-          $fieldset[$field['id']]['#default_value'] = (isset($config->get('data')[$field['id']])) ? $config->get('data')[$field['id']] : '';
+          $fieldset[$field['id']]['#default_value'] = (isset($config->get('data')['data'][$field['id']])) ? $config->get('data')['data'][$field['id']] : '';
         }
       }
     }
