@@ -1,0 +1,7 @@
+name: 'DGI Actions EZID'
+description: "Provides integration with California Digital Library's EZID service."
+type: module
+package: DGI Actions
+core: 8.x
+dependencies:
+  - discoverygarden:dgi_actions

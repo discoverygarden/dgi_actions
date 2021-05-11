@@ -2,6 +2,7 @@
 
 namespace Drupal\dgi_actions\Entity;
 
+use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Config\Entity\ConfigEntityBase;
 use Drupal\Core\Entity\EntityTypeInterface;
 
@@ -61,7 +62,7 @@ class ServiceData extends ConfigEntityBase implements ServiceDataInterface {
   protected $label;
 
   /**
-   * The Service Data setting service data type.
+   * The Service Data Type plugin ID.
    *
    * @var string
    */
@@ -78,6 +79,17 @@ class ServiceData extends ConfigEntityBase implements ServiceDataInterface {
    * {@inheritdoc}
    */
   public function setData(array $data): void {
+    $state = [];
+    $plugin = \Drupal::service('plugin.manager.service_data_type')->createInstance($this->getServiceDataType(), []);;
+    foreach ($plugin->getStateKeys() as $key) {
+      $state[$key] = NestedArray::getValue($data, (array) $key);
+      // Remove the values from the form_state so they do not get stored
+      // on the entity directly.
+      NestedArray::unsetValue($data, (array) $key);
+    }
+    if (!empty($state)) {
+      \Drupal::service('state')->set("dgi_actions.service_data.{$this->id()}", $state);
+    }
     $this->data = $data;
   }
 
@@ -85,7 +97,18 @@ class ServiceData extends ConfigEntityBase implements ServiceDataInterface {
    * {@inheritdoc}
    */
   public function getData(): array {
-    return $this->data;
+    // XXX: Return any values that are stored in state as part of the entity's
+    // data.
+    $stated_data = $this->data;
+    $plugin = \Drupal::service('plugin.manager.service_data_type')->createInstance($this->getServiceDataType(), []);
+    $state_keys = $plugin->getStateKeys();
+    if (!empty($state_keys)) {
+      $state = \Drupal::service('state')->get("dgi_actions.service_data.{$this->id()}");
+      foreach ($state_keys as $key) {
+        NestedArray::setValue($stated_data, (array) $key, NestedArray::getValue($state, (array) $key));
+      }
+    }
+    return $stated_data;
   }
 
   /**

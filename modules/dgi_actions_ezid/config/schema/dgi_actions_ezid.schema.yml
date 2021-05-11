@@ -1,0 +1,37 @@
+dgi_actions.service_data_type.ezid:
+  type: dgi_actions.service_data_type
+  label: 'CDL EZID Service Data'
+  mapping:
+    host:
+      type: uri
+      label: 'Host'
+      description: 'Host address for the EZID service.'
+    username:
+      label: 'Username'
+      type: string
+      description: 'Username for the EZID service.'
+    password:
+      label: 'Password'
+      type: string
+      description: 'Password for the EZID service.'
+    namespace:
+      label: 'Namespace'
+      type: string
+      description: 'Client namespace for the Identifier.'
+
+dgi_actions.data_profile_type.erc:
+  type: dgi_actions.data_profile_type
+  label: 'ERC Data Profile'
+  mapping:
+    who:
+      label: 'ERC Who'
+      type: string
+      description: 'Captures the WHO data (ie. Author/Publisher)'
+    what:
+      label: 'ERC What'
+      type: string
+      description: 'Captures the WHAT data (ie. Title)'
+    when:
+      label: 'ERC When'
+      type: string
+      description: 'Captures the WHEN data (ie. Published or posted date.)'

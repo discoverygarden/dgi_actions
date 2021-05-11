@@ -11,6 +11,7 @@ DGI Action ARK Indentifier Utilities, including:
 This module requires the following modules/libraries:
 
 * [DGI Actions](https://github.com/discoverygarden/dgi_actions)
+* [DGI Actions EZID](https://github.com/discoverygarden/dgi_actions/modules/dgi_actions_ezid)
 
 ## Installation
 
@@ -23,7 +24,7 @@ further information.
 This module houses the extended versions of the Identifier Actions implemented
 for ARK Identifiers within the [CDL EZID service](https://ezid.cdlib.org/doc/apidoc.html).
 
-The CDL EZID service  expects and sends data in string of keyed values separated by colons
+The CDL EZID service expects and sends data in string of keyed values separated by colons
 and separate key-value pairs separated by line breaks.
 
 Identifiers minted within the service have an [Internal Metadata](https://ezid.cdlib.org/doc/apidoc.html#internal-metadata),

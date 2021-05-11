@@ -18,3 +18,9 @@ services:
     arguments: ['@entity_type.manager']
     tags:
       - { name: 'context_provider' }
+  plugin.manager.service_data_type:
+    class: Drupal\dgi_actions\Plugin\ServiceDataTypeManager
+    parent: default_plugin_manager
+  plugin.manager.data_profile:
+    class: Drupal\dgi_actions\Plugin\DataProfileManager
+    parent: default_plugin_manager

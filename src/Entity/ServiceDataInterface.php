@@ -29,8 +29,9 @@ interface ServiceDataInterface extends ConfigEntityInterface {
    * Gets the Service Data Type member variable.
    *
    * @return string|null
-   *   Returns the service data type config id if it exists.
+   *   Returns the service data type plugin ID if it exists.
    */
   public function getServiceDataType(): ?string;
+
 
 }

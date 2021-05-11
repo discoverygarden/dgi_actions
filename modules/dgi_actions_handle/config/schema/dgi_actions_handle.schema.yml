@@ -1,0 +1,20 @@
+dgi_actions.service_data_type.handle:
+  type: mapping
+  label: 'Handle.net Service Data'
+  mapping:
+    host:
+      type: uri
+      label: 'Host'
+      description: 'Host address for the Handle.net endpoint.'
+    username:
+      label: 'Username'
+      type: string
+      description: 'Username of the Handle administrator.'
+    password:
+      label: 'Password'
+      type: string
+      description: 'Password of the Handle administrator.'
+    prefix:
+      label: 'Prefix'
+      type: string
+      description: 'Handle prefix as specified from Handle.net.'

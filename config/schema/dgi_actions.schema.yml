@@ -26,10 +26,10 @@ dgi_actions.identifier.*:
       type: string
       label: 'Identifier Object Field'
     service_data:
-      type: string
+      type: entity:dgiactions_servicedata
       label: 'Service Data'
     data_profile:
-      type: string
+      type: entity:dgiactions_dataprofile
       label: 'Data Profile'
 
 dgi_actions.data_profile.*:
@@ -44,37 +44,14 @@ dgi_actions.data_profile.*:
       type: string
     bundle:
       type: string
-    dataprofile:
+    data_profile_type:
       type: string
     data:
-      type: sequence
-      sequence:
-        type: mapping
-        mapping:
-          key:
-            type: string
-          source_field:
-            type: string
+      type: dgi_actions.data_profile_type.[%parent.data_profile_type]
 
 dgi_actions.data_profile_type.*:
-  type: config_object
+  type: mapping
   label: 'Data Profile Type'
-  mapping:
-    label:
-      type: string
-    id:
-      type: string
-    fields:
-      type: sequence
-      sequence:
-        type: mapping
-        mapping:
-          key:
-            type: string
-          label:
-            type: string
-          description:
-            type: string
 
 dgi_actions.service_data.*:
   type: config_entity
@@ -87,32 +64,11 @@ dgi_actions.service_data.*:
     service_data_type:
       type: string
     data:
-      type: dgi_actions.service_data_type.[service_data_type]
+      type: dgi_actions.service_data_type.[%parent.service_data_type]
 
 
 dgi_actions.service_data_type.*:
-  type: config_object
+  type: mapping
   label: 'Service Data Type'
-  mapping:
-    label:
-      type: string
-    id:
-      type: string
-    state_key:
-      type: string
-    data:
-      type: sequence
-      sequence:
-        type: mapping
-        mapping:
-          type:
-            type: string
-          data:
-            type: "[%parent.type]"
-          id:
-            type: string
-          label:
-            type: string
-          description:
-            type: string
+
 
