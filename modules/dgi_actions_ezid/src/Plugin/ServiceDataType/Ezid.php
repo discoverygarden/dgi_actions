@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\dgi_actions_handle\Plugin\ServiceDataType;
+namespace Drupal\dgi_actions_ezid\Plugin\ServiceDataType;
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Form\FormStateInterface;
@@ -13,13 +13,12 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * Mints a Handle from Handle.net.
  *
  * @ServiceDataType(
- *   id = "handle",
- *   label = @Translation("Handle"),
- *   description = @Translation("Service information for Handle.net Handles.")
+ *   id = "ezid",
+ *   label = @Translation("EZID"),
+ *   description = @Translation("Service data for California Digital Library's EZID.")
  * )
  */
-class Handle extends ServiceDataTypeBase implements ContainerFactoryPluginInterface {
-
+class Ezid extends ServiceDataTypeBase implements ContainerFactoryPluginInterface {
 
   /**
    * The Drupal state.
@@ -66,7 +65,7 @@ class Handle extends ServiceDataTypeBase implements ContainerFactoryPluginInterf
       'host' => NULL,
       'username' => NULL,
       'password' => NULL,
-      'prefix' => NULL,
+      'namespace' => NULL,
     ];
   }
 
@@ -77,30 +76,30 @@ class Handle extends ServiceDataTypeBase implements ContainerFactoryPluginInterf
     $form['host'] = [
       '#type' => 'url',
       '#title' => $this->t('Host'),
-      '#description' => $this->t('Host address for the Handle.net endpoint.'),
+      '#description' => $this->t('Host address for the EZID service endpoint.'),
       '#default_value' => $this->configuration['host'],
       '#required' => TRUE,
     ];
     $form['username'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Username'),
-      '#description' => $this->t('Username of the Handle administrator.'),
+      '#description' => $this->t('Username for interacting with EZID.'),
       '#default_value' => $this->configuration['username'],
       '#required' => TRUE,
     ];
     $form['password'] = [
       '#type' => 'password',
       '#title' => $this->t('Password'),
-      '#description' => $this->t('Password of the Handle administrator.'),
+      '#description' => $this->t('Used to authenticate with the EZID service.'),
       '#default_value' => $this->configuration['password'],
       '#required' => is_null($this->configuration['password']),
       '#placeholder' => $this->configuration['password'] ? '********' : '',
     ];
-    $form['prefix'] = [
+    $form['namespace'] = [
       '#type' => 'textfield',
-      '#title' => $this->t('Prefix'),
-      '#description' => $this->t('Handle prefix as specified from Handle.net'),
-      '#default_value' => $this->configuration['prefix'],
+      '#title' => $this->t('Namespace'),
+      '#description' => $this->t('Client namespace for the Identifier.'),
+      '#default_value' => $this->configuration['namespace'],
       '#required' => TRUE,
     ];
     return $form;
@@ -121,7 +120,7 @@ class Handle extends ServiceDataTypeBase implements ContainerFactoryPluginInterf
    */
   public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {
     $this->configuration['host'] = $form_state->getValue('host');
-    $this->configuration['prefix'] = $form_state->getValue('prefix');
+    $this->configuration['namespace'] = $form_state->getValue('prefix');
     $this->configuration['username'] = $form_state->getValue('username');
     $this->configuration['password'] = !empty($form_state->getValue('password')) ? $form_state->getValue('password') : $this->configuration['password'];
     // Handle the scenario where the user did not modify the password as this

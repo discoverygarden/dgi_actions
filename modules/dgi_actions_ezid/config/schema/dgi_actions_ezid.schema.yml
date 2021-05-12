@@ -1,5 +1,5 @@
 dgi_actions.service_data_type.ezid:
-  type: dgi_actions.service_data_type
+  type: mapping
   label: 'CDL EZID Service Data'
   mapping:
     host:

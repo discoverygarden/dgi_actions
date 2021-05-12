@@ -2,11 +2,11 @@
 
 namespace Drupal\dgi_actions;
 
-use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Config\Entity\ConfigEntityListBuilder;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\dgi_actions\Plugin\ServiceDataTypeManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -22,13 +22,20 @@ class ServiceDataListBuilder extends ConfigEntityListBuilder {
   protected $configFactory;
 
   /**
+   * The Service Data Type manager.
+   *
+   * @var \Drupal\dgi_actions\Plugin\ServiceDataTypeManager
+   */
+  protected $serviceDataTypeManager;
+
+  /**
    * {@inheritdoc}
    */
   public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
     return new static(
       $entity_type,
       $container->get('entity_type.manager')->getStorage($entity_type->id()),
-      $container->get('config.factory')
+      $container->get('plugin.manager.service_data_type')
     );
   }
 
@@ -39,12 +46,12 @@ class ServiceDataListBuilder extends ConfigEntityListBuilder {
    *   The entity type definition.
    * @param \Drupal\Core\Entity\EntityStorageInterface $storage
    *   The entity storage class.
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
-   *   The config factory.
+   * @param \Drupal\dgi_actions\Plugin\ServiceDataTypeManager $service_data_type_manager
+   *   The Service Data Type plugin manager.
    */
-  public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, ConfigFactoryInterface $config_factory) {
+  public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, ServiceDataTypeManager $service_data_type_manager) {
     parent::__construct($entity_type, $storage);
-    $this->configFactory = $config_factory;
+    $this->serviceDataTypeManager = $service_data_type_manager;
   }
 
   /**
@@ -63,8 +70,9 @@ class ServiceDataListBuilder extends ConfigEntityListBuilder {
   public function buildRow(EntityInterface $entity): array {
     $row['label'] = $entity->label();
     $row['id'] = $entity->id();
-    $service_data_type = $this->configFactory->get("dgi_actions.service_data_type.{$entity->get('service_data_type')}");
-    $row['service_data_type'] = $service_data_type->get('label');
+    $plugin = $this->serviceDataTypeManager->createInstance($entity->getServiceDataType());
+    $definition = $plugin->getPluginDefinition();
+    $row['service_data_type'] = $definition['label'];
 
     return $row + parent::buildRow($entity);
   }

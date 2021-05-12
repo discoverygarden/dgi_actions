@@ -26,56 +26,6 @@ class MintHandle extends MintIdentifier {
   use HandleTrait;
 
   /**
-   * Constructor.
-   *
-   * @param array $configuration
-   *   A configuration array containing information about the plugin instance.
-   * @param string $plugin_id
-   *   The plugin ID for the plugin instance.
-   * @param mixed $plugin_definition
-   *   The plugin implementation definition.
-   * @param \GuzzleHttp\ClientInterface $client
-   *   Http Client connection.
-   * @param \Psr\Log\LoggerInterface $logger
-   *   Logger.
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
-   *   Config Factory.
-   * @param \Drupal\dgi_actions\Utility\IdentifierUtils $utils
-   *   Identifier utils.
-   * @param \Drupal\Core\State\StateInterface $state
-   *   State API.
-   */
-  public function __construct(
-    array $configuration,
-    $plugin_id,
-    $plugin_definition,
-    ClientInterface $client,
-    LoggerInterface $logger,
-    ConfigFactoryInterface $config_factory,
-    IdentifierUtils $utils,
-    StateInterface $state
-  ) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition, $client, $logger, $config_factory, $utils);
-    $this->state = $state;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
-    return new static(
-      $configuration,
-      $plugin_id,
-      $plugin_definition,
-      $container->get('http_client'),
-      $container->get('logger.channel.dgi_actions'),
-      $container->get('config.factory'),
-      $container->get('dgi_actions.utils'),
-      $container->get('state')
-    );
-  }
-
-  /**
    * {@inheritdoc}
    */
   protected function getRequestType(): string {
@@ -108,6 +58,7 @@ class MintHandle extends MintIdentifier {
    * {@inheritdoc}
    */
   protected function mint() {
+    dsm('mint');
     return $this->handleRequest();
   }
 

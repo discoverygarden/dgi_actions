@@ -3,6 +3,7 @@
 namespace Drupal\dgi_actions\Plugin\Condition;
 
 use Drupal\Core\Condition\ConditionPluginBase;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
@@ -29,11 +30,11 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
   use StringTranslationTrait;
 
   /**
-   * Config Factory.
+   * The entity type manager.
    *
-   * @var \Drupal\Core\Config\ConfigFactory
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
-  protected $configFactory;
+  protected $entityTypeManager;
 
   /**
    * Logger.
@@ -63,8 +64,8 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
    *   The plugin implementation definition.
    * @param \Psr\Log\LoggerInterface $logger
    *   Logger.
-   * @param \Drupal\Core\Config\ConfigFactory $config_factory
-   *   Config Factory.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
    * @param \Drupal\dgi_actions\Utility\IdentifierUtils $utils
    *   Identifier utils.
    */
@@ -73,12 +74,12 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
     $plugin_id,
     $plugin_definition,
     LoggerInterface $logger,
-    ConfigFactory $config_factory,
+    EntityTypeManagerInterface $entity_type_manager,
     IdentifierUtils $utils
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->logger = $logger;
-    $this->configFactory = $config_factory;
+    $this->entityTypeManager = $entity_type_manager;
     $this->utils = $utils;
   }
 
@@ -91,7 +92,7 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
       $plugin_id,
       $plugin_definition,
       $container->get('logger.channel.dgi_actions'),
-      $container->get('config.factory'),
+      $container->get('entity_type.manager'),
       $container->get('dgi_actions.utils')
     );
   }
@@ -102,11 +103,15 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
   public function evaluate(): bool {
     $entity = $this->getContextValue('entity');
     if ($entity instanceof FieldableEntityInterface) {
-      $identifier_config = $this->configFactory->get($this->configuration['identifier']);
-      $field = $identifier_config->get('field');
-      $entity_type = $identifier_config->get('entity');
-      $bundle = $identifier_config->get('bundle');
+      $identifier = $this->entityTypeManager->getStorage('dgiactions_identifier')->load($this->configuration['identifier']);
+      $field = $identifier->get('field');
+      $entity_type = $identifier->get('entity');
+      $bundle = $identifier->get('bundle');
+      dsm($field, 'field');
+      dsm($entity_type, 'type');
+      dsm($bundle, 'bundle');
       if (!empty($field) && $entity->hasField($field) && $entity->getEntityTypeId() == $entity_type && $entity->bundle() == $bundle) {
+        dsm(!$entity->get($field)->isEmpty(), 'im in this condition');
         return !$entity->get($field)->isEmpty();
       }
     }
@@ -163,7 +168,7 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
     ];
 
     if ($selected_identifier) {
-      $identifier_config = $this->configFactory->get($selected_identifier);
+      $identifier_config = $this->entityTypeManager->getStorage('dgiactions_identifier')->load($selected_identifier);
       $form['identifier_container']['identifier_fieldset'] = [
         '#type' => 'fieldset',
         '#title' => $this->t('Identifier Configuration'),

@@ -34,19 +34,19 @@ interface IdentifierInterface extends ConfigEntityInterface {
   public function getField(): string;
 
   /**
-   * Gets the set Service Data ID.
+   * Gets the set Service Data entity.
    *
-   * @return string
-   *   Returns Service Data ID type.
+   * @return \Drupal\dgi_actions\Entity\ServiceDataInterface
+   *   Returns the Service Data entity.
    */
-  public function getServiceData(): string;
+  public function getServiceData(): ServiceDataInterface;
 
   /**
-   * Gets the set Data Profile ID.
+   * Gets the set Data Profile entity.
    *
-   * @return string
-   *   Returns Data Profile ID type.
+   * @return \Drupal\dgi_actions\Entity\DataProfileInterface
+   *   Returns Data Profile ID entity.
    */
-  public function getDataProfile(): string;
+  public function getDataProfile(): DataProfileInterface;
 
 }

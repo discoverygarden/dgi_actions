@@ -122,33 +122,15 @@ class Identifier extends ConfigEntityBase implements IdentifierInterface {
   /**
    * {@inheritdoc}
    */
-  public function getServiceData(): string {
-    return $this->service_data;
+  public function getServiceData(): ServiceDataInterface {
+    return \Drupal::service('entity_type.manager')->getStorage('dgiactions_servicedata')->load($this->service_data);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getDataProfile(): string {
-    return $this->data_profile;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function invalidateTagsOnSave($update) {
-    parent::invalidateTagsOnSave($update);
-    // Clear the config_filter plugin cache.
-    \Drupal::service('plugin.manager.config_filter')->clearCachedDefinitions();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected static function invalidateTagsOnDelete(EntityTypeInterface $entity_type, array $entities) {
-    parent::invalidateTagsOnDelete($entity_type, $entities);
-    // Clear the config_filter plugin cache.
-    \Drupal::service('plugin.manager.config_filter')->clearCachedDefinitions();
+  public function getDataProfile(): DataProfileInterface {
+    return \Drupal::service('entity_type.manager')->getStorage('dgiactions_dataprofile')->load($this->data_profile);
   }
 
 }

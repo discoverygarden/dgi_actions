@@ -13,7 +13,7 @@ abstract class ServiceDataTypeBase extends PluginBase implements ServiceDataType
   /**
    * {@inheritdoc}
    */
-  public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
+  public function buildConfigurationForm(array $form, FormStateInterface $form_state): array {
     return [];
   }
 
@@ -61,6 +61,7 @@ abstract class ServiceDataTypeBase extends PluginBase implements ServiceDataType
    * Returns a list of form keys denoting values to be stored in state.
    *
    * @return array
+   *   The array of keys to be looked at to get values to be placed into state.
    */
   public function getStateKeys() {
     return [];

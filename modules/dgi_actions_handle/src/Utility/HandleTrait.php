@@ -14,11 +14,11 @@ use GuzzleHttp\Psr7\Response;
 trait HandleTrait {
 
   /**
-   * Service Data config.
+   * Identifier entity describing the operation to be done.
    *
-   * @var \Drupal\Core\Config\ImmutableConfig
+   * @var \Drupal\dgi_actions\Entity\IdentifierInterface
    */
-  protected $serviceDataConfig;
+  protected $identifier;
 
   /**
    * Current actioned Entity.
@@ -41,28 +41,13 @@ trait HandleTrait {
    *   Authorization parameters to be passed to Guzzle.
    */
   protected function getAuthorizationParams(): array {
-    $creds = $this->state->get($this->getServiceDataConfig()->get('data.state_key'));
     return [
       strtr('300%3A!prefix/!admin', [
         '!prefix' => $this->getPrefix(),
-        '!admin' => $creds['username'],
+        '!admin' => $this->getIdentifier()->getServiceData()->getData()['username'],
       ]),
-      $creds['password'],
+      $this->getIdentifier()->getServiceData()->getData()['password'],
     ];
-  }
-
-  /**
-   * Gets the config to be used.
-   */
-  public function getServiceDataConfig(): ImmutableConfig {
-    return $this->serviceDataConfig;
-  }
-
-  /**
-   * Gets the state to be used.
-   */
-  public function getState(): StateInterface {
-    return $this->state;
   }
 
   /**
@@ -76,7 +61,7 @@ trait HandleTrait {
    * Gets the Handle prefix.
    */
   public function getPrefix(): string {
-    return $this->getServiceDataConfig()->get('data.data.prefix.data');
+    return $this->getIdentifier()->getServiceData()->getData()['prefix'];
   }
 
   /**
@@ -94,7 +79,7 @@ trait HandleTrait {
    *   The URL to be used for Handle requests.
    */
   protected function getUri(): string {
-    return "{$this->getServiceDataConfig()->get('data.data.host.data')}/{$this->getPrefix()}/{$this->getSuffix()}";
+    return "{$this->getIdentifier()->getServiceData()->getData()['host']}/{$this->getPrefix()}/{$this->getSuffix()}";
   }
 
   /**

@@ -65,7 +65,7 @@ abstract class MintIdentifier extends IdentifierAction {
    */
   protected function setIdentifierField(string $identifier_uri) {
     if ($identifier_uri) {
-      $field = $this->identifierConfig->get('field');
+      $field = $this->identifier->get('field');
       if (!empty($field) && $this->entity->hasField($field)) {
         $this->entity->set($field, $identifier_uri);
       }
@@ -85,8 +85,7 @@ abstract class MintIdentifier extends IdentifierAction {
     if ($entity instanceof FieldableEntityInterface) {
       try {
         $this->entity = $entity;
-        $this->setConfigs();
-        if ($this->entity && $this->identifierConfig) {
+        if ($this->entity && $this->identifier) {
           $response = $this->mint();
           $identifier_uri = $this->getIdentifierFromResponse($response);
           $this->setIdentifierField($identifier_uri);

@@ -2,6 +2,10 @@
 
 namespace Drupal\dgi_actions\Plugin\Action;
 
+use Drupal\Core\Config\ImmutableConfig;
+use Drupal\Core\Entity\EntityTypeManager;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\dgi_actions\Entity\IdentifierInterface;
 use Drupal\dgi_actions\Utility\IdentifierUtils;
 use Drupal\Core\Action\ConfigurableActionBase;
 use Drupal\Core\Form\FormStateInterface;
@@ -30,23 +34,9 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
   /**
    * Identifier config.
    *
-   * @var \Drupal\Core\Config\ImmutableConfig
+   * @var \Drupal\dgi_actions\Entity\IdentifierInterface
    */
-  protected $identifierConfig;
-
-  /**
-   * Service Data config.
-   *
-   * @var \Drupal\Core\Config\ImmutableConfig
-   */
-  protected $serviceDataConfig;
-
-  /**
-   * Data Profile config.
-   *
-   * @var \Drupal\Core\Config\ImmutableConfig
-   */
-  protected $dataProfileConfig;
+  protected $identifier;
 
   /**
    * Current actioned Entity.
@@ -101,13 +91,16 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
     ClientInterface $client,
     LoggerInterface $logger,
     ConfigFactoryInterface $config_factory,
-    IdentifierUtils $utils
+    IdentifierUtils $utils,
+    EntityTypeManagerInterface $etm
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->client = $client;
     $this->logger = $logger;
     $this->configFactory = $config_factory;
     $this->utils = $utils;
+    $this->identifier = $etm->getStorage('dgiactions_identifier')->load($this->configuration['identifier_entity']);
+
   }
 
   /**
@@ -121,7 +114,8 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
       $container->get('http_client'),
       $container->get('logger.channel.dgi_actions'),
       $container->get('config.factory'),
-      $container->get('dgi_actions.utils')
+      $container->get('dgi_actions.utils'),
+      $container->get('entity_type.manager')
     );
   }
 
@@ -130,6 +124,16 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
    */
   public function access($object, AccountInterface $account = NULL, $return_as_object = FALSE) {
     return $object->access('read', $account, $return_as_object);
+  }
+
+  /**
+   * Gets the identifier entity.
+   *
+   * @return \Drupal\dgi_actions\Entity\IdentifierInterface
+   *   The identifier entity being used to execute the action.
+   */
+  public function getIdentifier(): IdentifierInterface {
+    return $this->identifier;
   }
 
   /**
@@ -231,7 +235,7 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
    */
   public function defaultConfiguration(): array {
     return [
-      'identifier_type' => '',
+      'identifier_entity' => '',
     ];
   }
 
@@ -239,11 +243,11 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
    * {@inheritdoc}
    */
   public function buildConfigurationForm(array $form, FormStateInterface $form_state): array {
-    $form['identifier_type'] = [
+    $form['identifier_entity'] = [
       '#type' => 'select',
-      '#title' => $this->t('Identifier Type'),
+      '#title' => $this->t('Identifier Entity'),
       '#empty_option' => $this->t('- None -'),
-      '#default_value' => ($this->configuration['identifier_type']) ?: $this->t('- None -'),
+      '#default_value' => ($this->configuration['identifier_entity']) ?: $this->t('- None -'),
       '#options' => $this->utils->getIdentifiers(),
       '#description' => $this->t('The persistent identifier configuration to be used.'),
     ];
@@ -255,23 +259,7 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
    * {@inheritdoc}
    */
   public function submitConfigurationForm(array &$form, FormStateInterface $form_state): void {
-    $this->configuration = $form_state->getValues();
-    $this->setConfigs();
-  }
-
-  /**
-   * Sets the configs based on the configured identifier.
-   *
-   * Sets the IdentifierConfig, ServiceDataConfig, and
-   * dataProfileConfig variables to their corresponding
-   * config data based on the currently selected identifier.
-   */
-  public function setConfigs(): void {
-    $this->identifierConfig = $this->configFactory->get($this->configuration['identifier_type']);
-    if (!empty($this->identifierConfig->get())) {
-      $this->serviceDataConfig = $this->configFactory->get($this->identifierConfig->get('service_data'));
-      $this->dataProfileConfig = $this->configFactory->get($this->identifierConfig->get('data_profile'));
-    }
+    $this->configuration['identifier_entity'] = $form_state->getValue('identifier_entity');
   }
 
 }
