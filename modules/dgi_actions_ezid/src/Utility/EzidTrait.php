@@ -1,43 +1,27 @@
 <?php
 
-namespace Drupal\dgi_actions_ark_identifier\Utility;
+namespace Drupal\dgi_actions_ezid\Utility;
 
-use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use Psr\Log\LoggerInterface;
+use Drupal\Core\Entity\EntityInterface;
 
 /**
- * Text parser for CDL EZID Requests and Responses.
+ * Utilities when interacting with Handle.net's API.
  */
-class EzidTextParser implements ContainerInjectionInterface {
+trait EzidTrait {
 
   /**
-   * Logger.
+   * Identifier entity describing the operation to be done.
    *
-   * @var \Psr\Log\LoggerInterface
+   * @var \Drupal\dgi_actions\Entity\IdentifierInterface
    */
-  protected $logger;
+  protected $identifier;
 
   /**
-   * Constructor.
+   * Current actioned Entity.
    *
-   * @param \Psr\Log\LoggerInterface $logger
-   *   Logger.
+   * @var \Drupal\Core\Entity\EntityInterface
    */
-  public function __construct(
-    LoggerInterface $logger
-  ) {
-    $this->logger = $logger;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container): EzidTextParser {
-    return new static(
-       $container->get('logger.channel.dgi_actions')
-    );
-  }
+  protected $entity;
 
   /**
    * Parses CDL EZID API responses into a key-value array.
@@ -65,7 +49,7 @@ class EzidTextParser implements ContainerInjectionInterface {
    * Build the request content body from a supplied key-value array.
    *
    * @param array $data
-   *   The key-value array of data to be formated.
+   *   The key-value array of data to be formatted.
    *
    * @return string
    *   The request content body.
@@ -75,8 +59,27 @@ class EzidTextParser implements ContainerInjectionInterface {
     foreach ($data as $key => $val) {
       $output .= $key . ": " . $val . "\r\n";
     }
-
     return $output;
+  }
+
+  /**
+   * Constructs the auth parameters for Guzzle to connect to EZID's API.
+   *
+   * @return array
+   *   Authorization parameters to be passed to Guzzle.
+   */
+  public function getAuthorizationParams() {
+    return [
+      $this->getIdentifier()->getServiceData()->getData()['username'],
+      $this->getIdentifier()->getServiceData()->getData()['password'],
+    ];
+  }
+
+  /**
+   * Gets the entity being used.
+   */
+  public function getEntity(): EntityInterface {
+    return $this->entity;
   }
 
 }

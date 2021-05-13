@@ -2,15 +2,9 @@
 
 namespace Drupal\dgi_actions_handle\Plugin\Action;
 
-use Drupal\Core\Config\ConfigFactoryInterface;
-use Drupal\Core\State\StateInterface;
 use Drupal\dgi_actions\Plugin\Action\MintIdentifier;
-use Drupal\dgi_actions\Utility\IdentifierUtils;
 use Drupal\dgi_actions_handle\Utility\HandleTrait;
-use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Psr7\Response;
-use Psr\Log\LoggerInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Mints a Handle.
@@ -58,7 +52,6 @@ class MintHandle extends MintIdentifier {
    * {@inheritdoc}
    */
   protected function mint() {
-    dsm('mint');
     return $this->handleRequest();
   }
 

@@ -26,12 +26,12 @@ interface DataProfileInterface extends ConfigEntityInterface {
   public function getBundle(): string;
 
   /**
-   * Gets the set Data Profile Type.
+   * Gets the set Data Profile.
    *
-   * @return string
-   *   Returns data profile type id.
+   * @return string|null
+   *   Returns the data profile plugin ID if it exists.
    */
-  public function getDataprofile(): string;
+  public function getDataProfile(): ?string;
 
   /**
    * Gets the set Data.

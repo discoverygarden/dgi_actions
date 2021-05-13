@@ -44,10 +44,10 @@ dgi_actions.data_profile.*:
       type: string
     bundle:
       type: string
-    data_profile_type:
+    data_profile:
       type: string
     data:
-      type: dgi_actions.data_profile_type.[%parent.data_profile_type]
+      type: dgi_actions.data_profile_type.[%parent.data_profile]
 
 dgi_actions.data_profile_type.*:
   type: mapping

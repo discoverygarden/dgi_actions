@@ -23,9 +23,11 @@ abstract class MintIdentifier extends IdentifierAction {
    *   based on the configured data_profile.
    */
   protected function getFieldData(): array {
+
     $data = [];
-    if ($this->dataProfileConfig) {
-      foreach ($this->dataProfileConfig->get('data') as $value) {
+    $data_profile = $this->getIdentifier()->getDataProfile();
+    if ($data_profile) {
+      foreach ($data_profile->getData() as $value) {
         if ($this->entity->hasField($value['source_field'])) {
           $data[$value['key']] = $this->entity->get($value['source_field'])->getString();
         }

@@ -41,8 +41,6 @@ abstract class EntityBundleSelectionForm extends EntityForm {
    */
   protected $entityOptions;
 
-  protected $bundleOptions;
-
   /**
    * Constructs a new class instance.
    *
@@ -106,27 +104,6 @@ abstract class EntityBundleSelectionForm extends EntityForm {
 
   public function getFieldsForDropdown($entity, $bundle) {
     return $this->getEntityOptions()['entity_bundles'][$entity][$bundle]['fields'] ?? [];
-  }
-
-  /**
-   * Helper function to build Bundle Lists.
-   *
-   * @return array
-   *   Returns bundle fields and options.
-   */
-  public function bundleDropdownList($entity_bundles = []): array {
-    if (!$this->bundleOptions) {
-      $options = [];
-      foreach ($entity_bundles as $entity => $bundles) {
-        foreach ($bundles as $bundle => $bundle_data) {
-          $fields = $this->entityFieldManager->getFieldDefinitions($entity, $bundle);
-          $options['entity_bundle_fields'][$entity][$bundle] = array_combine(array_keys($fields), array_keys($fields));
-          $options['bundle_options'][$entity][$bundle] = $bundle_data['label'];
-        }
-      }
-      $this->bundleOptions = $options;
-    }
-    return $this->bundleOptions;
   }
 
 }

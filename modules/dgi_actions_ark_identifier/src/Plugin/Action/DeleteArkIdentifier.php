@@ -23,79 +23,6 @@ use Drupal\Core\State\StateInterface;
  */
 class DeleteArkIdentifier extends DeleteIdentifier {
 
-  // @codingStandardsIgnoreStart
-
-  /**
-   * CDL EZID Text Parser.
-   *
-   * @var \Drupal\dgi_actions_ark_identifier\Utility\EzidTextParser
-   */
-  protected $ezidParser;
-
-  /**
-   * State.
-   *
-   * @var \Drupal\Core\State\StateInterface
-   */
-  protected $state;
-
-  /**
-   * Constructor.
-   *
-   * @param array $configuration
-   *   A configuration array containing information about the plugin instance.
-   * @param string $plugin_id
-   *   The plugin ID for the plugin instance.
-   * @param mixed $plugin_definition
-   *   The plugin implementation definition.
-   * @param \GuzzleHttp\Client $client
-   *   Http Client connection.
-   * @param \Psr\Log\LoggerInterface $logger
-   *   Logger.
-   * @param \Drupal\Core\Config\ConfigFactory $config_factory
-   *   Config Factory.
-   * @param \Drupal\dgi_actions\Utility\IdentifierUtils $utils
-   *   Identifier utils.
-   * @param \Drupal\dgi_actions_ark_identifier\Utility\EzidTextParser $ezid_parser
-   *   CDL EZID Text parser.
-   * @param \Drupal\Core\State\StateInterface $state
-   *   State API.
-   */
-  public function __construct(
-    array $configuration,
-    $plugin_id,
-    $plugin_definition,
-    Client $client,
-    LoggerInterface $logger,
-    ConfigFactory $config_factory,
-    IdentifierUtils $utils,
-    EzidTextParser $ezid_parser,
-    StateInterface $state
-  ) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition, $client, $logger, $config_factory, $utils);
-    $this->ezidParser = $ezid_parser;
-    $this->state = $state;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): DeleteArkIdentifier {
-    return new static(
-      $configuration,
-      $plugin_id,
-      $plugin_definition,
-      $container->get('http_client'),
-      $container->get('logger.channel.dgi_actions'),
-      $container->get('config.factory'),
-      $container->get('dgi_actions.utils'),
-      $container->get('dgi_actions.ezidtextparser'),
-      $container->get('state')
-    );
-  }
-
-  // @codingStandardsIgnoreEnd
-
   /**
    * {@inheritdoc}
    */
@@ -114,12 +41,8 @@ class DeleteArkIdentifier extends DeleteIdentifier {
    * {@inheritdoc}
    */
   protected function getRequestParams(): array {
-    $creds = $this->state->get($this->serviceDataConfig->get('data.state_key'));
     return [
-      'auth' => [
-        $creds['username'],
-        $creds['password'],
-      ],
+      'auth' => $this->getAuthorizationParams(),
     ];
   }
 

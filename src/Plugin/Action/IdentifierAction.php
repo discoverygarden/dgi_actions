@@ -2,8 +2,6 @@
 
 namespace Drupal\dgi_actions\Plugin\Action;
 
-use Drupal\Core\Config\ImmutableConfig;
-use Drupal\Core\Entity\EntityTypeManager;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\dgi_actions\Entity\IdentifierInterface;
 use Drupal\dgi_actions\Utility\IdentifierUtils;
@@ -16,20 +14,12 @@ use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Psr7\Request;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerInterface;
-use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Session\AccountInterface;
 
 /**
  * Base class for Identifier Actions.
  */
 abstract class IdentifierAction extends ConfigurableActionBase implements ContainerFactoryPluginInterface {
-
-  /**
-   * Config Factory.
-   *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface
-   */
-  protected $configFactory;
 
   /**
    * Identifier config.
@@ -79,27 +69,24 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
    *   Http Client connection.
    * @param \Psr\Log\LoggerInterface $logger
    *   Logger.
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
-   *   Config Factory.
    * @param \Drupal\dgi_actions\Utility\IdentifierUtils $utils
    *   Identifier utils.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
    */
-  public function __construct(
-    array $configuration,
+  public function __construct(array $configuration,
     $plugin_id,
     $plugin_definition,
     ClientInterface $client,
     LoggerInterface $logger,
-    ConfigFactoryInterface $config_factory,
     IdentifierUtils $utils,
-    EntityTypeManagerInterface $etm
+    EntityTypeManagerInterface $entity_type_manager
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->client = $client;
     $this->logger = $logger;
-    $this->configFactory = $config_factory;
     $this->utils = $utils;
-    $this->identifier = $etm->getStorage('dgiactions_identifier')->load($this->configuration['identifier_entity']);
+    $this->identifier = $entity_type_manager->getStorage('dgiactions_identifier')->load($this->configuration['identifier_entity']);
 
   }
 
@@ -113,7 +100,6 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
       $plugin_definition,
       $container->get('http_client'),
       $container->get('logger.channel.dgi_actions'),
-      $container->get('config.factory'),
       $container->get('dgi_actions.utils'),
       $container->get('entity_type.manager')
     );

@@ -67,8 +67,6 @@ class ServiceDataForm extends EntityForm {
     $form = parent::form($form, $form_state);
 
     if ($this->getOperation() === 'edit') {
-      dsm($this->entity->getData());
-      dsm($this->entity->id());
       $this->plugin = $this->serviceDataTypeManager->createInstance($this->entity->getServiceDataType(), $this->entity->getData());
     }
     // Grab the list of available service data types.

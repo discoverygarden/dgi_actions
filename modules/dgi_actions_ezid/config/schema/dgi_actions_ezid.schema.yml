@@ -20,7 +20,7 @@ dgi_actions.service_data_type.ezid:
       description: 'Client namespace for the Identifier.'
 
 dgi_actions.data_profile_type.erc:
-  type: dgi_actions.data_profile_type
+  type: mapping
   label: 'ERC Data Profile'
   mapping:
     who:

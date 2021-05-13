@@ -23,7 +23,7 @@ class DataProfileDeleteForm extends EntityConfirmFormBase {
    * {@inheritdoc}
    */
   public function getCancelUrl(): Url {
-    return new Url('dgi_actions.entity.dgiactions_dataprofile.collection');
+    return new Url('entity.dgiactions_dataprofile.collection');
   }
 
   /**

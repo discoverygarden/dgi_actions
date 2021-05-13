@@ -2,12 +2,8 @@
 
 namespace Drupal\dgi_actions_handle\Plugin\ServiceDataType;
 
-use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Drupal\Core\State\StateInterface;
 use Drupal\dgi_actions\Plugin\ServiceDataTypeBase;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Mints a Handle from Handle.net.
@@ -18,15 +14,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   description = @Translation("Service information for Handle.net Handles.")
  * )
  */
-class Handle extends ServiceDataTypeBase implements ContainerFactoryPluginInterface {
-
-
-  /**
-   * The Drupal state.
-   *
-   * @var \Drupal\Core\State\StateInterface
-   */
-  protected $state;
+class Handle extends ServiceDataTypeBase {
 
   /**
    * Handle service data plugin constructor.
@@ -40,22 +28,9 @@ class Handle extends ServiceDataTypeBase implements ContainerFactoryPluginInterf
    * @param \Drupal\Core\State\StateInterface $state
    *   The Drupal state used to store credentials.
    */
-  public function __construct(array $configuration, $plugin_id, array $plugin_definition, StateInterface $state) {
+  public function __construct(array $configuration, $plugin_id, array $plugin_definition) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->state = $state;
     $this->setConfiguration($configuration);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
-    return new static(
-      $configuration,
-      $plugin_id,
-      $plugin_definition,
-      $container->get('state')
-    );
   }
 
   /**

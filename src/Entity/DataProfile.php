@@ -3,7 +3,6 @@
 namespace Drupal\dgi_actions\Entity;
 
 use Drupal\Core\Config\Entity\ConfigEntityBase;
-use Drupal\Core\Entity\EntityTypeInterface;
 
 /**
  * Defines the Data Profile setting entity.
@@ -41,7 +40,7 @@ use Drupal\Core\Entity\EntityTypeInterface;
  *     "label",
  *     "entity",
  *     "bundle",
- *     "dataprofile",
+ *     "data_profile",
  *     "data",
  *   }
  * )
@@ -63,25 +62,25 @@ class DataProfile extends ConfigEntityBase implements DataProfileInterface {
   protected $label;
 
   /**
-   * The Data Profile setting entity.
+   * The entity used in the Data Profile..
    *
    * @var string
    */
   protected $entity;
 
   /**
-   * The Data Profile setting bundle.
+   * The bundle used in the Data Profile.
    *
    * @var string
    */
   protected $bundle;
 
   /**
-   * The Data Profile setting dataprofile.
+   * The data profile entity ID being used.
    *
    * @var string
    */
-  protected $dataprofile;
+  protected $data_profile;
 
   /**
    * The Data Profile setting fields.
@@ -107,8 +106,8 @@ class DataProfile extends ConfigEntityBase implements DataProfileInterface {
   /**
    * {@inheritdoc}
    */
-  public function getDataprofile(): string {
-    return $this->dataprofile;
+  public function getDataProfile(): ?string {
+    return $this->data_profile;
   }
 
   /**
@@ -123,24 +122,6 @@ class DataProfile extends ConfigEntityBase implements DataProfileInterface {
    */
   public function setData(array $data) {
     $this->data = $data;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function invalidateTagsOnSave($update) {
-    parent::invalidateTagsOnSave($update);
-    // Clear the config_filter plugin cache.
-    \Drupal::service('plugin.manager.config_filter')->clearCachedDefinitions();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected static function invalidateTagsOnDelete(EntityTypeInterface $entity_type, array $entities) {
-    parent::invalidateTagsOnDelete($entity_type, $entities);
-    // Clear the config_filter plugin cache.
-    \Drupal::service('plugin.manager.config_filter')->clearCachedDefinitions();
   }
 
 }

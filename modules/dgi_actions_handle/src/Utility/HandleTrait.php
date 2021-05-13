@@ -2,9 +2,7 @@
 
 namespace Drupal\dgi_actions_handle\Utility;
 
-use Drupal\Core\Config\ImmutableConfig;
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\Core\State\StateInterface;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Psr7\Response;
 
@@ -26,13 +24,6 @@ trait HandleTrait {
    * @var \Drupal\Core\Entity\EntityInterface
    */
   protected $entity;
-
-  /**
-   * State API.
-   *
-   * @var \Drupal\Core\State\StateInterface
-   */
-  protected $state;
 
   /**
    * Constructs the auth parameters for Guzzle to connect to Handle.net's API.
