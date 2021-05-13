@@ -2,15 +2,9 @@
 
 namespace Drupal\dgi_actions_ark_identifier\Plugin\Action;
 
-use Drupal\dgi_actions_ark_identifier\Utility\EzidTextParser;
 use Drupal\dgi_actions\Plugin\Action\DeleteIdentifier;
-use Drupal\dgi_actions\Utility\IdentifierUtils;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use GuzzleHttp\Client;
-use Drupal\Core\Config\ConfigFactory;
+use Drupal\dgi_actions_ezid\Utility\EzidTrait;
 use Psr\Http\Message\ResponseInterface;
-use Psr\Log\LoggerInterface;
-use Drupal\Core\State\StateInterface;
 
 /**
  * Deletes an ARK Identifier Record on CDL EZID.
@@ -23,6 +17,8 @@ use Drupal\Core\State\StateInterface;
  */
 class DeleteArkIdentifier extends DeleteIdentifier {
 
+  use EzidTrait;
+
   /**
    * {@inheritdoc}
    */
@@ -34,6 +30,8 @@ class DeleteArkIdentifier extends DeleteIdentifier {
    * {@inheritdoc}
    */
   protected function getUri(): string {
+    // XXX: Grab the existing ARK value as it contains the end-point URL to
+    // delete.
     return $this->getIdentifierFromEntity();
   }
 
@@ -51,7 +49,7 @@ class DeleteArkIdentifier extends DeleteIdentifier {
    */
   protected function handleResponse(ResponseInterface $response): void {
     $contents = $response->getBody()->getContents();
-    $filteredResponse = $this->ezidParser->parseEzidResponse($contents);
+    $filteredResponse = $this->parseEzidResponse($contents);
 
     if (array_key_exists('success', $filteredResponse)) {
       $this->logger->info('ARK Identifier Deleted: @contents', ['@contents' => $contents]);

@@ -46,7 +46,7 @@ class DataProfileForm extends EntityBundleSelectionForm {
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container): DataProfileForm {
+  public static function create(ContainerInterface $container) {
     return new static(
       $container->get('entity_field.manager'),
       $container->get('entity_type.bundle.info'),
@@ -59,10 +59,11 @@ class DataProfileForm extends EntityBundleSelectionForm {
    */
   public function form(array $form, FormStateInterface $form_state): array {
     $form = parent::form($form, $form_state);
+
     if ($this->getOperation() === 'edit') {
-      $this->plugin = $this->dataProfileManager->createInstance($this->entity->getDataProfile(), $this->entity->getData());
-      $this->targetEntity = $this->entity->get('entity');
-      $this->targetBundle = $this->entity->get('bundle');
+      $this->plugin = $this->plugin ?? $this->entity->getDataProfilePlugin();
+      $this->targetEntity = $this->targetEntity ?? $this->entity->get('entity');
+      $this->targetBundle = $this->targetBundle ?? $this->entity->get('bundle');
     }
 
     // Grab the list of available service data types.
@@ -74,20 +75,21 @@ class DataProfileForm extends EntityBundleSelectionForm {
     }
 
     $triggering_element = $form_state->getTriggeringElement();
+
     if (isset($triggering_element['#parents'])) {
       if ($triggering_element['#parents'] === ['entity']) {
         $this->targetEntity = !empty($form_state->getValue('entity')) ? $form_state->getValue('entity') : NULL;
         unset($this->targetBundle);
+        unset($this->plugin);
       }
       if ($triggering_element['#parents'] === ['bundle']) {
         $this->targetBundle = !empty($form_state->getValue('bundle')) ? $form_state->getValue('bundle') : NULL;
-        unset($this->targetField);
+        unset($this->plugin);
       }
       if ($triggering_element['#parents'] === ['data_profile']) {
         $this->plugin = !empty($form_state->getValue('data_profile')) ? $this->dataProfileManager->createInstance($form_state->getValue('data_profile')) : NULL;
       }
     }
-
     $form['label'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Label'),
@@ -172,7 +174,7 @@ class DataProfileForm extends EntityBundleSelectionForm {
           '#type' => 'select',
           '#title' => $this->t('Data Profile Type'),
           '#empty_option' => $this->t('- None -'),
-          '#default_value' => $this->entity->getDataProfile(),
+          '#default_value' => isset($this->plugin) ? $this->plugin->getPluginId() : NULL,
           '#options' => $options,
           '#description' => $this->t('The Data Profile type to be used.'),
           '#required' => TRUE,

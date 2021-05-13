@@ -11,7 +11,6 @@ use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\dgi_actions\Utility\IdentifierUtils;
-use Drupal\Core\Config\ConfigFactory;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -107,11 +106,7 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
       $field = $identifier->get('field');
       $entity_type = $identifier->get('entity');
       $bundle = $identifier->get('bundle');
-      dsm($field, 'field');
-      dsm($entity_type, 'type');
-      dsm($bundle, 'bundle');
       if (!empty($field) && $entity->hasField($field) && $entity->getEntityTypeId() == $entity_type && $entity->bundle() == $bundle) {
-        dsm(!$entity->get($field)->isEmpty(), 'im in this condition');
         return !$entity->get($field)->isEmpty();
       }
     }

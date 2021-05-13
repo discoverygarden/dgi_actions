@@ -23,7 +23,7 @@ class IdentifierHtmlRouteProvider extends AdminHtmlRouteProvider {
     $entity_type_id = $entity_type->id();
 
     if ($collection_route = $this->getCollectionRoute($entity_type)) {
-      $collection->add("entity.{$entity_type_id}.collection", $collection_route);
+      $collection->add("entity.$entity_type_id.collection", $collection_route);
     }
 
     return $collection;

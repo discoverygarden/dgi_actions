@@ -75,6 +75,13 @@ class ServiceData extends ConfigEntityBase implements ServiceDataInterface {
   protected $data;
 
   /**
+   * The state to be set in the Drupal state.
+   *
+   * @var array
+   */
+  protected $state = [];
+
+  /**
    * {@inheritdoc}
    */
   public function set($property_name, $value) {
@@ -92,17 +99,17 @@ class ServiceData extends ConfigEntityBase implements ServiceDataInterface {
    */
   public function setData(array $data): void {
     $state = [];
-    $plugin = \Drupal::service('plugin.manager.service_data_type')->createInstance($this->getServiceDataType(), []);;
-    foreach ($plugin->getStateKeys() as $key) {
-      if (NestedArray::keyExists($data, (array) $key)) {
-        $state[$key] = NestedArray::getValue($data, (array) $key);
-        // Remove the values so they do not get stored on the entity directly.
-        NestedArray::unsetValue($data, (array) $key);
+    if ($this->getServiceDataType()) {
+      $plugin = \Drupal::service('plugin.manager.service_data_type')->createInstance($this->getServiceDataType(), []);
+      foreach ($plugin->getStateKeys() as $key) {
+        if (NestedArray::keyExists($data, (array) $key)) {
+          $state[$key] = NestedArray::getValue($data, (array) $key);
+          // Remove the values so they do not get stored on the entity directly.
+          NestedArray::unsetValue($data, (array) $key);
+        }
       }
     }
-    if (!empty($state)) {
-      \Drupal::service('state')->set("dgi_actions.service_data.{$this->id()}", $state);
-    }
+    $this->state = $state;
     $this->data = $data;
   }
 
@@ -124,6 +131,16 @@ class ServiceData extends ConfigEntityBase implements ServiceDataInterface {
       }
     }
     return $stated_data;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function save() {
+    if (!empty($this->state)) {
+      \Drupal::service('state')->set("dgi_actions.service_data.{$this->id()}", $this->state);
+    }
+    return parent::save();
   }
 
   /**

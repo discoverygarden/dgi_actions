@@ -27,13 +27,12 @@ abstract class MintIdentifier extends IdentifierAction {
     $data = [];
     $data_profile = $this->getIdentifier()->getDataProfile();
     if ($data_profile) {
-      foreach ($data_profile->getData() as $value) {
-        if ($this->entity->hasField($value['source_field'])) {
-          $data[$value['key']] = $this->entity->get($value['source_field'])->getString();
+      foreach ($data_profile->getData() as $key => $field) {
+        if ($this->entity->hasField($field)) {
+          $data[$key] = $this->entity->get($field)->getString();
         }
       }
     }
-
     return $data;
   }
 

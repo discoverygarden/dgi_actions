@@ -5,7 +5,6 @@ namespace Drupal\dgi_actions\Form;
 use Drupal\Core\Entity\EntityForm;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Form\SubformState;
-use Drupal\Core\State\StateInterface;
 use Drupal\dgi_actions\Plugin\ServiceDataTypeManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -15,13 +14,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @package Drupal\dgi_actions\Form
  */
 class ServiceDataForm extends EntityForm {
-
-  /**
-   * The drupal state.
-   *
-   * @var \Drupal\Core\State\StateInterface
-   */
-  protected $state;
 
   /**
    * The Service Data Type manager.
@@ -40,13 +32,10 @@ class ServiceDataForm extends EntityForm {
   /**
    * Constructs a new class instance.
    *
-   * @param \Drupal\Core\State\StateInterface $state
-   *   The drupal state.
    * @param \Drupal\dgi_actions\Plugin\ServiceDataTypeManager $service_data_type_manager
    *   The Service Data Type plugin manager.
    */
-  public function __construct(StateInterface $state, ServiceDataTypeManager $service_data_type_manager) {
-    $this->state = $state;
+  public function __construct(ServiceDataTypeManager $service_data_type_manager) {
     $this->serviceDataTypeManager = $service_data_type_manager;
   }
 
@@ -55,7 +44,6 @@ class ServiceDataForm extends EntityForm {
    */
   public static function create(ContainerInterface $container): ServiceDataForm {
     return new static(
-      $container->get('state'),
       $container->get('plugin.manager.service_data_type')
     );
   }
@@ -67,8 +55,9 @@ class ServiceDataForm extends EntityForm {
     $form = parent::form($form, $form_state);
 
     if ($this->getOperation() === 'edit') {
-      $this->plugin = $this->serviceDataTypeManager->createInstance($this->entity->getServiceDataType(), $this->entity->getData());
+      $this->plugin = $this->plugin ?? $this->serviceDataTypeManager->createInstance($this->entity->getServiceDataType(), $this->entity->getData());
     }
+
     // Grab the list of available service data types.
     $definitions = $this->serviceDataTypeManager->getDefinitions();
     $options = [];
@@ -77,7 +66,6 @@ class ServiceDataForm extends EntityForm {
       $options[$service] = $definition['label'];
     }
     $triggering_element = $form_state->getTriggeringElement();
-
     if (isset($triggering_element['#parents']) && $triggering_element['#parents'] === ['service_data_type']) {
       $this->plugin = !empty($form_state->getValue('service_data_type')) ? $this->serviceDataTypeManager->createInstance($form_state->getValue('service_data_type')) : NULL;
     }
@@ -106,7 +94,7 @@ class ServiceDataForm extends EntityForm {
       '#title' => $this->t('Service Data Type'),
       '#options' => $options,
       '#empty_option' => $this->t('- None -'),
-      '#default_value' => $this->entity->getServiceDataType(),
+      '#default_value' => isset($this->plugin) ? $this->plugin->getPluginId() : NULL,
       '#required' => TRUE,
       '#ajax' => [
         'callback' => '::serviceDataTypeSelectionCallback',
@@ -117,7 +105,6 @@ class ServiceDataForm extends EntityForm {
       '#type' => 'container',
       '#attributes' => ['id' => 'servicedata-fieldset-container'],
     ];
-    // @TODO: No AJAX?
     // If a service data type has been selected do things.
     if ($this->plugin) {
       $form['service_data_fieldset']['container']['fieldset'] = [

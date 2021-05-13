@@ -34,7 +34,18 @@ class Erc extends DataProfileBase {
   /**
    * {@inheritdoc}
    */
-  public function defaultConfiguration() {
+  public function modifyData(array $data): array {
+    $erc_data = [];
+    foreach ($data as $field => $value) {
+      $erc_data["erc.$field"] = $value;
+    }
+    return $erc_data;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function defaultConfiguration(): array {
     return [
       'who' => NULL,
       'what' => NULL,

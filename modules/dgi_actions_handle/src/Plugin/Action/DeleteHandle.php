@@ -2,15 +2,9 @@
 
 namespace Drupal\dgi_actions_handle\Plugin\Action;
 
-use Drupal\Core\Config\ConfigFactoryInterface;
-use Drupal\Core\State\StateInterface;
 use Drupal\dgi_actions\Plugin\Action\DeleteIdentifier;
-use Drupal\dgi_actions\Utility\IdentifierUtils;
 use Drupal\dgi_actions_handle\Utility\HandleTrait;
-use GuzzleHttp\ClientInterface;
 use Psr\Http\Message\ResponseInterface;
-use Psr\Log\LoggerInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Deletes a Handle.

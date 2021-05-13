@@ -2,7 +2,6 @@
 
 namespace Drupal\dgi_actions\Form;
 
-use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityFieldManager;
 use Drupal\Core\Entity\EntityTypeBundleInfo;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -53,6 +52,7 @@ class IdentifierForm extends EntityBundleSelectionForm {
    *   The drupal core entity type bundle info.
    */
   public function __construct(EntityTypeManagerInterface $entity_type_manager, EntityFieldManager $entityFieldManager, EntityTypeBundleInfo $entityTypeBundleInfo) {
+    parent::__construct($entityFieldManager, $entityTypeBundleInfo);
     $this->entityTypeManager = $entity_type_manager;
     $this->entityFieldManager = $entityFieldManager;
     $this->entityTypeBundleInfo = $entityTypeBundleInfo;
@@ -134,7 +134,6 @@ class IdentifierForm extends EntityBundleSelectionForm {
         'wrapper' => 'bundle-fieldset-container',
       ],
     ];
-    // @TODO: NO AJAX?
     $entity_fieldset =& $form['entity_fieldset'];
 
     // Setup containers for AJAX.
@@ -258,7 +257,17 @@ class IdentifierForm extends EntityBundleSelectionForm {
     return $form['dataprofile_fieldset_container'];
   }
 
-  public function getOptionsForDropdown($entity_id) {
+  /**
+   * Helper that gets all available entities as options for a dropdown.
+   *
+   * @param string $entity_id
+   *   The entity type to be retrieved.
+   *
+   * @return array
+   *   An associative array where the key is the entity ID and the value is the
+   *   label of the entity.
+   */
+  public function getOptionsForDropdown(string $entity_id): array {
     $entities = $this->entityTypeManager->getStorage($entity_id)->loadMultiple();
     $entities_options = [];
     if (!empty($entities)) {
@@ -269,11 +278,25 @@ class IdentifierForm extends EntityBundleSelectionForm {
     return $entities_options;
   }
 
-  public function getDataProfileOptionsForDropdown() {
+  /**
+   * Gets all available data profile entities as options.
+   *
+   * @return array
+   *   An associative array where the key is the entity ID and the value is the
+   *   label of the entity.
+   */
+  public function getDataProfileOptionsForDropdown(): array {
     return $this->getOptionsForDropdown('dgiactions_dataprofile');
   }
 
-  public function getServiceDataOptionsForDropdown() {
+  /**
+   * Gets all available service data types as options.
+   *
+   * @return array
+   *   An associative array where the key is the entity ID and the value is the
+   *   label of the entity.
+   */
+  public function getServiceDataOptionsForDropdown(): array {
     return $this->getOptionsForDropdown('dgiactions_servicedata');
   }
 

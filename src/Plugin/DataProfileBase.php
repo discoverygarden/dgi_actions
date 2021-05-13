@@ -32,7 +32,7 @@ abstract class DataProfileBase extends PluginBase implements DataProfileInterfac
   /**
    * {@inheritdoc}
    */
-  public function getConfiguration() {
+  public function getConfiguration(): array {
     return $this->configuration;
   }
 
@@ -46,15 +46,25 @@ abstract class DataProfileBase extends PluginBase implements DataProfileInterfac
   /**
    * {@inheritdoc}
    */
-  public function defaultConfiguration() {
+  public function defaultConfiguration(): array {
     return [];
   }
 
   /**
    * {@inheritdoc}
    */
-  public function calculateDependencies() {
+  public function calculateDependencies(): array {
     return [];
+  }
+
+  /**
+   * Allows a profile plugin to modify data before being sent out the API.
+   *
+   * @return array
+   *   Returns the data to be sent off to the API;
+   */
+  public function modifyData(array $data): array {
+    return $data;
   }
 
 }

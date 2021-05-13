@@ -25,8 +25,6 @@ class Handle extends ServiceDataTypeBase {
    *   The ID of the plugin being instansiated.
    * @param array $plugin_definition
    *   Array describing the plugin definition.
-   * @param \Drupal\Core\State\StateInterface $state
-   *   The Drupal state used to store credentials.
    */
   public function __construct(array $configuration, $plugin_id, array $plugin_definition) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
@@ -36,7 +34,7 @@ class Handle extends ServiceDataTypeBase {
   /**
    * {@inheritdoc}
    */
-  public function defaultConfiguration() {
+  public function defaultConfiguration(): array {
     return [
       'host' => NULL,
       'username' => NULL,
@@ -84,7 +82,7 @@ class Handle extends ServiceDataTypeBase {
   /**
    * {@inheritdoc}
    */
-  public function getStateKeys() {
+  public function getStateKeys(): array {
     return [
       'username',
       'password',

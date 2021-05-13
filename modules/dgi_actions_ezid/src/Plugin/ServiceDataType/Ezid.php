@@ -41,7 +41,7 @@ class Ezid extends ServiceDataTypeBase {
   /**
    * {@inheritdoc}
    */
-  public function defaultConfiguration() {
+  public function defaultConfiguration(): array {
     return [
       'host' => NULL,
       'username' => NULL,
@@ -89,7 +89,7 @@ class Ezid extends ServiceDataTypeBase {
   /**
    * {@inheritdoc}
    */
-  public function getStateKeys() {
+  public function getStateKeys(): array {
     return [
       'username',
       'password',

@@ -27,17 +27,23 @@ abstract class EntityBundleSelectionForm extends EntityForm {
   protected $entityTypeBundleInfo;
 
   /**
-   * The targeted entity.
+   * The targeted entity type.
+   *
+   * @var string
    */
   protected $targetEntity;
 
   /**
-   * The targeted bundle.
+   * The targeted bundle ID.
+   *
+   * @var string
    */
   protected $targetBundle;
 
   /**
+   * Contains information about the available entities, bundles and fields.
    *
+   * @var array
    */
   protected $entityOptions;
 
@@ -89,11 +95,24 @@ abstract class EntityBundleSelectionForm extends EntityForm {
     return $this->entityOptions;
   }
 
-  public function getEntityOptionsForDropdown() {
+  /**
+   * Helper to return all available entities for use in a select.
+   *
+   * @return array
+   *   An associative array where both the key and value is the entity type.
+   */
+  public function getEntityOptionsForDropdown(): array {
     return $this->getEntityOptions()['entity_options'];
   }
 
-  public function getEntityBundlesForDropdown() {
+  /**
+   * Helper to return all available bundles for use in a select.
+   *
+   * @return array
+   *   An associative array where both they key is the bundle ID and the value
+   *   is the label.
+   */
+  public function getEntityBundlesForDropdown(): array {
     $options = [];
     $bundles = $this->getEntityOptions()['entity_bundles'][$this->targetEntity] ?? [];
     foreach ($bundles as $bundle => $bundle_data) {
@@ -102,7 +121,18 @@ abstract class EntityBundleSelectionForm extends EntityForm {
     return $options;
   }
 
-  public function getFieldsForDropdown($entity, $bundle) {
+  /**
+   * Helper to return all available fields for use in a select.
+   *
+   * @param string $entity
+   *   The entity ID to retrieve fields from.
+   * @param string $bundle
+   *   The bundle ID to retrieve fields from.
+   *
+   * @return array
+   *   An associative array where both the key and value is the field name.
+   */
+  public function getFieldsForDropdown(string $entity, string $bundle): array {
     return $this->getEntityOptions()['entity_bundles'][$entity][$bundle]['fields'] ?? [];
   }
 

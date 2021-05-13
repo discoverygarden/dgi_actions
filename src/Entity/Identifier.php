@@ -3,7 +3,6 @@
 namespace Drupal\dgi_actions\Entity;
 
 use Drupal\Core\Config\Entity\ConfigEntityBase;
-use Drupal\Core\Entity\EntityTypeInterface;
 
 /**
  * Defines the Identifier setting entity.

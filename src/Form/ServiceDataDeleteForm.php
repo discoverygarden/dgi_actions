@@ -7,7 +7,6 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\State\StateInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Url;
-use Drupal\dgi_actions\Plugin\ServiceDataTypeManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**

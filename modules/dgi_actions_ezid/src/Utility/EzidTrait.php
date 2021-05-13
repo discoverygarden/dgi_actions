@@ -57,7 +57,7 @@ trait EzidTrait {
   public function buildEzidRequestBody(array $data): string {
     $output = "";
     foreach ($data as $key => $val) {
-      $output .= $key . ": " . $val . "\r\n";
+      $output .= "$key: $val\r\n";
     }
     return $output;
   }
@@ -68,7 +68,7 @@ trait EzidTrait {
    * @return array
    *   Authorization parameters to be passed to Guzzle.
    */
-  public function getAuthorizationParams() {
+  public function getAuthorizationParams(): array {
     return [
       $this->getIdentifier()->getServiceData()->getData()['username'],
       $this->getIdentifier()->getServiceData()->getData()['password'],

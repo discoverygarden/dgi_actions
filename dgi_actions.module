@@ -21,9 +21,7 @@ function dgi_actions_entity_insert(EntityInterface $entity) {
 
   $original_entity = clone $entity;
   $utils->executeEntityReactions(EntityMintReaction::class, $entity);
-
   if (\Drupal::service('islandora.utils')->haveFieldsChanged($entity, $original_entity)) {
-    dsm($entity->label(),'insert');
     $entity->save();
   }
 }
@@ -36,7 +34,6 @@ function dgi_actions_entity_presave(EntityInterface $entity) {
     return;
   }
   if (!$entity->isNew()) {
-    dsm($entity->label(), 'presave');
     $utils = \Drupal::service('dgi_actions.dgiutils');
     $utils->executeEntityReactions(EntityMintReaction::class, $entity);
   }

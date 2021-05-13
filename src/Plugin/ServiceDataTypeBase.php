@@ -32,7 +32,7 @@ abstract class ServiceDataTypeBase extends PluginBase implements ServiceDataType
   /**
    * {@inheritdoc}
    */
-  public function getConfiguration() {
+  public function getConfiguration(): array {
     return $this->configuration;
   }
 
@@ -46,14 +46,14 @@ abstract class ServiceDataTypeBase extends PluginBase implements ServiceDataType
   /**
    * {@inheritdoc}
    */
-  public function defaultConfiguration() {
+  public function defaultConfiguration(): array {
     return [];
   }
 
   /**
    * {@inheritdoc}
    */
-  public function calculateDependencies() {
+  public function calculateDependencies(): array {
     return [];
   }
 
@@ -63,7 +63,7 @@ abstract class ServiceDataTypeBase extends PluginBase implements ServiceDataType
    * @return array
    *   The array of keys to be looked at to get values to be placed into state.
    */
-  public function getStateKeys() {
+  public function getStateKeys(): array {
     return [];
   }
 

@@ -2,9 +2,9 @@
 
 namespace Drupal\dgi_actions\Utility;
 
+use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Plugin\Context\ContextProviderInterface;
 use Drupal\islandora\IslandoraContextManager;
-use Drupal\Core\Entity\EntityInterface;
 
 /**
  * Utility functions for figuring out when to fire derivative reactions.
@@ -43,10 +43,10 @@ class DgiUtils {
    *
    * @param string $reaction_type
    *   Reaction type.
-   * @param \Drupal\Core\Entity\EntityInterface $entity
+   * @param \Drupal\Core\Entity\ContentEntityInterface $entity
    *   Entity to evaluate contexts and pass to reaction.
    */
-  public function executeEntityReactions(string $reaction_type, EntityInterface $entity) {
+  public function executeEntityReactions(string $reaction_type, ContentEntityInterface $entity) {
     $provider = $this->provider;
     $provider->setEntity($entity);
     $this->contextManager->evaluateContexts();

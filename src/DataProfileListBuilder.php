@@ -2,12 +2,10 @@
 
 namespace Drupal\dgi_actions;
 
-use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Config\Entity\ConfigEntityListBuilder;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
-use Drupal\dgi_actions\Annotation\DataProfile;
 use Drupal\dgi_actions\Plugin\DataProfileManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -69,7 +67,7 @@ class DataProfileListBuilder extends ConfigEntityListBuilder {
     $row['id'] = $entity->id();
     $row['entity'] = $entity->get('entity');
     $row['bundle'] = $entity->get('bundle');
-    $plugin = $this->dataProfileManager->createInstance($entity->getDataProfile());
+    $plugin = $entity->getDataProfilePlugin();
     $definition = $plugin->getPluginDefinition();
     $row['dataprofile'] = $definition['label'];
 

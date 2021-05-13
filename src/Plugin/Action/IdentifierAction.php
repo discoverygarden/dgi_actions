@@ -82,6 +82,7 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
     IdentifierUtils $utils,
     EntityTypeManagerInterface $entity_type_manager
   ) {
+
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->client = $client;
     $this->logger = $logger;

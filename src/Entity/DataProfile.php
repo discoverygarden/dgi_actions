@@ -3,6 +3,7 @@
 namespace Drupal\dgi_actions\Entity;
 
 use Drupal\Core\Config\Entity\ConfigEntityBase;
+use Drupal\dgi_actions\Plugin\DataProfileInterface as ProfileInterface;
 
 /**
  * Defines the Data Profile setting entity.
@@ -106,15 +107,17 @@ class DataProfile extends ConfigEntityBase implements DataProfileInterface {
   /**
    * {@inheritdoc}
    */
-  public function getDataProfile(): ?string {
-    return $this->data_profile;
+  public function getDataProfilePlugin(): ?ProfileInterface {
+    return \Drupal::service('plugin.manager.data_profile')->createInstance($this->data_profile, $this->data);
+
   }
 
   /**
    * {@inheritdoc}
    */
   public function getData(): array {
-    return $this->data;
+    // Allow the data profile to modify the data going out before it's returned.
+    return $this->getDataProfilePlugin()->modifyData($this->data);
   }
 
   /**
