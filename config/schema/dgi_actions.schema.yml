@@ -2,14 +2,6 @@ dgi_actions.identifier.*:
   type: config_entity
   label: 'Identifier'
   mapping:
-    status:
-      type: boolean
-      label: 'Status'
-    dependencies:
-      type: sequence
-      label: 'Dependencies'
-      sequence:
-        type: string
     id:
       type: string
       label: 'Identifier ID'
@@ -26,11 +18,11 @@ dgi_actions.identifier.*:
       type: string
       label: 'Identifier Object Field'
     service_data:
-      type: entity:dgiactions_servicedata
-      label: 'Service Data'
+      type: string
+      label: 'Service Data Entity ID'
     data_profile:
-      type: entity:dgiactions_dataprofile
-      label: 'Data Profile'
+      type: string
+      label: 'Data Profile Entity ID'
 
 dgi_actions.data_profile.*:
   type: config_entity

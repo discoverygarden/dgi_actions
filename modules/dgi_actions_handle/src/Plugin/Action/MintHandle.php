@@ -60,6 +60,7 @@ class MintHandle extends MintIdentifier {
    */
   protected function getIdentifierFromResponse(Response $response): string {
     $body = json_decode($response->getBody(), TRUE);
+    $this->logger->info('Handle minted: @handle.', ['@handle' => $body['handle']]);
     return "https://hdl.handle.net/{$body['handle']}";
   }
 

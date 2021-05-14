@@ -9,7 +9,7 @@ use Drupal\Core\Plugin\Context\EntityContext;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 
 /**
- * Sets the provided media as a context.
+ * Sets the provided entity as a context.
  */
 class EntityContextProvider implements ContextProviderInterface {
 
@@ -60,6 +60,7 @@ class EntityContextProvider implements ContextProviderInterface {
     if (!isset($this->entity) || !$this->entity instanceof ContentEntityInterface) {
       return [];
     }
+
     $contexts = [];
     $contexts[$this->entity->getEntityTypeId()] = EntityContext::fromEntity($this->entity);
     return array_intersect_key($contexts, array_flip($unqualified_context_ids));

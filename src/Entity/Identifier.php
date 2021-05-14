@@ -132,4 +132,25 @@ class Identifier extends ConfigEntityBase implements IdentifierInterface {
     return \Drupal::service('entity_type.manager')->getStorage('dgiactions_dataprofile')->load($this->data_profile);
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function calculateDependencies() {
+    parent::calculateDependencies();
+
+    // Add the dependency on the data profile and service data entities if
+    // they are here.
+    if ($this->data_profile) {
+      $profile_entity = $this->getDataProfile();
+      $this->addDependency('config', $profile_entity->getConfigDependencyName());
+    }
+
+    if ($this->service_data) {
+      $service_entity = $this->getServiceData();
+      $this->addDependency('config', $service_entity->getConfigDependencyName());
+    }
+
+    return $this;
+  }
+
 }

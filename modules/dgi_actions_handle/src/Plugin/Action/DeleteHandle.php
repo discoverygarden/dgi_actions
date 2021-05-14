@@ -22,7 +22,7 @@ class DeleteHandle extends DeleteIdentifier {
   /**
    * {@inheritdoc}
    */
-  protected function handleResponse(ResponseInterface $response) {
+  protected function handleResponse(ResponseInterface $response): void {
     $this->logger->info('Handle %prefix/%suffix was deleted.', [
       '%prefix' => $this->getPrefix(),
       '%suffix' => $this->getSuffix(),
@@ -33,7 +33,8 @@ class DeleteHandle extends DeleteIdentifier {
    * {@inheritdoc}
    */
   protected function delete() {
-    $this->handleRequest();
+    $response = $this->handleRequest();
+    $this->handleResponse($response);
   }
 
   /**
