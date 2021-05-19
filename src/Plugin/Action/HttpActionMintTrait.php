@@ -5,7 +5,7 @@ namespace Drupal\dgi_actions\Plugin\Action;
 use Psr\Http\Message\ResponseInterface;
 
 /**
- * Utilities for dealing with HTTP services.
+ * Utilities for minting with HTTP services.
  */
 trait HttpActionMintTrait {
 
