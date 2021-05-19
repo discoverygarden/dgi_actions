@@ -3,8 +3,6 @@
 namespace Drupal\dgi_actions\Plugin\Action;
 
 use Drupal\Core\Entity\FieldableEntityInterface;
-use GuzzleHttp\Exception\RequestException;
-use Psr\Http\Message\ResponseInterface;
 
 /**
  * Basic implementation for deleting an identifier.
@@ -12,40 +10,9 @@ use Psr\Http\Message\ResponseInterface;
 abstract class DeleteIdentifier extends IdentifierAction {
 
   /**
-   * Gets the Identifier from the entity's field.
-   *
-   * @throws \InvalidArgumentException
-   *   If the Entity doesn't have the configured identifier field.
-   *
-   * @return string
-   *   Returns the value stored in the identifier field as a string.
+   * Deletes the identifier from the service.
    */
-  public function getIdentifierFromEntity(): string {
-    $field = $this->identifier->get('field');
-    $identifier = $this->entity->get($field)->getString();
-    if (empty($identifier)) {
-      $this->logger->error('Identifier field @field is empty.', ['@field' => $field]);
-    }
-
-    return $identifier;
-  }
-
-  /**
-   * Handles identifier specific actions for response.
-   *
-   * @param \Psr\Http\Message\ResponseInterface $response
-   *   The Guzzle HTTP Response Object.
-   */
-  abstract protected function handleResponse(ResponseInterface $response);
-
-  /**
-   * Delete's the identifier from the service.
-   */
-  protected function delete() {
-    $request = $this->buildRequest();
-    $response = $this->sendRequest($request);
-    $this->handleResponse($response);
-  }
+  abstract protected function delete(): void;
 
   /**
    * {@inheritdoc}
@@ -59,20 +26,16 @@ abstract class DeleteIdentifier extends IdentifierAction {
         }
       }
       catch (\InvalidArgumentException $iae) {
-        $this->logger->error('Deleting failed for @entity: Configured field not found on Entity: @iae', [
-          '@entity' => $this->getEntity()->uuid(),
+        $this->logger->error('Deleting failed for @type/@id: Configured field not found on Entity: @iae', [
+          '@type' => $this->getEntity()->getEntityTypeId(),
+          '@id' => $this->getEntity()->id(),
           '@iae' => $iae->getMessage(),
         ]);
       }
-      catch (RequestException $re) {
-        $this->logger->error('Deleting failed for @entity: Bad Request: @re', [
-          '@entity' => $this->getEntity()->uuid(),
-          '@re' => $re->getMessage(),
-        ]);
-      }
       catch (\Exception $e) {
-        $this->logger->error('Deleting failed for @entity: Error: @exception', [
-          '@entity' => $this->getEntity()->uuid(),
+        $this->logger->error('Deleting failed for @type/@id: Error: @exception', [
+          '@type' => $this->getEntity()->getEntityTypeId(),
+          '@id' => $this->getEntity()->id(),
           '@exception' => $e->getMessage(),
         ]);
       }

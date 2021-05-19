@@ -30,4 +30,13 @@ class ServiceDataType extends Plugin {
    */
   public $label;
 
+  /**
+   * A description about the plugin.
+   *
+   * @var \Drupal\Core\Annotation\Translation
+   *
+   * @ingroup plugin_translatable
+   */
+  public $description;
+
 }

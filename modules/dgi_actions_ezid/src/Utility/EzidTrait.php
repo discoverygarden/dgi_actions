@@ -5,7 +5,7 @@ namespace Drupal\dgi_actions_ezid\Utility;
 use Drupal\Core\Entity\EntityInterface;
 
 /**
- * Utilities when interacting with Handle.net's API.
+ * Utilities when interacting with CDL's EZID service.
  */
 trait EzidTrait {
 

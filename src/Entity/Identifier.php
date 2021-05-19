@@ -121,14 +121,14 @@ class Identifier extends ConfigEntityBase implements IdentifierInterface {
   /**
    * {@inheritdoc}
    */
-  public function getServiceData(): ServiceDataInterface {
+  public function getServiceData(): ?ServiceDataInterface {
     return \Drupal::service('entity_type.manager')->getStorage('dgiactions_servicedata')->load($this->service_data);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getDataProfile(): DataProfileInterface {
+  public function getDataProfile(): ?DataProfileInterface {
     return \Drupal::service('entity_type.manager')->getStorage('dgiactions_dataprofile')->load($this->data_profile);
   }
 

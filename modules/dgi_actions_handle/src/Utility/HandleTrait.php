@@ -3,6 +3,7 @@
 namespace Drupal\dgi_actions_handle\Utility;
 
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\dgi_actions\Plugin\Action\HttpActionTrait;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Psr7\Response;
 
@@ -10,6 +11,8 @@ use GuzzleHttp\Psr7\Response;
  * Utilities when interacting with Handle.net's API.
  */
 trait HandleTrait {
+
+  use HttpActionTrait;
 
   /**
    * Identifier entity describing the operation to be done.

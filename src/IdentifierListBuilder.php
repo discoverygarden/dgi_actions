@@ -33,8 +33,10 @@ class IdentifierListBuilder extends ConfigEntityListBuilder {
     $row['entity'] = $entity->get('entity');
     $row['bundle'] = $entity->get('bundle');
     $row['field'] = $entity->get('field');
-    $row['service_data'] = $entity->get('service_data');
-    $row['data_profile'] = $entity->get('data_profile');
+    $service_data = $entity->getServiceData();
+    $data_profile = $entity->getDataProfile();
+    $row['service_data'] = $service_data ? $service_data->toLink(NULL, 'edit-form') : '';
+    $row['data_profile'] = $data_profile ? $data_profile->toLink(NULL, 'edit-form') : '';
 
     return $row + parent::buildRow($entity);
   }

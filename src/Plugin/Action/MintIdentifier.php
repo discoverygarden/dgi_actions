@@ -4,8 +4,6 @@ namespace Drupal\dgi_actions\Plugin\Action;
 
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Entity\Exception\UndefinedLinkTemplateException;
-use GuzzleHttp\Exception\RequestException;
-use GuzzleHttp\Psr7\Response;
 
 /**
  * Basic implementation for minting an identifier.
@@ -37,26 +35,12 @@ abstract class MintIdentifier extends IdentifierAction {
   }
 
   /**
-   * Mints the identifier to the service.
-   *
-   * @return mixed
-   *   The request response returned by the service.
-   */
-  protected function mint() {
-    $request = $this->buildRequest();
-    return $this->sendRequest($request);
-  }
-
-  /**
-   * Gets the Identifier from the service API response.
-   *
-   * @param \GuzzleHttp\Psr7\Response $response
-   *   Response from the service API.
+   * Mints the identifier.
    *
    * @return string
-   *   The identifier returned in the API response.
+   *   The identifier returned by the minting.
    */
-  abstract protected function getIdentifierFromResponse(Response $response): string;
+  abstract protected function mint(): string;
 
   /**
    * Sets the Entity field with the Identifier.
@@ -87,35 +71,33 @@ abstract class MintIdentifier extends IdentifierAction {
       try {
         $this->entity = $entity;
         if ($this->entity && $this->identifier) {
-          $response = $this->mint();
-          $identifier_uri = $this->getIdentifierFromResponse($response);
-          $this->setIdentifierField($identifier_uri);
+          $this->setIdentifierField($this->mint());
         }
         else {
-          $this->logger->error('Minting failed for @entity: Entity or Configs were not properly set.', ['@entity' => $this->getEntity()->uuid()]);
+          $this->logger->error('Minting failed for @type/@id: Entity or Configs were not properly set.', [
+            '@type' => $this->getEntity()->getEntityTypeId(),
+            '@id' => $this->getEntity()->id(),
+          ]);
         }
       }
       catch (UndefinedLinkTemplateException $ulte) {
-        $this->logger->warning('Minting failed for @entity: Error retrieving Entity URL: @errorMessage', [
-          '@entity' => $this->getEntity()->uuid(),
+        $this->logger->warning('Minting failed for @type/@id: Error retrieving Entity URL: @errorMessage', [
+          '@type' => $this->getEntity()->getEntityTypeId(),
+          '@id' => $this->getEntity()->id(),
           '@errorMessage' => $ulte->getMessage(),
         ]);
       }
       catch (\InvalidArgumentException $iae) {
-        $this->logger->error('Minting failed for @entity: Configured field not found on Entity: @iae', [
-          '@entity' => $this->getEntity()->uuid(),
+        $this->logger->error('Minting failed for @type/@id: Configured field not found on Entity: @iae', [
+          '@type' => $this->getEntity()->getEntityTypeId(),
+          '@id' => $this->getEntity()->id(),
           '@iae' => $iae->getMessage(),
         ]);
       }
-      catch (RequestException $re) {
-        $this->logger->error('Minting failed for @entity: Bad Request: @badrequest', [
-          '@entity' => $this->getEntity()->uuid(),
-          '@badrequest' => $re->getMessage(),
-        ]);
-      }
       catch (\Exception $e) {
-        $this->logger->error('Minting failed for @entity: Error: @exception', [
-          '@entity' => $this->getEntity()->uuid(),
+        $this->logger->error('Minting failed for @type/@id: Error: @exception', [
+          '@type' => $this->getEntity()->getEntityTypeId(),
+          '@id' => $this->getEntity()->id(),
           '@exception' => $e->getMessage(),
         ]);
       }

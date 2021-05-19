@@ -10,9 +10,6 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use GuzzleHttp\ClientInterface;
-use GuzzleHttp\Psr7\Request;
-use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerInterface;
 use Drupal\Core\Session\AccountInterface;
 
@@ -65,8 +62,6 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
    *   The plugin ID for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
-   * @param \GuzzleHttp\ClientInterface $client
-   *   Http Client connection.
    * @param \Psr\Log\LoggerInterface $logger
    *   Logger.
    * @param \Drupal\dgi_actions\Utility\IdentifierUtils $utils
@@ -77,14 +72,12 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
   public function __construct(array $configuration,
     $plugin_id,
     $plugin_definition,
-    ClientInterface $client,
     LoggerInterface $logger,
     IdentifierUtils $utils,
     EntityTypeManagerInterface $entity_type_manager
   ) {
 
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->client = $client;
     $this->logger = $logger;
     $this->utils = $utils;
     $this->identifier = $entity_type_manager->getStorage('dgiactions_identifier')->load($this->configuration['identifier_entity']);
@@ -99,7 +92,6 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
       $configuration,
       $plugin_id,
       $plugin_definition,
-      $container->get('http_client'),
       $container->get('logger.channel.dgi_actions'),
       $container->get('dgi_actions.utils'),
       $container->get('entity_type.manager')
@@ -157,59 +149,22 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
   }
 
   /**
-   * Gets the request type.
+   * Gets the Identifier from the entity's field.
+   *
+   * @throws \InvalidArgumentException
+   *   If the Entity doesn't have the configured identifier field.
    *
    * @return string
-   *   Request type. (IE. POST, GET, DELETE, etc).
+   *   Returns the value stored in the identifier field as a string.
    */
-  abstract protected function getRequestType(): string;
+  public function getIdentifierFromEntity(): string {
+    $field = $this->identifier->get('field');
+    $identifier = $this->entity->get($field)->getString();
+    if (empty($identifier)) {
+      $this->logger->error('Identifier field @field is empty.', ['@field' => $field]);
+    }
 
-  /**
-   * Gets the URI end-point for the request.
-   *
-   * @return string
-   *   URI end-point for the request.
-   */
-  abstract protected function getUri(): string;
-
-  /**
-   * Builds the Guzzle HTTP Request.
-   *
-   * @throws \GuzzleHttp\Exception\RequestException
-   *   Thrown by Guzzle when creating an invalid Request.
-   *
-   * @return \GuzzleHttp\Psr7\Request
-   *   The Guzzle HTTP Request Object.
-   */
-  protected function buildRequest(): Request {
-    $requestType = $this->getRequestType();
-    $uri = $this->getUri();
-    return new Request($requestType, $uri);
-  }
-
-  /**
-   * Returns the request param array.
-   *
-   * @return array
-   *   Required params for the applicable service.
-   */
-  abstract protected function getRequestParams(): array;
-
-  /**
-   * Sends the Request and Request Body.
-   *
-   * @param \GuzzleHttp\Psr7\Request $request
-   *   The Guzzle HTTP Request Object.
-   *
-   * @return \Psr\Http\Message\ResponseInterface
-   *   The Guzzle HTTP Response Object.
-   *
-   * @throws \GuzzleHttp\Exception\BadResponseException
-   *   Thrown when receiving 4XX or 5XX error.
-   */
-  protected function sendRequest(Request $request): ResponseInterface {
-    $requestParams = $this->getRequestParams();
-    return $this->client->send($request, $requestParams);
+    return $identifier;
   }
 
   /**

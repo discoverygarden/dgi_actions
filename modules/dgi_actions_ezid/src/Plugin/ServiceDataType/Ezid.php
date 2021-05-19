@@ -24,12 +24,12 @@ class Ezid extends ServiceDataTypeBase {
   protected $state;
 
   /**
-   * Handle service data plugin constructor.
+   * EZID service data plugin constructor.
    *
    * @param array $configuration
    *   Array containing default configuration for the plugin.
    * @param string $plugin_id
-   *   The ID of the plugin being instansiated.
+   *   The ID of the plugin being instantiated.
    * @param array $plugin_definition
    *   Array describing the plugin definition.
    */

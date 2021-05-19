@@ -2,9 +2,15 @@
 
 namespace Drupal\dgi_actions_ark_identifier\Plugin\Action;
 
+use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\dgi_actions\Plugin\Action\HttpActionMintTrait;
 use Drupal\dgi_actions\Plugin\Action\MintIdentifier;
+use Drupal\dgi_actions\Utility\IdentifierUtils;
 use Drupal\dgi_actions_ezid\Utility\EzidTrait;
+use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Psr7\Response;
+use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Mints an ARK Identifier Record on CDL EZID.
@@ -17,7 +23,46 @@ use GuzzleHttp\Psr7\Response;
  */
 class MintArkIdentifier extends MintIdentifier {
 
+  use HttpActionMintTrait;
   use EzidTrait;
+
+  /**
+   * Constructor.
+   *
+   * @param array $configuration
+   *   A configuration array containing information about the plugin instance.
+   * @param string $plugin_id
+   *   The plugin ID for the plugin instance.
+   * @param mixed $plugin_definition
+   *   The plugin implementation definition.
+   * @param \Psr\Log\LoggerInterface $logger
+   *   Logger.
+   * @param \Drupal\dgi_actions\Utility\IdentifierUtils $utils
+   *   Identifier utils.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
+   * @param \GuzzleHttp\ClientInterface $client
+   *   The HTTP client to be used for the request.
+   */
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, LoggerInterface $logger, IdentifierUtils $utils, EntityTypeManagerInterface $entity_type_manager, ClientInterface $client) {
+    parent::__construct($configuration, $plugin_id, $plugin_definition, $logger, $utils, $entity_type_manager);
+    $this->client = $client;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
+    return new static(
+      $configuration,
+      $plugin_id,
+      $plugin_definition,
+      $container->get('logger.channel.dgi_actions'),
+      $container->get('dgi_actions.utils'),
+      $container->get('entity_type.manager'),
+      $container->get('http_client')
+    );
+  }
 
   /**
    * Builds the Request Body.
@@ -53,12 +98,18 @@ class MintArkIdentifier extends MintIdentifier {
     $contents = $response->getBody()->getContents();
     $response = $this->parseEzidResponse($contents);
     if (array_key_exists('success', $response)) {
-      $this->logger->info('ARK Identifier Minted: @contents', ['@contents' => $contents]);
+      $this->logger->info('ARK Identifier Minted for @type/@id: @contents', [
+        '@type' => $this->getEntity()->getEntityTypeId(),
+        '@id' => $this->getEntity()->id(),
+        '@contents' => $contents,
+      ]);
       return "{$this->getIdentifier()->getServiceData()->getData()['host']}/id/{$response['success']}";
     }
-
-    $this->logger->error('There was an issue minting the ARK Identifier: @contents', ['@contents' => $contents]);
-    return FALSE;
+    throw new \Exception('There was an issue minting the ARK Identifier for @type/@id: @contents', [
+      '@type' => $this->getEntity()->getEntityTypeId(),
+      '@id' => $this->getEntity()->id(),
+      '@contents' => $contents,
+    ]);
   }
 
   /**

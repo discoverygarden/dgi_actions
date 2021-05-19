@@ -2,12 +2,12 @@
 
 namespace Drupal\dgi_actions\Plugin\Condition;
 
+use Drupal\Component\Render\MarkupInterface;
 use Drupal\Core\Condition\ConditionPluginBase;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\dgi_actions\Utility\IdentifierUtils;
@@ -116,7 +116,7 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
   /**
    * {@inheritdoc}
    */
-  public function summary(): TranslatableMarkup {
+  public function summary(): MarkupInterface {
     if (!empty($this->configuration['negate'])) {
       return $this->t('Entity does not have a persistent identifier.');
     }

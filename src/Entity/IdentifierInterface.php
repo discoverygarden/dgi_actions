@@ -36,17 +36,17 @@ interface IdentifierInterface extends ConfigEntityInterface {
   /**
    * Gets the set Service Data entity.
    *
-   * @return \Drupal\dgi_actions\Entity\ServiceDataInterface
-   *   Returns the Service Data entity.
+   * @return \Drupal\dgi_actions\Entity\ServiceDataInterface|null
+   *   Returns the Service Data entity or NULL if one does not exist.
    */
-  public function getServiceData(): ServiceDataInterface;
+  public function getServiceData(): ?ServiceDataInterface;
 
   /**
    * Gets the set Data Profile entity.
    *
-   * @return \Drupal\dgi_actions\Entity\DataProfileInterface
-   *   Returns Data Profile ID entity.
+   * @return \Drupal\dgi_actions\Entity\DataProfileInterface|null
+   *   Returns Data Profile ID entity or NULL if one does not exist.
    */
-  public function getDataProfile(): DataProfileInterface;
+  public function getDataProfile(): ?DataProfileInterface;
 
 }

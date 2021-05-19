@@ -23,7 +23,7 @@ class IdentifierDeleteForm extends EntityConfirmFormBase {
    * {@inheritdoc}
    */
   public function getCancelUrl(): Url {
-    return new Url('entity.dgiactions_identifier.collection');
+    return Url::fromRoute('entity.dgiactions_identifier.collection');
   }
 
   /**

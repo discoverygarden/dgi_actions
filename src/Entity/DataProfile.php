@@ -63,7 +63,7 @@ class DataProfile extends ConfigEntityBase implements DataProfileInterface {
   protected $label;
 
   /**
-   * The entity used in the Data Profile..
+   * The entity used in the Data Profile.
    *
    * @var string
    */
