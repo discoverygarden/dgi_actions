@@ -1,0 +1,7 @@
+name: 'DGI Actions Handle'
+description: "Provides integration with Handle.net for minting identifiers."
+type: module
+package: DGI Actions
+core: 8.x
+dependencies:
+  - discoverygarden:dgi_actions

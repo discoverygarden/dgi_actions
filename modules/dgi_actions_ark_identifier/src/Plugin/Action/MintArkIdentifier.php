@@ -2,15 +2,15 @@
 
 namespace Drupal\dgi_actions_ark_identifier\Plugin\Action;
 
-use Drupal\dgi_actions_ark_identifier\Utility\EzidTextParser;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\dgi_actions\Plugin\Action\HttpActionMintTrait;
 use Drupal\dgi_actions\Plugin\Action\MintIdentifier;
 use Drupal\dgi_actions\Utility\IdentifierUtils;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use GuzzleHttp\Client;
+use Drupal\dgi_actions_ezid\Utility\EzidTrait;
+use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Psr7\Response;
-use Drupal\Core\Config\ConfigFactory;
 use Psr\Log\LoggerInterface;
-use Drupal\Core\State\StateInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Mints an ARK Identifier Record on CDL EZID.
@@ -23,21 +23,8 @@ use Drupal\Core\State\StateInterface;
  */
 class MintArkIdentifier extends MintIdentifier {
 
-  // @codingStandardsIgnoreStart
-
-  /**
-   * CDL EZID Text Parser.
-   *
-   * @var \Drupal\dgi_actions\Utilities\EzidTextParser
-   */
-  protected $ezidParser;
-
-  /**
-   * State API.
-   *
-   * @var \Drupal\Core\State\StateInterface
-   */
-  protected $state;
+  use HttpActionMintTrait;
+  use EzidTrait;
 
   /**
    * Constructor.
@@ -48,33 +35,18 @@ class MintArkIdentifier extends MintIdentifier {
    *   The plugin ID for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
-   * @param \GuzzleHttp\Client $client
-   *   Http Client connection.
    * @param \Psr\Log\LoggerInterface $logger
    *   Logger.
-   * @param \Drupal\Core\Config\ConfigFactory $config_factory
-   *   Config Factory.
-   * @param \Drupal\dgi_actions\Utilities\IdentifierUtils $utils
+   * @param \Drupal\dgi_actions\Utility\IdentifierUtils $utils
    *   Identifier utils.
-   * @param \Drupal\dgi_actions\Utilities\EzidTextParser $ezid_parser
-   *   CDL EZID Text parser.
-   * @param \Drupal\Core\State\StateInterface $state
-   *   State API.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
+   * @param \GuzzleHttp\ClientInterface $client
+   *   The HTTP client to be used for the request.
    */
-  public function __construct(
-    array $configuration,
-    $plugin_id,
-    $plugin_definition,
-    Client $client,
-    LoggerInterface $logger,
-    ConfigFactory $config_factory,
-    IdentifierUtils $utils,
-    EzidTextParser $ezid_parser,
-    StateInterface $state
-  ) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition, $client, $logger, $config_factory, $utils);
-    $this->ezidParser = $ezid_parser;
-    $this->state = $state;
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, LoggerInterface $logger, IdentifierUtils $utils, EntityTypeManagerInterface $entity_type_manager, ClientInterface $client) {
+    parent::__construct($configuration, $plugin_id, $plugin_definition, $logger, $utils, $entity_type_manager);
+    $this->client = $client;
   }
 
   /**
@@ -85,15 +57,12 @@ class MintArkIdentifier extends MintIdentifier {
       $configuration,
       $plugin_id,
       $plugin_definition,
-      $container->get('http_client'),
       $container->get('logger.channel.dgi_actions'),
-      $container->get('config.factory'),
       $container->get('dgi_actions.utils'),
-      $container->get('dgi_actions.ezidtextparser'),
-      $container->get('state')
+      $container->get('entity_type.manager'),
+      $container->get('http_client')
     );
   }
-  // @codingStandardsIgnoreEnd
 
   /**
    * Builds the Request Body.
@@ -108,7 +77,7 @@ class MintArkIdentifier extends MintIdentifier {
    *   Returns the stringified version of the key-value
    *   pairs else returns an empty string if $data is empty or null.
    */
-  protected function buildRequestBody(array $data) {
+  protected function buildRequestBody(array $data): string {
     // Setting custom values for the identifiers internal metadata.
     // Adding External URL to the Data Array under the EZID _target key.
     // Also setting _status as reserved. Else identifier cannot be deleted.
@@ -119,64 +88,59 @@ class MintArkIdentifier extends MintIdentifier {
         '_status' => 'reserved',
       ], $data
     );
-
-    $output = $this->ezidParser->buildEzidRequestBody($data);
-
-    return $output;
+    return $this->buildEzidRequestBody($data);
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function getIdentifierFromResponse(Response $response) {
+  protected function getIdentifierFromResponse(Response $response): string {
     $contents = $response->getBody()->getContents();
-    $responseArray = $this->ezidParser->parseEzidResponse($contents);
-    if (array_key_exists('success', $responseArray)) {
-      $this->logger->info('ARK Identifier Minted: @contents', ['@contents' => $contents]);
-      return $this->serviceDataConfig->get('data.host') . '/id/' . $responseArray['success'];
+    $response = $this->parseEzidResponse($contents);
+    if (array_key_exists('success', $response)) {
+      $this->logger->info('ARK Identifier Minted for @type/@id: @contents', [
+        '@type' => $this->getEntity()->getEntityTypeId(),
+        '@id' => $this->getEntity()->id(),
+        '@contents' => $contents,
+      ]);
+      return "{$this->getIdentifier()->getServiceData()->getData()['host']}/id/{$response['success']}";
     }
-
-    $this->logger->error('There was an issue minting the ARK Identifier: @contents', ['@contents' => $contents]);
-    return FALSE;
+    throw new \Exception('There was an issue minting the ARK Identifier for @type/@id: @contents', [
+      '@type' => $this->getEntity()->getEntityTypeId(),
+      '@id' => $this->getEntity()->id(),
+      '@contents' => $contents,
+    ]);
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function getRequestType() {
+  protected function getRequestType(): string {
     return 'POST';
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function getUri() {
-    $uri = $this->serviceDataConfig->get('data.host') . '/shoulder/' . $this->serviceDataConfig->get('data.namespace');
-
-    return $uri;
+  protected function getUri(): string {
+    return "{$this->getIdentifier()->getServiceData()->getData()['host']}/shoulder/{$this->getIdentifier()->getServiceData()->getData()['namespace']}";
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function getRequestParams() {
+  protected function getRequestParams(): array {
     $fieldData = $this->getFieldData();
-    $requestBody = $this->buildRequestBody($fieldData);
-    $creds = $this->state->get($this->serviceDataConfig->get('data.state_key'));
+    $body = $this->buildRequestBody($fieldData);
 
-    $requestParams = [
-      'auth' => [
-        $creds['username'],
-        $creds['password'],
-      ],
+    return [
+      'auth' => $this->getAuthorizationParams(),
       'headers' => [
         'Content-Type' => 'text/plain; charset=UTF-8',
-        'Content-Length' => strlen($requestBody),
+        'Content-Length' => strlen($body),
       ],
-      'body' => $requestBody,
+      'body' => $body,
     ];
-
-    return $requestParams;
   }
 
 }

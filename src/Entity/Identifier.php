@@ -3,7 +3,6 @@
 namespace Drupal\dgi_actions\Entity;
 
 use Drupal\Core\Config\Entity\ConfigEntityBase;
-use Drupal\Core\Entity\EntityTypeInterface;
 
 /**
  * Defines the Identifier setting entity.
@@ -99,66 +98,59 @@ class Identifier extends ConfigEntityBase implements IdentifierInterface {
   protected $service_data;
 
   /**
-   * Gets the Description value.
-   *
-   * @return string|null
-   *   Returns the description variable.
-   */
-  public function getDescription() {
-    return $this->description;
-  }
-
-  /**
    * {@inheritdoc}
    */
-  public function getEntity() {
+  public function getEntity(): string {
     return $this->entity;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getBundle() {
+  public function getBundle(): string {
     return $this->bundle;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getField() {
+  public function getField(): string {
     return $this->field;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getServiceData() {
-    return $this->service_data;
+  public function getServiceData(): ?ServiceDataInterface {
+    return \Drupal::service('entity_type.manager')->getStorage('dgiactions_servicedata')->load($this->service_data);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getDataProfile() {
-    return $this->data_profile;
+  public function getDataProfile(): ?DataProfileInterface {
+    return \Drupal::service('entity_type.manager')->getStorage('dgiactions_dataprofile')->load($this->data_profile);
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function invalidateTagsOnSave($update) {
-    parent::invalidateTagsOnSave($update);
-    // Clear the config_filter plugin cache.
-    \Drupal::service('plugin.manager.config_filter')->clearCachedDefinitions();
-  }
+  public function calculateDependencies() {
+    parent::calculateDependencies();
 
-  /**
-   * {@inheritdoc}
-   */
-  protected static function invalidateTagsOnDelete(EntityTypeInterface $entity_type, array $entities) {
-    parent::invalidateTagsOnDelete($entity_type, $entities);
-    // Clear the config_filter plugin cache.
-    \Drupal::service('plugin.manager.config_filter')->clearCachedDefinitions();
+    // Add the dependency on the data profile and service data entities if
+    // they are here.
+    if ($this->data_profile) {
+      $profile_entity = $this->getDataProfile();
+      $this->addDependency('config', $profile_entity->getConfigDependencyName());
+    }
+
+    if ($this->service_data) {
+      $service_entity = $this->getServiceData();
+      $this->addDependency('config', $service_entity->getConfigDependencyName());
+    }
+
+    return $this;
   }
 
 }

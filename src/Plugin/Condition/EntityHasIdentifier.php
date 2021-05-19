@@ -2,14 +2,15 @@
 
 namespace Drupal\dgi_actions\Plugin\Condition;
 
+use Drupal\Component\Render\MarkupInterface;
 use Drupal\Core\Condition\ConditionPluginBase;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\dgi_actions\Utility\IdentifierUtils;
-use Drupal\Core\Config\ConfigFactory;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -17,7 +18,7 @@ use Psr\Log\LoggerInterface;
  *
  * @Condition(
  *   id = "dgi_actions_entity_persistent_identifier_populated",
- *   label = @Translation("Entity missing persistent identifier"),
+ *   label = @Translation("Entity has persistent identifier"),
  *   context_definitions = {
  *     "entity" = @ContextDefinition("entity", required = FALSE, label = @Translation("Entity"))
  *   }
@@ -28,11 +29,11 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
   use StringTranslationTrait;
 
   /**
-   * Config Factory.
+   * The entity type manager.
    *
-   * @var \Drupal\Core\Config\ConfigFactory
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
-  protected $configFactory;
+  protected $entityTypeManager;
 
   /**
    * Logger.
@@ -62,8 +63,8 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
    *   The plugin implementation definition.
    * @param \Psr\Log\LoggerInterface $logger
    *   Logger.
-   * @param \Drupal\Core\Config\ConfigFactory $config_factory
-   *   Config Factory.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
    * @param \Drupal\dgi_actions\Utility\IdentifierUtils $utils
    *   Identifier utils.
    */
@@ -72,12 +73,12 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
     $plugin_id,
     $plugin_definition,
     LoggerInterface $logger,
-    ConfigFactory $config_factory,
+    EntityTypeManagerInterface $entity_type_manager,
     IdentifierUtils $utils
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->logger = $logger;
-    $this->configFactory = $config_factory;
+    $this->entityTypeManager = $entity_type_manager;
     $this->utils = $utils;
   }
 
@@ -90,7 +91,7 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
       $plugin_id,
       $plugin_definition,
       $container->get('logger.channel.dgi_actions'),
-      $container->get('config.factory'),
+      $container->get('entity_type.manager'),
       $container->get('dgi_actions.utils')
     );
   }
@@ -98,30 +99,24 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
   /**
    * {@inheritdoc}
    */
-  public function evaluate() {
+  public function evaluate(): bool {
     $entity = $this->getContextValue('entity');
     if ($entity instanceof FieldableEntityInterface) {
-      $identifier_config = $this->configFactory->get($this->configuration['identifier']);
-      $field = $identifier_config->get('field');
-      $entity_type = $identifier_config->get('entity');
-      $bundle = $identifier_config->get('bundle');
-
+      $identifier = $this->entityTypeManager->getStorage('dgiactions_identifier')->load($this->configuration['identifier']);
+      $field = $identifier->get('field');
+      $entity_type = $identifier->get('entity');
+      $bundle = $identifier->get('bundle');
       if (!empty($field) && $entity->hasField($field) && $entity->getEntityTypeId() == $entity_type && $entity->bundle() == $bundle) {
-        return $entity->get($field)->isEmpty();
-      }
-      else {
-        return !$this->isNegated();
+        return !$entity->get($field)->isEmpty();
       }
     }
-    else {
-      return !$this->isNegated();
-    }
+    return FALSE;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function summary() {
+  public function summary(): MarkupInterface {
     if (!empty($this->configuration['negate'])) {
       return $this->t('Entity does not have a persistent identifier.');
     }
@@ -133,24 +128,27 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
   /**
    * {@inheritdoc}
    */
-  public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
-    if (is_null($form_state->getValue('conditions')['dgi_actions_entity_persistent_identifier_populated']['identifier'])) {
-      if ($this->configuration['identifier']) {
-        $selected_identifier = $this->configuration['identifier'];
-      }
-      else {
-        $selected_identifier = '';
-      }
+  public function buildConfigurationForm(array $form, FormStateInterface $form_state): array {
+    // Get the value from the form_state if AJAX has triggered this, default
+    // to what is stored on the entity otherwise.
+    $triggering_element = $form_state->getTriggeringElement();
+    $identifier_parents = [
+      'conditions',
+      'dgi_actions_entity_persistent_identifier_populated',
+      'identifier',
+    ];
+    if (!empty($triggering_element) && $triggering_element['#parents'] === $identifier_parents) {
+      $selected_identifier = $form_state->getValue('conditions')['dgi_actions_entity_persistent_identifier_populated']['identifier'];
     }
     else {
-      $selected_identifier = (string) $form_state->getValue('conditions')['dgi_actions_entity_persistent_identifier_populated']['identifier'];
+      $selected_identifier = $this->configuration['identifier'];
     }
 
     $form['identifier'] = [
       '#type' => 'select',
       '#title' => $this->t('Identifier Type'),
       '#empty_option' => $this->t('- None -'),
-      '#default_value' => ($selected_identifier) ?: $this->t('- None -'),
+      '#default_value' => $selected_identifier,
       '#options' => $this->utils->getIdentifiers(),
       '#description' => $this->t('The persistent identifier configuration to be used.'),
       '#ajax' => [
@@ -159,16 +157,18 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
       ],
     ];
 
-    if ($selected_identifier) {
-      $form['identifier_container'] = [
-        '#type' => 'container',
-        '#attributes' => ['id' => 'identifier-container'],
-      ];
+    $form['identifier_container'] = [
+      '#type' => 'container',
+      '#attributes' => ['id' => 'identifier-container'],
+    ];
 
-      $identifier_config = $this->configFactory->get($selected_identifier);
+    if ($selected_identifier) {
+      $identifier_config = $this->entityTypeManager->getStorage('dgiactions_identifier')->load($selected_identifier);
       $form['identifier_container']['identifier_fieldset'] = [
         '#type' => 'fieldset',
         '#title' => $this->t('Identifier Configuration'),
+        '#access' => !is_null($selected_identifier),
+        '#disabled' => is_null($selected_identifier),
       ];
       $form['identifier_container']['identifier_fieldset']['entity_type'] = [
         '#type' => 'textfield',
@@ -186,11 +186,13 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
         '#description' => $this->t('The Bundle type configured in the selected Identifier config.'),
         '#disabled' => TRUE,
       ];
-    }
-
-    if (!$selected_identifier) {
-      $form['identifier_container']['identifier_fieldset']['#access'] = FALSE;
-      $form['identifier_container']['identifier_fieldset']['#disabled'] = TRUE;
+      $form['identifier_container']['identifier_fieldset']['field'] = [
+        '#type' => 'textfield',
+        '#title' => $this->t('Field'),
+        '#default_value' => ($identifier_config->get('field')) ?: '',
+        '#description' => $this->t('The field configured to have the identifier placed into.'),
+        '#disabled' => TRUE,
+      ];
     }
 
     return parent::buildConfigurationForm($form, $form_state);
@@ -214,7 +216,7 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
   /**
    * {@inheritdoc}
    */
-  public function defaultConfiguration() {
+  public function defaultConfiguration(): array {
     return array_merge(
       ['identifier' => NULL],
       parent::defaultConfiguration()

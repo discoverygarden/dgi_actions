@@ -3,6 +3,7 @@
 namespace Drupal\dgi_actions\Entity;
 
 use Drupal\Core\Config\Entity\ConfigEntityInterface;
+use Drupal\dgi_actions\Plugin\DataProfileInterface as PluginInterface;
 
 /**
  * Provides an interface for defining Data Profile setting entities.
@@ -15,7 +16,7 @@ interface DataProfileInterface extends ConfigEntityInterface {
    * @return string
    *   Returns entity type.
    */
-  public function getEntity();
+  public function getEntity(): string;
 
   /**
    * Gets the set Bundle type.
@@ -23,15 +24,15 @@ interface DataProfileInterface extends ConfigEntityInterface {
    * @return string
    *   Returns bundle type.
    */
-  public function getBundle();
+  public function getBundle(): string;
 
   /**
-   * Gets the set Data Profile Type.
+   * Gets the set Data Profile plugin.
    *
-   * @return string
-   *   Returns data profile type id.
+   * @return \Drupal\dgi_actions\Plugin\DataProfileInterface|null
+   *   Returns the data profile plugin if it exists.
    */
-  public function getDataprofile();
+  public function getDataProfilePlugin(): ?PluginInterface;
 
   /**
    * Gets the set Data.
@@ -39,7 +40,7 @@ interface DataProfileInterface extends ConfigEntityInterface {
    * @return array
    *   Returns data array.
    */
-  public function getData();
+  public function getData(): array;
 
   /**
    * Sets the set Data.

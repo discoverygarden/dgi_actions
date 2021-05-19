@@ -2,14 +2,6 @@ dgi_actions.identifier.*:
   type: config_entity
   label: 'Identifier'
   mapping:
-    status:
-      type: boolean
-      label: 'Status'
-    dependencies:
-      type: sequence
-      label: 'Dependencies'
-      sequence:
-        type: string
     id:
       type: string
       label: 'Identifier ID'
@@ -27,10 +19,10 @@ dgi_actions.identifier.*:
       label: 'Identifier Object Field'
     service_data:
       type: string
-      label: 'Service Data'
+      label: 'Service Data Entity ID'
     data_profile:
       type: string
-      label: 'Data Profile'
+      label: 'Data Profile Entity ID'
 
 dgi_actions.data_profile.*:
   type: config_entity
@@ -44,37 +36,14 @@ dgi_actions.data_profile.*:
       type: string
     bundle:
       type: string
-    dataprofile:
+    data_profile:
       type: string
     data:
-      type: sequence
-      sequence:
-        type: mapping
-        mapping:
-          key:
-            type: string
-          source_field:
-            type: string
+      type: dgi_actions.data_profile_type.[%parent.data_profile]
 
 dgi_actions.data_profile_type.*:
-  type: config_object
+  type: mapping
   label: 'Data Profile Type'
-  mapping:
-    label:
-      type: string
-    id:
-      type: string
-    fields:
-      type: sequence
-      sequence:
-        type: mapping
-        mapping:
-          key:
-            type: string
-          label:
-            type: string
-          description:
-            type: string
 
 dgi_actions.service_data.*:
   type: config_entity
@@ -87,26 +56,11 @@ dgi_actions.service_data.*:
     service_data_type:
       type: string
     data:
-      type: sequence
-      sequence:
-        type: string
+      type: dgi_actions.service_data_type.[%parent.service_data_type]
+
 
 dgi_actions.service_data_type.*:
-  type: config_object
+  type: mapping
   label: 'Service Data Type'
-  mapping:
-    label:
-      type: string
-    id:
-      type: string
-    data:
-      type: sequence
-      sequence:
-        type: mapping
-        mapping:
-          id:
-            type: string
-          label:
-            type: string
-          description:
-            type: string
+
+

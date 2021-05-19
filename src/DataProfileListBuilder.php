@@ -2,11 +2,11 @@
 
 namespace Drupal\dgi_actions;
 
-use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Config\Entity\ConfigEntityListBuilder;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\dgi_actions\Plugin\DataProfileManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -15,11 +15,11 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class DataProfileListBuilder extends ConfigEntityListBuilder {
 
   /**
-   * The config factory that knows what is overwritten.
+   * The Data Profile manager.
    *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface
+   * @var \Drupal\dgi_actions\Plugin\DataProfileManager
    */
-  protected $configFactory;
+  protected $dataProfileManager;
 
   /**
    * {@inheritdoc}
@@ -28,7 +28,7 @@ class DataProfileListBuilder extends ConfigEntityListBuilder {
     return new static(
       $entity_type,
       $container->get('entity_type.manager')->getStorage($entity_type->id()),
-      $container->get('config.factory')
+      $container->get('plugin.manager.data_profile')
     );
   }
 
@@ -39,18 +39,18 @@ class DataProfileListBuilder extends ConfigEntityListBuilder {
    *   The entity type definition.
    * @param \Drupal\Core\Entity\EntityStorageInterface $storage
    *   The entity storage class.
-   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
-   *   The config factory.
+   * @param \Drupal\dgi_actions\Plugin\DataProfileManager $data_profile_manager
+   *   The Data Profile manager.
    */
-  public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, ConfigFactoryInterface $config_factory) {
+  public function __construct(EntityTypeInterface $entity_type, EntityStorageInterface $storage, DataProfileManager $data_profile_manager) {
     parent::__construct($entity_type, $storage);
-    $this->configFactory = $config_factory;
+    $this->dataProfileManager = $data_profile_manager;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function buildHeader() {
+  public function buildHeader(): array {
     $header['label'] = $this->t('Profile Label');
     $header['id'] = $this->t('Machine name');
     $header['entity'] = $this->t('Entity');
@@ -62,16 +62,14 @@ class DataProfileListBuilder extends ConfigEntityListBuilder {
   /**
    * {@inheritdoc}
    */
-  public function buildRow(EntityInterface $entity) {
+  public function buildRow(EntityInterface $entity): array {
     $row['label'] = $entity->label();
     $row['id'] = $entity->id();
-    $config = $this->configFactory->get('dgi_actions.data_profile.' . $entity->id());
-    $row['entity'] = $config->get('entity');
-    $row['bundle'] = $config->get('bundle');
-    if ($config->get('dataprofile')) {
-      $data_profile_type = $this->configFactory->get($config->get('dataprofile'))->get('label');
-    }
-    $row['dataprofile'] = ($data_profile_type) ?: '';
+    $row['entity'] = $entity->get('entity');
+    $row['bundle'] = $entity->get('bundle');
+    $plugin = $entity->getDataProfilePlugin();
+    $definition = $plugin->getPluginDefinition();
+    $row['dataprofile'] = $definition['label'];
 
     return $row + parent::buildRow($entity);
   }

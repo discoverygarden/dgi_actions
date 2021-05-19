@@ -2,15 +2,15 @@
 
 namespace Drupal\dgi_actions_ark_identifier\Plugin\Action;
 
-use Drupal\dgi_actions_ark_identifier\Utility\EzidTextParser;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\dgi_actions\Plugin\Action\DeleteIdentifier;
+use Drupal\dgi_actions\Plugin\Action\HttpActionDeleteTrait;
 use Drupal\dgi_actions\Utility\IdentifierUtils;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use GuzzleHttp\Client;
-use GuzzleHttp\Psr7\Response;
-use Drupal\Core\Config\ConfigFactory;
+use Drupal\dgi_actions_ezid\Utility\EzidTrait;
+use GuzzleHttp\ClientInterface;
+use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerInterface;
-use Drupal\Core\State\StateInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Deletes an ARK Identifier Record on CDL EZID.
@@ -23,21 +23,8 @@ use Drupal\Core\State\StateInterface;
  */
 class DeleteArkIdentifier extends DeleteIdentifier {
 
-  // @codingStandardsIgnoreStart
-
-  /**
-   * CDL EZID Text Parser.
-   *
-   * @var \Drupal\dgi_actions\Utilities\EzidTextParser
-   */
-  protected $ezidParser;
-
-  /**
-   * State.
-   *
-   * @var \Drupal\Core\State\StateInterface
-   */
-  protected $state;
+  use HttpActionDeleteTrait;
+  use EzidTrait;
 
   /**
    * Constructor.
@@ -48,33 +35,18 @@ class DeleteArkIdentifier extends DeleteIdentifier {
    *   The plugin ID for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
-   * @param \GuzzleHttp\Client $client
-   *   Http Client connection.
    * @param \Psr\Log\LoggerInterface $logger
    *   Logger.
-   * @param \Drupal\Core\Config\ConfigFactory $config_factory
-   *   Config Factory.
-   * @param \Drupal\dgi_actions\Utilities\IdentifierUtils $utils
+   * @param \Drupal\dgi_actions\Utility\IdentifierUtils $utils
    *   Identifier utils.
-   * @param \Drupal\dgi_actions\Utilities\EzidTextParser $ezid_parser
-   *   CDL EZID Text parser.
-   * @param \Drupal\Core\State\StateInterface $state
-   *   State API.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
+   * @param \GuzzleHttp\ClientInterface $client
+   *   The HTTP client to be used for the request.
    */
-  public function __construct(
-    array $configuration,
-    $plugin_id,
-    $plugin_definition,
-    Client $client,
-    LoggerInterface $logger,
-    ConfigFactory $config_factory,
-    IdentifierUtils $utils,
-    EzidTextParser $ezid_parser,
-    StateInterface $state
-  ) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition, $client, $logger, $config_factory, $utils);
-    $this->ezidParser = $ezid_parser;
-    $this->state = $state;
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, LoggerInterface $logger, IdentifierUtils $utils, EntityTypeManagerInterface $entity_type_manager, ClientInterface $client) {
+    parent::__construct($configuration, $plugin_id, $plugin_definition, $logger, $utils, $entity_type_manager);
+    $this->client = $client;
   }
 
   /**
@@ -85,54 +57,44 @@ class DeleteArkIdentifier extends DeleteIdentifier {
       $configuration,
       $plugin_id,
       $plugin_definition,
-      $container->get('http_client'),
       $container->get('logger.channel.dgi_actions'),
-      $container->get('config.factory'),
       $container->get('dgi_actions.utils'),
-      $container->get('dgi_actions.ezidtextparser'),
-      $container->get('state')
+      $container->get('entity_type.manager'),
+      $container->get('http_client')
     );
   }
-
-  // @codingStandardsIgnoreEnd
 
   /**
    * {@inheritdoc}
    */
-  protected function getRequestType() {
+  protected function getRequestType(): string {
     return 'DELETE';
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function getUri() {
-    $identifier = $this->getIdentifierFromEntity();
-
-    return $identifier;
+  protected function getUri(): string {
+    // XXX: Grab the existing ARK value as it contains the end-point URL to
+    // delete.
+    return $this->getIdentifierFromEntity();
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function getRequestParams() {
-    $creds = $this->state->get($this->serviceDataConfig->get('data.state_key'));
-    $requestParams = [
-      'auth' => [
-        $creds['username'],
-        $creds['password'],
-      ],
+  protected function getRequestParams(): array {
+    return [
+      'auth' => $this->getAuthorizationParams(),
     ];
-
-    return $requestParams;
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function handleResponse(Response $response) {
+  protected function handleDeleteResponse(ResponseInterface $response): void {
     $contents = $response->getBody()->getContents();
-    $filteredResponse = $this->ezidParser->parseEzidResponse($contents);
+    $filteredResponse = $this->parseEzidResponse($contents);
 
     if (array_key_exists('success', $filteredResponse)) {
       $this->logger->info('ARK Identifier Deleted: @contents', ['@contents' => $contents]);

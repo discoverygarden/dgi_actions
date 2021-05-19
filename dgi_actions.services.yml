@@ -6,8 +6,21 @@ services:
   dgi_actions.utils:
     class: Drupal\dgi_actions\Utility\IdentifierUtils
     arguments:
-      - '@config.factory'
+      - '@entity_type.manager'
       - '@logger.channel.dgi_actions'
   dgi_actions.dgiutils:
     class: Drupal\dgi_actions\Utility\DgiUtils
-    arguments: ['@context.manager']
+    arguments:
+      - '@context.manager'
+      - '@dgi_actions.entity_hook_context'
+  dgi_actions.entity_hook_context:
+    class: Drupal\dgi_actions\ContextProvider\EntityContextProvider
+    arguments: ['@entity_type.manager']
+    tags:
+      - { name: 'context_provider' }
+  plugin.manager.service_data_type:
+    class: Drupal\dgi_actions\Plugin\ServiceDataTypeManager
+    parent: default_plugin_manager
+  plugin.manager.data_profile:
+    class: Drupal\dgi_actions\Plugin\DataProfileManager
+    parent: default_plugin_manager

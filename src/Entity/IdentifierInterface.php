@@ -15,7 +15,7 @@ interface IdentifierInterface extends ConfigEntityInterface {
    * @return string
    *   Returns entity type.
    */
-  public function getEntity();
+  public function getEntity(): string;
 
   /**
    * Gets the set Bundle type.
@@ -23,7 +23,7 @@ interface IdentifierInterface extends ConfigEntityInterface {
    * @return string
    *   Returns bundle type.
    */
-  public function getBundle();
+  public function getBundle(): string;
 
   /**
    * Gets the set Field.
@@ -31,22 +31,22 @@ interface IdentifierInterface extends ConfigEntityInterface {
    * @return string
    *   Returns field type.
    */
-  public function getField();
+  public function getField(): string;
 
   /**
-   * Gets the set Service Data ID.
+   * Gets the set Service Data entity.
    *
-   * @return string
-   *   Returns Service Data ID type.
+   * @return \Drupal\dgi_actions\Entity\ServiceDataInterface|null
+   *   Returns the Service Data entity or NULL if one does not exist.
    */
-  public function getServiceData();
+  public function getServiceData(): ?ServiceDataInterface;
 
   /**
-   * Gets the set Data Profile ID.
+   * Gets the set Data Profile entity.
    *
-   * @return string
-   *   Returns Data Profile ID type.
+   * @return \Drupal\dgi_actions\Entity\DataProfileInterface|null
+   *   Returns Data Profile ID entity or NULL if one does not exist.
    */
-  public function getDataProfile();
+  public function getDataProfile(): ?DataProfileInterface;
 
 }

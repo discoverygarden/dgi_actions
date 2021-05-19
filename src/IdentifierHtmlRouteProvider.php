@@ -23,7 +23,7 @@ class IdentifierHtmlRouteProvider extends AdminHtmlRouteProvider {
     $entity_type_id = $entity_type->id();
 
     if ($collection_route = $this->getCollectionRoute($entity_type)) {
-      $collection->add("entity.{$entity_type_id}.collection", $collection_route);
+      $collection->add("entity.$entity_type_id.collection", $collection_route);
     }
 
     return $collection;
@@ -35,8 +35,8 @@ class IdentifierHtmlRouteProvider extends AdminHtmlRouteProvider {
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
    *   The entity type.
    *
-   * @return \Symfony\Component\Routing\Route|null
-   *   The generated route, if available.
+   * @return \Symfony\Component\Routing\Route|bool
+   *   The generated route, if available, FALSE otherwise.
    */
   protected function getCollectionRoute(EntityTypeInterface $entity_type) {
     if ($entity_type->hasLinkTemplate('collection') && $entity_type->hasListBuilderClass()) {
@@ -54,6 +54,7 @@ class IdentifierHtmlRouteProvider extends AdminHtmlRouteProvider {
 
       return $route;
     }
+    return FALSE;
   }
 
 }

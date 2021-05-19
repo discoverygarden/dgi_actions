@@ -2,44 +2,50 @@
 
 /**
  * @file
- * Contains dgi_actions.module.
+ * Holds entity CRUD hooks for DGI Actions.
  */
 
+use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\dgi_actions\Plugin\ContextReaction\EntityDeleteReaction;
+use Drupal\dgi_actions\Plugin\ContextReaction\EntityMintReaction;
 
 /**
  * Implements hook_entity_insert().
  */
 function dgi_actions_entity_insert(EntityInterface $entity) {
-  dgi_actions_execute_entity_identifier_reactions('\Drupal\dgi_actions\Plugin\ContextReaction\EntityIdentifierInsertReaction', $entity);
+  if (!$entity instanceof ContentEntityInterface) {
+    return;
+  }
+  $utils = \Drupal::service('dgi_actions.dgiutils');
+
+  $original_entity = clone $entity;
+  $utils->executeEntityReactions(EntityMintReaction::class, $entity);
+  if (\Drupal::service('islandora.utils')->haveFieldsChanged($entity, $original_entity)) {
+    $entity->save();
+  }
+}
+
+/**
+ * Implements hook_entity_presave().
+ */
+function dgi_actions_entity_presave(EntityInterface $entity) {
+  if (!$entity instanceof ContentEntityInterface) {
+    return;
+  }
+  if (!$entity->isNew()) {
+    $utils = \Drupal::service('dgi_actions.dgiutils');
+    $utils->executeEntityReactions(EntityMintReaction::class, $entity);
+  }
 }
 
 /**
  * Implements hook_entity_delete().
  */
 function dgi_actions_entity_delete(EntityInterface $entity) {
-  dgi_actions_execute_entity_identifier_reactions('\Drupal\dgi_actions\Plugin\ContextReaction\EntityIdentifierDeleteReaction', $entity);
-}
-
-/**
- * Helper function to launch Entity Identifier Reactions.
- */
-function dgi_actions_execute_entity_identifier_reactions($reactionType, EntityInterface $entity) {
-  $utils = \Drupal::service('dgi_actions.dgiutils');
-  $configFactory = \Drupal::service('config.factory');
-
-  $identifiers = $configFactory->listAll('dgi_actions.identifier');
-
-  if ($identifiers) {
-    foreach ($identifiers as $identifier) {
-      $config = $configFactory->get($identifier);
-      $configEntity = ($config) ? $config->get('entity') : NULL;
-      $configBundle = ($config) ? $config->get('bundle') : NULL;
-
-      if ($entity->getEntityTypeId() == $configEntity && $entity->bundle() == $configBundle) {
-        // Execute index reactions.
-        $utils->executeEntityReactions($reactionType, $entity);
-      }
-    }
+  if (!$entity instanceof ContentEntityInterface) {
+    return;
   }
+  $utils = \Drupal::service('dgi_actions.dgiutils');
+  $utils->executeEntityReactions(EntityDeleteReaction::class, $entity);
 }

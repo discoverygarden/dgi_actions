@@ -15,22 +15,22 @@ interface ServiceDataInterface extends ConfigEntityInterface {
    * @param array $data
    *   Data array to be written to the config.
    */
-  public function setData(array $data);
+  public function setData(array $data): void;
 
   /**
-   * Gets the Data member variable.
+   * Gets the data member variable with any state information contained.
    *
    * @return array
-   *   Returns the data array from the config.
+   *   Returns the data array from the entity.
    */
-  public function getData();
+  public function getData(): array;
 
   /**
    * Gets the Service Data Type member variable.
    *
-   * @return string
-   *   Returns the service data type config id.
+   * @return string|null
+   *   Returns the service data type plugin ID if it exists.
    */
-  public function getServiceDataType();
+  public function getServiceDataType(): ?string;
 
 }

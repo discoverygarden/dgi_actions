@@ -2,8 +2,7 @@
 
 namespace Drupal\dgi_actions\Utility;
 
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\Core\Config\ConfigFactory;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -12,11 +11,11 @@ use Psr\Log\LoggerInterface;
 class IdentifierUtils {
 
   /**
-   * Config Factory.
+   * Entity type manager.
    *
    * @var \Drupal\Core\Config\ConfigFactory
    */
-  protected $configFactory;
+  protected $entityTypeManager;
 
   /**
    * Logger.
@@ -28,27 +27,17 @@ class IdentifierUtils {
   /**
    * Constructor.
    *
-   * @param \Drupal\Core\Config\ConfigFactory $config_factory
-   *   Config factory.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
    * @param \Psr\Log\LoggerInterface $logger
    *   Logger.
    */
   public function __construct(
-    ConfigFactory $config_factory,
+    EntityTypeManagerInterface $entity_type_manager,
     LoggerInterface $logger
   ) {
-    $this->configFactory = $config_factory;
+    $this->entityTypeManager = $entity_type_manager;
     $this->logger = $logger;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container) {
-    return new static(
-      $container->get('config.factory'),
-      $container->get('logger.channel.dgi_actions')
-    );
   }
 
   /**
@@ -57,16 +46,16 @@ class IdentifierUtils {
    * @return array
    *   Returns list of configured DGI Actions Identifiers.
    */
-  public function getIdentifiers() {
-    $configs = $this->configFactory->listAll('dgi_actions.identifier');
-    $config_options = [];
-    if (!empty($configs)) {
-      foreach ($configs as $config_id) {
-        $config_options[$config_id] = $this->configFactory->get($config_id)->get('label');
+  public function getIdentifiers(): array {
+    $entities = $this->entityTypeManager->getStorage('dgiactions_identifier')->loadMultiple();
+    $entities_options = [];
+    if (!empty($entities)) {
+      foreach ($entities as $entity) {
+        $entities_options[$entity->id()] = $entity->label();
       }
     }
 
-    return $config_options;
+    return $entities_options;
   }
 
 }

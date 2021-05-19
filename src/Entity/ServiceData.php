@@ -2,8 +2,8 @@
 
 namespace Drupal\dgi_actions\Entity;
 
+use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Config\Entity\ConfigEntityBase;
-use Drupal\Core\Entity\EntityTypeInterface;
 
 /**
  * Defines the Service Data setting entity.
@@ -61,7 +61,7 @@ class ServiceData extends ConfigEntityBase implements ServiceDataInterface {
   protected $label;
 
   /**
-   * The Service Data setting service data type.
+   * The Service Data Type plugin ID.
    *
    * @var string
    */
@@ -75,52 +75,79 @@ class ServiceData extends ConfigEntityBase implements ServiceDataInterface {
   protected $data;
 
   /**
-   * Gets the Description value.
+   * The state to be set in the Drupal state.
    *
-   * @return string|null
-   *   Returns the description variable.
+   * @var array
    */
-  public function getDescription() {
-    return $this->description;
+  protected $state = [];
+
+  /**
+   * {@inheritdoc}
+   */
+  public function set($property_name, $value) {
+    // Due to the potential of having state based things on the entity
+    // avoid directly calling set.
+    if ($property_name === 'data') {
+      $this->setData($value);
+      return $this;
+    }
+    return parent::set($property_name, $value);
   }
 
   /**
    * {@inheritdoc}
    */
-  public function setData(array $data) {
+  public function setData(array $data): void {
+    $state = [];
+    if ($this->getServiceDataType()) {
+      $plugin = \Drupal::service('plugin.manager.service_data_type')->createInstance($this->getServiceDataType(), []);
+      foreach ($plugin->getStateKeys() as $key) {
+        if (NestedArray::keyExists($data, (array) $key)) {
+          $state[$key] = NestedArray::getValue($data, (array) $key);
+          // Remove the values so they do not get stored on the entity directly.
+          NestedArray::unsetValue($data, (array) $key);
+        }
+      }
+    }
+    $this->state = $state;
     $this->data = $data;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getData() {
-    return $this->data;
+  public function getData(): array {
+    // XXX: Return any values that are stored in state as part of the entity's
+    // data.
+    $stated_data = $this->data;
+    $plugin = \Drupal::service('plugin.manager.service_data_type')->createInstance($this->getServiceDataType(), []);
+    $state_keys = $plugin->getStateKeys();
+    if (!empty($state_keys)) {
+      $state = \Drupal::service('state')->get("dgi_actions.service_data.{$this->id()}");
+      if (!empty($state)) {
+        foreach ($state_keys as $key) {
+          NestedArray::setValue($stated_data, (array) $key, NestedArray::getValue($state, (array) $key));
+        }
+      }
+    }
+    return $stated_data;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getServiceDataType() {
+  public function save() {
+    if (!empty($this->state)) {
+      \Drupal::service('state')->set("dgi_actions.service_data.{$this->id()}", $this->state);
+    }
+    return parent::save();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getServiceDataType(): ?string {
     return $this->service_data_type;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function invalidateTagsOnSave($update) {
-    parent::invalidateTagsOnSave($update);
-    // Clear the config_filter plugin cache.
-    \Drupal::service('plugin.manager.config_filter')->clearCachedDefinitions();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected static function invalidateTagsOnDelete(EntityTypeInterface $entity_type, array $entities) {
-    parent::invalidateTagsOnDelete($entity_type, $entities);
-    // Clear the config_filter plugin cache.
-    \Drupal::service('plugin.manager.config_filter')->clearCachedDefinitions();
   }
 
 }

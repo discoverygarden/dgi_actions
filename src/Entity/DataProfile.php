@@ -3,7 +3,7 @@
 namespace Drupal\dgi_actions\Entity;
 
 use Drupal\Core\Config\Entity\ConfigEntityBase;
-use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\dgi_actions\Plugin\DataProfileInterface as ProfileInterface;
 
 /**
  * Defines the Data Profile setting entity.
@@ -41,7 +41,7 @@ use Drupal\Core\Entity\EntityTypeInterface;
  *     "label",
  *     "entity",
  *     "bundle",
- *     "dataprofile",
+ *     "data_profile",
  *     "data",
  *   }
  * )
@@ -63,32 +63,25 @@ class DataProfile extends ConfigEntityBase implements DataProfileInterface {
   protected $label;
 
   /**
-   * The Data Profile setting description.
-   *
-   * @var string
-   */
-  protected $description = '';
-
-  /**
-   * The Data Profile setting entity.
+   * The entity used in the Data Profile.
    *
    * @var string
    */
   protected $entity;
 
   /**
-   * The Data Profile setting bundle.
+   * The bundle used in the Data Profile.
    *
    * @var string
    */
   protected $bundle;
 
   /**
-   * The Data Profile setting dataprofile.
+   * The data profile entity ID being used.
    *
    * @var string
    */
-  protected $dataprofile;
+  protected $data_profile;
 
   /**
    * The Data Profile setting fields.
@@ -98,41 +91,33 @@ class DataProfile extends ConfigEntityBase implements DataProfileInterface {
   protected $data;
 
   /**
-   * Gets the Description value.
-   *
-   * @return string|null
-   *   Returns the description variable.
-   */
-  public function getDescription() {
-    return $this->description;
-  }
-
-  /**
    * {@inheritdoc}
    */
-  public function getEntity() {
+  public function getEntity(): string {
     return $this->entity;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getBundle() {
+  public function getBundle(): string {
     return $this->bundle;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getDataprofile() {
-    return $this->dataprofile;
+  public function getDataProfilePlugin(): ?ProfileInterface {
+    return \Drupal::service('plugin.manager.data_profile')->createInstance($this->data_profile, $this->data);
+
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getData() {
-    return $this->data;
+  public function getData(): array {
+    // Allow the data profile to modify the data going out before it's returned.
+    return $this->getDataProfilePlugin()->modifyData($this->data);
   }
 
   /**
@@ -140,24 +125,6 @@ class DataProfile extends ConfigEntityBase implements DataProfileInterface {
    */
   public function setData(array $data) {
     $this->data = $data;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function invalidateTagsOnSave($update) {
-    parent::invalidateTagsOnSave($update);
-    // Clear the config_filter plugin cache.
-    \Drupal::service('plugin.manager.config_filter')->clearCachedDefinitions();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected static function invalidateTagsOnDelete(EntityTypeInterface $entity_type, array $entities) {
-    parent::invalidateTagsOnDelete($entity_type, $entities);
-    // Clear the config_filter plugin cache.
-    \Drupal::service('plugin.manager.config_filter')->clearCachedDefinitions();
   }
 
 }
