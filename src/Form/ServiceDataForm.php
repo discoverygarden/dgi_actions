@@ -84,6 +84,7 @@ class ServiceDataForm extends EntityForm {
       '#machine_name' => [
         'exists' => '\Drupal\dgi_actions\Entity\ServiceData::load',
       ],
+      '#disabled' => !$this->entity->isNew(),
     ];
     $form['service_data_fieldset'] = [
       '#type' => 'fieldset',

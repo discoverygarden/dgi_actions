@@ -114,6 +114,7 @@ class IdentifierForm extends EntityBundleSelectionForm {
       '#machine_name' => [
         'exists' => '\Drupal\dgi_actions\Entity\Identifier::load',
       ],
+      '#disabled' => !$this->entity->isNew(),
     ];
 
     $form['entity_fieldset'] = [

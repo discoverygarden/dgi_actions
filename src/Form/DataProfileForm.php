@@ -104,6 +104,7 @@ class DataProfileForm extends EntityBundleSelectionForm {
       '#machine_name' => [
         'exists' => '\Drupal\dgi_actions\Entity\DataProfile::load',
       ],
+      '#disabled' => !$this->entity->isNew(),
     ];
 
     $form['entity_fieldset'] = [
