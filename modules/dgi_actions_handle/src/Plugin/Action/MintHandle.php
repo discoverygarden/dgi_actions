@@ -84,7 +84,7 @@ class MintHandle extends MintIdentifier {
         [
           'index' => 1,
           'type' => 'URL',
-          'data' => $this->entity->toUrl()->setAbsolute()->toString(TRUE)->getGeneratedUrl(),
+          'data' => $this->getExternalUrl(),
         ],
       ],
       'query' => [
