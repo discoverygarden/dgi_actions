@@ -100,6 +100,13 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
    * {@inheritdoc}
    */
   public function evaluate(): bool {
+    if (empty($this->configuration['identifier'])) {
+      // XXX: We are not configured... should have no influence on things;
+      // however, they have not implemented 3-value logic, so we have to return
+      // TRUE to stay out of the way.
+      return TRUE;
+    }
+
     $entity = $this->getContextValue('entity');
     if ($entity instanceof FieldableEntityInterface) {
       $identifier = $this->entityTypeManager->getStorage('dgiactions_identifier')->load($this->configuration['identifier']);
