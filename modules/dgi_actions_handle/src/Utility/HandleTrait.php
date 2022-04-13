@@ -121,7 +121,7 @@ trait HandleTrait {
       '200' => t('Values not found'),
       '201' => t('Value already exists'),
       '202' => t('Invalid value'),
-      '301' => t('Server not response for handle'),
+      '301' => t('Server not responsible for handle'),
       '402' => t('Authentication needed'),
     ];
 
