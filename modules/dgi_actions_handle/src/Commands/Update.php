@@ -22,20 +22,6 @@ class Update {
   protected $requestType;
 
   /**
-   * The identifier to be used.
-   *
-   * @var \Drupal\dgi_actions\Entity\IdentifierInterface
-   */
-  protected $identifier;
-
-  /**
-   * The HTTP client to be used.
-   *
-   * @var \GuzzleHttp\ClientInterface
-   */
-  protected $client;
-
-  /**
    * The handle to be updated.
    *
    * @var string

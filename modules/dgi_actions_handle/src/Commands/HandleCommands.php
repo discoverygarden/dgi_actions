@@ -30,6 +30,13 @@ class HandleCommands extends DrushCommands {
   protected EntityTypeManagerInterface $entityTypeManager;
 
   /**
+   * Identifier utils service.
+   *
+   * @var \Drupal\dgi_actions\Utility\IdentifierUtils
+   */
+  protected IdentifierUtils $utils;
+
+  /**
    * Handle Drush commands.
    *
    * @param \GuzzleHttp\ClientInterface $client
