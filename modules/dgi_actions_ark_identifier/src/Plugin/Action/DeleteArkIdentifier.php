@@ -3,11 +3,12 @@
 namespace Drupal\dgi_actions_ark_identifier\Plugin\Action;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\dgi_actions_ezid\Utility\EzidTrait;
 use Drupal\dgi_actions\Plugin\Action\DeleteIdentifier;
 use Drupal\dgi_actions\Plugin\Action\HttpActionDeleteTrait;
 use Drupal\dgi_actions\Utility\IdentifierUtils;
-use Drupal\dgi_actions_ezid\Utility\EzidTrait;
 use GuzzleHttp\ClientInterface;
+use GuzzleHttp\RequestOptions;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -85,7 +86,8 @@ class DeleteArkIdentifier extends DeleteIdentifier {
    */
   protected function getRequestParams(): array {
     return [
-      'auth' => $this->getAuthorizationParams(),
+      RequestOptions::AUTH => $this->getAuthorizationParams(),
+      RequestOptions::HTTP_ERRORS => FALSE,
     ];
   }
 
