@@ -4,6 +4,7 @@ namespace Drupal\dgi_actions\Plugin\Action;
 
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Entity\Exception\UndefinedLinkTemplateException;
+use Drupal\Core\Form\FormStateInterface;
 
 /**
  * Basic implementation for minting an identifier.
@@ -72,6 +73,9 @@ abstract class MintIdentifier extends IdentifierAction {
         $this->entity = $entity;
         if ($this->entity && $this->identifier) {
           $this->setIdentifierField($this->mint());
+          if (array_key_exists('save_entity', $this->configuration) && $this->configuration['save_entity']) {
+            $this->entity->save();
+          }
         }
         else {
           $this->logger->error('Minting failed for @type/@id: Entity or Configs were not properly set.', [
@@ -102,6 +106,28 @@ abstract class MintIdentifier extends IdentifierAction {
         ]);
       }
     }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function buildConfigurationForm(array $form, FormStateInterface $form_state): array {
+    $form = parent::buildConfigurationForm($form, $form_state);
+    $form['save_entity'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Save Entity'),
+      '#default_value' => ($this->configuration['save_entity']) ?: false,
+      '#description' => $this->t('Save the entity when populating the identifier field. Do not use if triggering from a hook or context reaction!'),
+    ];
+
+    return $form;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function submitConfigurationForm(array &$form, FormStateInterface $form_state): void {
+    $this->configuration['save_entity'] = $form_state->getValue('save_entity');
   }
 
 }
