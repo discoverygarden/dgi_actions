@@ -78,8 +78,8 @@ class Ezid extends ServiceDataTypeBase {
     ];
     $form['namespace'] = [
       '#type' => 'textfield',
-      '#title' => $this->t('Namespace'),
-      '#description' => $this->t('Client namespace for the Identifier.'),
+      '#title' => $this->t('Shoulder'),
+      '#description' => $this->t('EZID shoulder for minting the Identifier. E.g. `ark:/99999/fk4`.'),
       '#default_value' => $this->configuration['namespace'],
       '#required' => TRUE,
     ];
