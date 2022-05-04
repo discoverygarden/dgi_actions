@@ -4,6 +4,7 @@ namespace Drupal\dgi_actions\Plugin\Action;
 
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Entity\Exception\UndefinedLinkTemplateException;
+use Drupal\Core\Field\EntityReferenceFieldItemList;
 use Drupal\Core\Form\FormStateInterface;
 
 /**
@@ -28,7 +29,11 @@ abstract class MintIdentifier extends IdentifierAction {
     if ($data_profile) {
       foreach ($data_profile->getData() as $key => $field) {
         if ($this->entity->hasField($field)) {
-          $data[$key] = $this->entity->get($field)->getString();
+          if ($this->entity->get($field) instanceof EntityReferenceFieldItemList) {
+            $data[$key] = $this->entity->get($field)->entity->label();
+          } else {
+            $data[$key] = $this->entity->get($field)->getString();
+          }
         }
       }
     }
