@@ -79,12 +79,12 @@ class DataProfileForm extends EntityBundleSelectionForm {
     if (isset($triggering_element['#parents'])) {
       if ($triggering_element['#parents'] === ['entity']) {
         $this->targetEntity = !empty($form_state->getValue('entity')) ? $form_state->getValue('entity') : NULL;
-        unset($this->targetBundle);
-        unset($this->plugin);
+        $this->targetBundle = NULL;
+        $this->plugin = NULL;
       }
       if ($triggering_element['#parents'] === ['bundle']) {
         $this->targetBundle = !empty($form_state->getValue('bundle')) ? $form_state->getValue('bundle') : NULL;
-        unset($this->plugin);
+        $this->plugin = NULL;
       }
       if ($triggering_element['#parents'] === ['data_profile']) {
         $this->plugin = !empty($form_state->getValue('data_profile')) ? $this->dataProfileManager->createInstance($form_state->getValue('data_profile')) : NULL;
