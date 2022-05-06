@@ -29,10 +29,15 @@ abstract class MintIdentifier extends IdentifierAction {
     if ($data_profile) {
       foreach ($data_profile->getData() as $key => $field) {
         if ($this->entity->hasField($field)) {
-          if ($this->entity->get($field) instanceof EntityReferenceFieldItemList) {
-            $data[$key] = $this->entity->get($field)->entity->label();
-          } else {
-            $data[$key] = $this->entity->get($field)->getString();
+          $entity_field = $this->entity->get($field);
+          if ($entity_field->isEmpty()) {
+            continue;
+          }
+          if ($entity_field instanceof EntityReferenceFieldItemList) {
+            $data[$key] = $entity_field->entity->label();
+          }
+          else {
+            $data[$key] = $entity_field->getString();
           }
         }
       }
@@ -114,6 +119,20 @@ abstract class MintIdentifier extends IdentifierAction {
   }
 
   /**
+   * Adds the `save_entity` configuration option.
+   *
+   * This option, when true, will save the entity as part of the action.
+   *
+   * The default FALSE option is for when the action is triggered
+   * as a context reaction.
+   */
+  public function defaultConfiguration(): array {
+    return parent::defaultConfiguration() + [
+      'save_entity' => FALSE,
+    ];
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function buildConfigurationForm(array $form, FormStateInterface $form_state): array {
@@ -121,7 +140,7 @@ abstract class MintIdentifier extends IdentifierAction {
     $form['save_entity'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Save Entity'),
-      '#default_value' => ($this->configuration['save_entity']) ?: false,
+      '#default_value' => $this->configuration['save_entity'],
       '#description' => $this->t('Save the entity when populating the identifier field. Do not use if triggering from a hook or context reaction!'),
     ];
 
@@ -132,6 +151,7 @@ abstract class MintIdentifier extends IdentifierAction {
    * {@inheritdoc}
    */
   public function submitConfigurationForm(array &$form, FormStateInterface $form_state): void {
+    parent::submitConfigurationForm($form, $form_state);
     $this->configuration['save_entity'] = $form_state->getValue('save_entity');
   }
 
