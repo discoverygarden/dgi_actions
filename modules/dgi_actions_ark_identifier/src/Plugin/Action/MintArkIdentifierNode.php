@@ -11,4 +11,4 @@ namespace Drupal\dgi_actions_ark_identifier\Plugin\Action;
  *   type = "node"
  * )
  */
-class MintArkIdentifierNode extends MintArkIdentifier { }
+class MintArkIdentifierNode extends MintArkIdentifier {}
