@@ -104,7 +104,10 @@ class MintArkIdentifier extends MintIdentifier {
         '@id' => $this->getEntity()->id(),
         '@contents' => $contents,
       ]);
-      return "{$this->getIdentifier()->getServiceData()->getData()['host']}/id/{$response['success']}";
+      $ark = $response['success'];
+      $service_data = $this->getIdentifier()->getServiceData()->getData();
+      $resolver = (array_key_exists('resolver', $service_data)) ? $service_data['resolver'] : "{$service_data['host']}/id";
+      return "{$resolver}/{$ark}";
     }
     throw new \Exception('There was an issue minting the ARK Identifier for @type/@id: @contents', [
       '@type' => $this->getEntity()->getEntityTypeId(),
@@ -163,11 +166,16 @@ class MintArkIdentifier extends MintIdentifier {
    */
   public function buildConfigurationForm(array $form, FormStateInterface $form_state): array {
     $form = parent::buildConfigurationForm($form, $form_state);
+    $status_options = [
+      'public' => 'public',
+      'reserved' => 'reserved',
+      'unavailable' => 'unavailable',
+    ];
     $form['status'] = [
       '#type' => 'select',
       '#title' => $this->t('Status'),
       '#default_value' => $this->configuration['status'],
-      '#options' => ['public' => 'public','reserved' => 'reserved','unavailable' => 'unavailable'],
+      '#options' => $status_options,
       '#description' => $this->t("Set the identifier's status. This impacts the ARK's resolvability. See the EZID API documentation (https://ezid.cdlib.org/doc/apidoc.html#identifier-status)."),
     ];
 

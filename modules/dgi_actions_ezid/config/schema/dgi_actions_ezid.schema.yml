@@ -18,6 +18,10 @@ dgi_actions.service_data_type.ezid:
       label: 'Namespace'
       type: string
       description: 'Client namespace for the Identifier.'
+    resolver:
+      label: 'Resolver'
+      type: string
+      description: 'Host address for the EZID resolver.'
 
 dgi_actions.data_profile_type.erc:
   type: mapping
