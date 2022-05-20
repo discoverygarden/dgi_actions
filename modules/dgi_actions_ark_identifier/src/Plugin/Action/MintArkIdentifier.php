@@ -3,6 +3,7 @@
 namespace Drupal\dgi_actions_ark_identifier\Plugin\Action;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\dgi_actions\Plugin\Action\HttpActionMintTrait;
 use Drupal\dgi_actions\Plugin\Action\MintIdentifier;
 use Drupal\dgi_actions\Utility\IdentifierUtils;
@@ -85,7 +86,7 @@ class MintArkIdentifier extends MintIdentifier {
     $data = array_merge(
       [
         '_target' => $this->getExternalUrl(),
-        '_status' => 'reserved',
+        '_status' => $this->configuration['status'],
       ], $data
     );
     return $this->buildEzidRequestBody($data);
@@ -103,7 +104,10 @@ class MintArkIdentifier extends MintIdentifier {
         '@id' => $this->getEntity()->id(),
         '@contents' => $contents,
       ]);
-      return "{$this->getIdentifier()->getServiceData()->getData()['host']}/id/{$response['success']}";
+      $ark = $response['success'];
+      $service_data = $this->getIdentifier()->getServiceData()->getData();
+      $resolver = (array_key_exists('resolver', $service_data) && !empty($service_data['resolver'])) ? $service_data['resolver'] : "{$service_data['host']}/id";
+      return "{$resolver}/{$ark}";
     }
     throw new \Exception('There was an issue minting the ARK Identifier for @type/@id: @contents', [
       '@type' => $this->getEntity()->getEntityTypeId(),
@@ -141,6 +145,49 @@ class MintArkIdentifier extends MintIdentifier {
       ],
       'body' => $body,
     ];
+  }
+
+  /**
+   * Adds the `save_entity` configuration option.
+   *
+   * This option, when true, will save the entity as part of the action.
+   *
+   * The default FALSE option is for when the action is triggered
+   * as a context reaction.
+   */
+  public function defaultConfiguration(): array {
+    return parent::defaultConfiguration() + [
+      'status' => 'reserved',
+    ];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function buildConfigurationForm(array $form, FormStateInterface $form_state): array {
+    $form = parent::buildConfigurationForm($form, $form_state);
+    $status_options = [
+      'public' => 'public',
+      'reserved' => 'reserved',
+      'unavailable' => 'unavailable',
+    ];
+    $form['status'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Status'),
+      '#default_value' => $this->configuration['status'],
+      '#options' => $status_options,
+      '#description' => $this->t("Set the identifier's status. This impacts the ARK's resolvability. See the EZID API documentation (https://ezid.cdlib.org/doc/apidoc.html#identifier-status)."),
+    ];
+
+    return $form;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function submitConfigurationForm(array &$form, FormStateInterface $form_state): void {
+    parent::submitConfigurationForm($form, $form_state);
+    $this->configuration['status'] = $form_state->getValue('status');
   }
 
 }

@@ -47,6 +47,7 @@ class Ezid extends ServiceDataTypeBase {
       'username' => NULL,
       'password' => NULL,
       'namespace' => NULL,
+      'resolver' => '',
     ];
   }
 
@@ -82,6 +83,12 @@ class Ezid extends ServiceDataTypeBase {
       '#description' => $this->t('EZID shoulder for minting the Identifier. E.g. `ark:/99999/fk4`.'),
       '#default_value' => $this->configuration['namespace'],
       '#required' => TRUE,
+    ];
+    $form['resolver'] = [
+      '#type' => 'url',
+      '#title' => $this->t('Resolver'),
+      '#description' => $this->t('Host address for the EZID resolver. (Falls back to the EZID Host plus "/id".)'),
+      '#default_value' => $this->configuration['resolver'],
     ];
     return $form;
   }
