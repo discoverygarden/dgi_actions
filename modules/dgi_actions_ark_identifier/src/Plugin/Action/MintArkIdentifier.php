@@ -106,7 +106,7 @@ class MintArkIdentifier extends MintIdentifier {
       ]);
       $ark = $response['success'];
       $service_data = $this->getIdentifier()->getServiceData()->getData();
-      $resolver = (array_key_exists('resolver', $service_data)) ? $service_data['resolver'] : "{$service_data['host']}/id";
+      $resolver = (array_key_exists('resolver', $service_data) && !empty($service_data['resolver'])) ? $service_data['resolver'] : "{$service_data['host']}/id";
       return "{$resolver}/{$ark}";
     }
     throw new \Exception('There was an issue minting the ARK Identifier for @type/@id: @contents', [
