@@ -5,7 +5,7 @@ dgi_actions.admin:
     _controller: '\Drupal\system\Controller\SystemController::systemAdminMenuBlockPage'
     _title: 'DGI Actions'
   requirements:
-    _permission: 'access administration pages'
+    _permission: 'administer site configuration'
 
 # Menu list of Identifiers configuration forms
 dgi_actions.identifiers:
@@ -14,7 +14,7 @@ dgi_actions.identifiers:
     _controller: '\Drupal\system\Controller\SystemController::systemAdminMenuBlockPage'
     _title: 'Identifiers'
   requirements:
-    _permission: 'access administration pages'
+    _permission: 'administer site configuration'
 
 # Identifiers Admin Page
 entity.dgiactions_identifier.collection:

@@ -62,5 +62,3 @@ dgi_actions.service_data.*:
 dgi_actions.service_data_type.*:
   type: mapping
   label: 'Service Data Type'
-
-
