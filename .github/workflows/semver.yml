@@ -1,0 +1,14 @@
+---
+name: Auto Semver
+on:
+  pull_request_target:
+    types: closed
+    branches:
+      - 1.x
+jobs:
+  update:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run Auto Semver
+        uses: discoverygarden/auto-semver@v1
