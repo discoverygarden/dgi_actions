@@ -1,3 +1,4 @@
+---
 dgi_actions.service_data_type.handle:
   type: mapping
   label: 'Handle.net Service Data'
@@ -18,3 +19,8 @@ dgi_actions.service_data_type.handle:
       label: 'Prefix'
       type: string
       description: 'Handle prefix as specified from Handle.net.'
+
+action.configuration.dgi_actions_delete_handle:
+  type: dgi_actions_action_delete_base
+action.configuration.dgi_actions_mint_handle:
+  type: dgi_actions_action_mint_base

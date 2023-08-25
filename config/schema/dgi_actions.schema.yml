@@ -69,3 +69,19 @@ condition.plugin.dgi_actions_entity_persistent_identifier_populated:
     identifier:
       type: machine_name
       nullable: true
+
+
+dgi_actions_action_identifier_base:
+  type: mapping
+  mapping:
+    identifier_entity:
+      type: machine_name
+
+dgi_actions_action_mint_base:
+  type: dgi_actions_action_identifier_base
+  mapping:
+    save_entity:
+      type: boolean
+
+dgi_actions_action_delete_base:
+  type: dgi_actions_action_identifier_base

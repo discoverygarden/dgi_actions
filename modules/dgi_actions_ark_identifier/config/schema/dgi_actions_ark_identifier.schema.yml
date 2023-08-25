@@ -1,0 +1,20 @@
+---
+action.configuration.dgi_actions_delete_ark_identifier:
+  type: dgi_actions_action_delete_base
+dgi_actions_ark_identifier_mint_base:
+  type: dgi_actions_action_mint_base
+  mapping:
+    status:
+      type: dgi_actions_ark_identifier_status.[%parent.status]
+dgi_actions_ark_identifier_status.public:
+  type: machine_name
+dgi_actions_ark_identifier_status.reserved:
+  type: machine_name
+dgi_actions_ark_identifier_status.unavailable:
+  type: machine_name
+dgi_actions_ark_identifier_status.*:
+  type: undefined
+action.configuration.dgi_actions_mint_ark_identifier:
+  type: dgi_actions_ark_identifier_mint_base
+action.configuration.dgi_actions_mint_ark_identifier_node:
+  type: dgi_actions_ark_identifier_mint_base
