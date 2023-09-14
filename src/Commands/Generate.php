@@ -177,7 +177,8 @@ class Generate extends DrushCommands {
     $entity_id_key = $this->entityTypeManager->getDefinition($entity_type)->getKeys()['id'];
 
     $entity_storage = $this->entityTypeManager->getStorage($entity_type);
-    $query = $entity_storage->getQuery();
+    $query = $entity_storage->getQuery()
+      ->accessCheck(FALSE);
     if ($ids) {
       $query->condition($entity_id_key, explode(',', $ids), 'IN');
     }
