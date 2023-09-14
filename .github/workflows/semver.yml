@@ -5,6 +5,7 @@ on:
     types: closed
     branches:
       - 1.x
+      - main
 jobs:
   update:
     if: github.event.pull_request.merged == true

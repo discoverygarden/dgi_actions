@@ -4,6 +4,7 @@ on:
   pull_request:
     branches:
       - 1.x
+      - main
   workflow_dispatch:
 
 jobs:
