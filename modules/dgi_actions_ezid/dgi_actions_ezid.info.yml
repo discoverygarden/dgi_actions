@@ -2,6 +2,6 @@ name: 'DGI Actions EZID'
 description: "Provides integration with California Digital Library's EZID service."
 type: module
 package: DGI Actions
-core_version_requirement: ^8 || ^9
+core_version_requirement: ^9 || ^10
 dependencies:
   - dgi_actions:dgi_actions

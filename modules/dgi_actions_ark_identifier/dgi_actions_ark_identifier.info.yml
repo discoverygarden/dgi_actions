@@ -2,7 +2,7 @@ name: 'DGI Actions ARK Identifier'
 description: "DGI Actions ARK Identifier sub-module."
 type: module
 package: DGI Actions
-core_version_requirement: ^8 || ^9
+core_version_requirement: ^9 || ^10
 dependencies:
   - dgi_actions:dgi_actions
   - dgi_actions:dgi_actions_ezid
