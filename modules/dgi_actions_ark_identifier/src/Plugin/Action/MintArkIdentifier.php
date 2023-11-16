@@ -9,7 +9,7 @@ use Drupal\dgi_actions\Plugin\Action\MintIdentifier;
 use Drupal\dgi_actions\Utility\IdentifierUtils;
 use Drupal\dgi_actions_ezid\Utility\EzidTrait;
 use GuzzleHttp\ClientInterface;
-use GuzzleHttp\Psr7\Response;
+use Psr\Http\Message\ResponseInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -95,7 +95,7 @@ class MintArkIdentifier extends MintIdentifier {
   /**
    * {@inheritdoc}
    */
-  protected function getIdentifierFromResponse(Response $response): string {
+  protected function getIdentifierFromResponse(ResponseInterface $response): string {
     $contents = $response->getBody()->getContents();
     $response = $this->parseEzidResponse($contents);
     if (array_key_exists('success', $response)) {
