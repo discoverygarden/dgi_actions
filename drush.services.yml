@@ -11,6 +11,14 @@ services:
     ]
     tags:
       - { name: drush.command }
+  dgi_actions.print_missing_identifier_entity_ids:
+    class: \Drupal\dgi_actions\Commands\PrintMissingEntityIds
+    arguments: [
+      '@entity_type.manager',
+      '@dgi_actions.utils'
+    ]
+    tags:
+      - { name: drush.command }
   logger.dgi_actions:
     parent: logger.channel_base
     arguments: [ 'dgi_actions' ]
