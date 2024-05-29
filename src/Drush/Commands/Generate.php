@@ -13,8 +13,8 @@ use Drupal\dgi_actions\Utility\IdentifierUtils;
 use Drupal\islandora\IslandoraUtils;
 use Drush\Commands\DrushCommands;
 use GuzzleHttp\ClientInterface;
+use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Drush commands for generating identifiers for existing objects.
