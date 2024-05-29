@@ -1,7 +1,7 @@
 ---
 services:
   dgi_actions_handle.commands:
-    class: \Drupal\dgi_actions_handle\Commands\HandleCommands
+    class: \Drupal\dgi_actions_handle\Drush\Commands\HandleCommands
     arguments: ['@http_client', '@entity_type.manager', '@dgi_actions.utils']
     tags:
       - { name: drush.command }
