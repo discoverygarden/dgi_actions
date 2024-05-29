@@ -7,7 +7,7 @@ services:
       '@dgi_actions.utils',
       '@dgi_actions.dgiutils',
       '@islandora.utils',
-      '@logger.dgi_actions'
+      '@logger.channel.dgi_actions'
     ]
     tags:
       - { name: drush.command }
@@ -19,6 +19,3 @@ services:
     ]
     tags:
       - { name: drush.command }
-  logger.dgi_actions:
-    parent: logger.channel_base
-    arguments: [ 'dgi_actions' ]

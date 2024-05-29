@@ -14,6 +14,7 @@ use Drupal\islandora\IslandoraUtils;
 use Drush\Commands\DrushCommands;
 use GuzzleHttp\ClientInterface;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Drush commands for generating identifiers for existing objects.
@@ -88,6 +89,19 @@ class Generate extends DrushCommands {
     $this->utils = $utils;
     $this->islandoraUtils = $islandora_utils;
     $this->ourLogger = $logger;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  public static function create(ContainerInterface $container) : self {
+    return new static(
+      $container->get('http_client'),
+      $container->get('entity_type.manager'),
+      $container->get('dgi_actions.utils'),
+      $container->get('islandora.utils'),
+      $container->get('logger.channel.dgi_actions')
+    );
   }
 
   /**
