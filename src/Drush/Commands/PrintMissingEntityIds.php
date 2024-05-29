@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\dgi_actions\Commands;
+namespace Drupal\dgi_actions\Drush\Commands;
 
 use Consolidation\AnnotatedCommand\CommandData;
 use Consolidation\AnnotatedCommand\CommandError;
