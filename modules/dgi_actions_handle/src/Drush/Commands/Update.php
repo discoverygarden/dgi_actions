@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\dgi_actions_handle\Commands;
+namespace Drupal\dgi_actions_handle\Drush\Commands;
 
 use Drupal\dgi_actions\Entity\IdentifierInterface;
 use Drupal\dgi_actions_handle\Utility\HandleTrait;
