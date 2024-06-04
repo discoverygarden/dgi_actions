@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\dgi_actions\Commands;
+namespace Drupal\dgi_actions\Drush\Commands;
 
 use Consolidation\AnnotatedCommand\CommandData;
 use Consolidation\AnnotatedCommand\CommandError;
@@ -8,6 +8,7 @@ use Drupal\Core\DependencyInjection\DependencySerializationTrait;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\dgi_actions\Utility\IdentifierUtils;
 use Drush\Commands\DrushCommands;
+use Psr\Container\ContainerInterface;
 
 /**
  * Drush commands for generating identifiers for existing objects.
@@ -43,6 +44,16 @@ class PrintMissingEntityIds extends DrushCommands {
 
     $this->entityTypeManager = $entity_type_manager;
     $this->identifierUtils = $identifier_utils;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  public static function create(ContainerInterface $container) : self {
+    return new static(
+      $container->get('entity_type.manager'),
+      $container->get('dgi_actions.utils')
+    );
   }
 
   /**

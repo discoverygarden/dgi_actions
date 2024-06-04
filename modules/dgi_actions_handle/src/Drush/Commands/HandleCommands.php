@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\dgi_actions_handle\Commands;
+namespace Drupal\dgi_actions_handle\Drush\Commands;
 
 use Consolidation\AnnotatedCommand\CommandData;
 use Consolidation\AnnotatedCommand\CommandError;
@@ -9,6 +9,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\dgi_actions\Utility\IdentifierUtils;
 use Drush\Commands\DrushCommands;
 use GuzzleHttp\ClientInterface;
+use Psr\Container\ContainerInterface;
 
 /**
  * Drush commands for Handle.net things.
@@ -51,6 +52,17 @@ class HandleCommands extends DrushCommands {
     $this->client = $client;
     $this->entityTypeManager = $entity_type_manager;
     $this->utils = $utils;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  public static function create(ContainerInterface $container) : self {
+    return new static(
+      $container->get('http_client'),
+      $container->get('entity_type.manager'),
+      $container->get('dgi_actions.utils')
+    );
   }
 
   /**

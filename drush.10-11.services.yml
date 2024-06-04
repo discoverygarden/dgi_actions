@@ -1,24 +1,21 @@
 services:
   dgi_actions.commands:
-    class: \Drupal\dgi_actions\Commands\Generate
+    class: \Drupal\dgi_actions\Drush\Commands\Generate
     arguments: [
       '@http_client',
       '@entity_type.manager',
       '@dgi_actions.utils',
       '@dgi_actions.dgiutils',
       '@islandora.utils',
-      '@logger.dgi_actions'
+      '@logger.channel.dgi_actions'
     ]
     tags:
       - { name: drush.command }
   dgi_actions.print_missing_identifier_entity_ids:
-    class: \Drupal\dgi_actions\Commands\PrintMissingEntityIds
+    class: \Drupal\dgi_actions\Drush\Commands\PrintMissingEntityIds
     arguments: [
       '@entity_type.manager',
       '@dgi_actions.utils'
     ]
     tags:
       - { name: drush.command }
-  logger.dgi_actions:
-    parent: logger.channel_base
-    arguments: [ 'dgi_actions' ]
