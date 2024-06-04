@@ -16,6 +16,27 @@ Install as usual, see
 [this](https://www.drupal.org/docs/extending-drupal/installing-modules) for
 further information.
 
+## Features
+
+- Provides Action Plugins for minting and deleting Handle.net Handles.
+- Provides a service data type plugin for Handle.net Handles.
+- Uses uuid by default as handle suffix. Also supports custom suffixes.
+
+## Usage
+- See DGI Actions readme for general usage.
+- Create a new service data type with the type `handle`.
+- There is no UI for configuring the handle suffix field. It must be set in the
+  configuration file. The default suffix field is `uuid`.
+
+## User Notes
+
+- The field that is to be used for handle suffix must be made unique and required
+  in the content type configuration so that the value does not change. If the field is not unique,
+  handle generation will fail for the duplicate value.
+- The handle also must be unique and should be non-editable.
+- To make the suffix and handle fields non-editable and required, an additional module is provided
+  `dgi_actions_handle_constraints`. This module should be enabled and configured to make the necessary field validation changes.
+- See dgi_actions_handle_constraints README for more information.
 
 ## Troubleshooting/Issues
 
