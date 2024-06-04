@@ -1,0 +1,9 @@
+constraint_settings:
+  - entity_type: node
+    entity_bundle: islandora_object
+    field_name: field_pid
+    field_usage: suffix
+  - entity_type: node
+    entity_bundle: islandora_object
+    field_name: field_handle
+    field_usage: identifier

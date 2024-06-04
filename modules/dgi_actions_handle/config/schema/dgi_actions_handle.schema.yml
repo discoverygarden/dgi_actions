@@ -19,6 +19,10 @@ dgi_actions.service_data_type.handle:
       label: 'Prefix'
       type: string
       description: 'Handle prefix as specified from Handle.net.'
+    suffix_field:
+      label: 'Suffix'
+      type: string
+      description: 'Field to use as handle suffix.'
 
 action.configuration.dgi_actions_delete_handle:
   type: dgi_actions_action_delete_base
