@@ -28,4 +28,3 @@ action.configuration.dgi_actions_delete_handle:
   type: dgi_actions_action_delete_base
 action.configuration.dgi_actions_mint_handle:
   type: dgi_actions_action_mint_base
-

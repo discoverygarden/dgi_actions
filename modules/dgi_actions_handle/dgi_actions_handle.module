@@ -5,23 +5,27 @@
  * Holds hooks for DGI Actions handle.
  */
 
+use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\node\NodeInterface;
+
 /**
  * Function for adding unique constraint.
  *
- * This function is used to add a unique constraint to a specified field in an entity.
- * It first retrieves the service data for 'handles' and checks if a 'suffix_field' is set in the data.
- * If the 'suffix_field' is set and exists in the fields array, it adds a 'UniqueField' constraint to it.
+ * This function is used to add a unique constraint
+ * to a specified field in an entity. If the 'suffix_field' is
+ * set and exists in the fields array, it adds a 'UniqueField' constraint to it.
  *
  * @param array $fields
- *   The fields array. This array contains the fields of the entity to which the constraint is to be added.
+ *   The fields array.
  * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
- *   The entity type. This is the type of the entity to which the constraint is to be added.
+ *   The entity type.
  */
-function _handle_suffix_validation_add_constraint(array &$fields, \Drupal\Core\Entity\EntityTypeInterface $entity_type): void
-{
+function _dgi_actions_handle_suffix_validation_add_constraint(array &$fields, EntityTypeInterface $entity_type): void {
   $suffix_field = _dgi_actions_handle_get_suffix_field();
 
-  // If the suffix field is not set or the suffix field does not exist in fields, return.
+  // If the suffix field is not set or the suffix
+  // field does not exist in fields, return.
   if (empty($fields[$suffix_field])) {
     return;
   }
@@ -33,16 +37,12 @@ function _handle_suffix_validation_add_constraint(array &$fields, \Drupal\Core\E
 /**
  * Function to get the suffix field.
  *
- * This function retrieves the service data for 'handles' and checks if a 'suffix_field' is set in the data.
- * If the 'suffix_field' is set, it returns the 'suffix_field'. Otherwise, it returns NULL.
- *
  * @return string|null
  *   The suffix field if it is set, NULL otherwise.
  */
-function _dgi_actions_handle_get_suffix_field() : string | null
-{
-  /* @var \Drupal\dgi_actions\Entity\ServiceDataInterface $handle_service_data */
-  $handle_service_data = \Drupal::entityTypeManager()->getStorage('dgiactions_servicedata')->load('handles');
+function _dgi_actions_handle_get_suffix_field(): string|null {
+  /** @var \Drupal\dgi_actions\Entity\ServiceDataInterface $handle_service_data */
+  $handle_service_data = Drupal::entityTypeManager()->getStorage('dgiactions_servicedata')->load('handles');
   if ($handle_service_data) {
     $data = $handle_service_data->getData();
     return $data['suffix_field'] ?? NULL;
@@ -52,17 +52,11 @@ function _dgi_actions_handle_get_suffix_field() : string | null
 /**
  * Implements hook_entity_base_field_info_alter().
  *
- * This hook is used to alter base field definitions for a specific entity type.
- * It checks if the entity type is 'node' and if so, it calls the function to add a unique constraint.
- *
- * @param array $fields
- *   The fields array. This array contains the base fields of the entity.
- * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
- *   The entity type. This is the type of the entity whose base fields are being altered.
+ * Adds a unique constraint to the suffix field.
  */
-function dgi_actions_handle_entity_base_field_info_alter(&$fields, \Drupal\Core\Entity\EntityTypeInterface $entity_type) {
+function dgi_actions_handle_entity_base_field_info_alter(&$fields, EntityTypeInterface $entity_type) {
   if ($entity_type->id() === 'node') {
-    _handle_suffix_validation_add_constraint($fields, $entity_type);
+    _dgi_actions_handle_suffix_validation_add_constraint($fields, $entity_type);
   }
 
 }
@@ -70,17 +64,12 @@ function dgi_actions_handle_entity_base_field_info_alter(&$fields, \Drupal\Core\
 /**
  * Implements hook_entity_bundle_field_info_alter().
  *
- * This hook is used to alter bundle field definitions for a specific entity type.
- * It checks if the entity type is 'node' and if so, it calls the function to add a unique constraint.
- *
- * @param array $fields
- *   The fields array. This array contains the bundle fields of the entity.
- * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
- *   The entity type. This is the type of the entity whose bundle fields are being altered.
+ * It checks if the entity type is 'node' and if so,
+ * it calls the function to add a unique constraint.
  */
-function dgi_actions_handle_entity_bundle_field_info_alter(&$fields, \Drupal\Core\Entity\EntityTypeInterface $entity_type) {
+function dgi_actions_handle_entity_bundle_field_info_alter(&$fields, EntityTypeInterface $entity_type) {
   if ($entity_type->id() === 'node') {
-    _handle_suffix_validation_add_constraint($fields, $entity_type);
+    _dgi_actions_handle_suffix_validation_add_constraint($fields, $entity_type);
   }
 }
 
@@ -88,25 +77,22 @@ function dgi_actions_handle_entity_bundle_field_info_alter(&$fields, \Drupal\Cor
  * Implements hook_ENTITY_TYPE_presave().
  *
  * This hook is used to prevent changes to the suffix field of a node.
- * It checks if the node has the suffix field and if the field value has been changed.
- * If the field value has been changed, it reverts it to the original value and adds a message to the user.
- *
- * @param \Drupal\node\NodeInterface $node
- *   The node that is being saved.
+ * If the field value has been changed, it reverts it to the original
+ * value and adds a message to the user.Needed for spreadsheet ingest.
  */
-function dgi_actions_handle_node_presave(\Drupal\node\NodeInterface $node) {
+function dgi_actions_handle_node_presave(NodeInterface $node) {
   $suffix_field = _dgi_actions_handle_get_suffix_field();
 
   // Check if the node has the suffix field.
   if ($suffix_field && $node->hasField($suffix_field)) {
     // Load the original node from the database.
-    $original_node = \Drupal::entityTypeManager()->getStorage('node')->loadUnchanged($node->id());
+    $original_node = Drupal::entityTypeManager()->getStorage('node')->loadUnchanged($node->id());
 
     // Check if the field value has been changed.
     if ($node->{$suffix_field}->value != $original_node->{$suffix_field}->value) {
       // If the field value has been changed, revert it to the original value.
       $node->{$suffix_field}->value = $original_node->{$suffix_field}->value;
-      \Drupal::messenger()->addMessage('The suffix field cannot be changed.');
+      Drupal::messenger()->addMessage('The suffix field cannot be changed.');
     }
   }
 
@@ -115,18 +101,10 @@ function dgi_actions_handle_node_presave(\Drupal\node\NodeInterface $node) {
 /**
  * Implements hook_form_FORM_ID_alter().
  *
- * This hook is used to make the suffix field non-editable if it has a value when editing a node.
- * It checks if the form is for a node and if the suffix field exists in the form.
- * If the suffix field has a value, it sets the suffix field to be non-editable and adds a description to the field.
- *
- * @param array $form
- *   The form array. This array contains the form elements.
- * @param \Drupal\Core\Form\FormStateInterface $form_state
- *   The form state. This object contains the current state of the form.
- * @param string $form_id
- *   The form ID. This is the ID of the form that is being altered.
+ * This hook is used to make the suffix field non-editable
+ * if it has a value when editing a node.
  */
-function dgi_actions_handle_form_node_form_alter(array &$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+function dgi_actions_handle_form_node_form_alter(array &$form, FormStateInterface $form_state, $form_id) {
   $suffix_field = _dgi_actions_handle_get_suffix_field();
 
   // Load the node from the form state.
@@ -138,7 +116,7 @@ function dgi_actions_handle_form_node_form_alter(array &$form, \Drupal\Core\Form
     if ($node->{$suffix_field}->value) {
       // Set the suffix field to be non-editable.
       $form[$suffix_field]['#disabled'] = TRUE;
-      $form[$suffix_field]['#description'] = 'The suffix field cannot be changed.';
+      $form[$suffix_field]['#description'] = t('The suffix field cannot be changed.');
     }
   }
 }
