@@ -24,16 +24,19 @@ use Drupal\node\NodeInterface;
 function _dgi_actions_handle_suffix_validation_add_constraint(array &$fields, EntityTypeInterface $entity_type): void {
   try {
     $suffix_field = _dgi_actions_handle_get_suffix_field();
+    $handle_field = _dgi_actions_handle_get_handle_field();
 
-    // If the suffix field is not set or the suffix
-    // field does not exist in fields, return.
-    if (empty($fields[$suffix_field])) {
+    // If the suffix and handle field is not set or the
+    // fields do not exist, return.
+    if (empty($fields[$suffix_field]) && empty($fields[$handle_field])) {
       return;
     }
 
-    // Add UniqueField and required constraint to the configured suffix field.
+    // Add UniqueField and required constraint.
     $fields[$suffix_field]->addConstraint('UniqueField');
     $fields[$suffix_field]->setRequired(TRUE);
+
+    $fields[$handle_field]->addConstraint('UniqueField');
   }
   catch (Exception $e) {
     Drupal::logger('dgi_actions_handle')->error($e->getMessage());
@@ -121,20 +124,24 @@ function dgi_actions_handle_node_presave(NodeInterface $node): void {
 function dgi_actions_handle_form_node_form_alter(array &$form, FormStateInterface $form_state, $form_id): void {
   try {
     $suffix_field = _dgi_actions_handle_get_suffix_field();
+    $handle_field = _dgi_actions_handle_get_handle_field();
 
     // Load the node from the form state.
     $node = $form_state->getFormObject()->getEntity();
 
-    $form[$suffix_field]['widget'][0]['value']['#description'] = t('This field is used as the handle suffix.
+    if (isset($form[$suffix_field]) && isset($form[$handle_field])) {
+      $form[$suffix_field]['widget'][0]['value']['#description'] = t('This field is used as the handle suffix.
                                                     The suffix field, once set, cannot be changed.');
-    $form[$suffix_field]['#access'] = TRUE;
+      $form[$suffix_field]['#access'] = TRUE;
 
-    // Check if the node is new and if the suffix field exists in the form.
-    if (!$node->isNew() && isset($form[$suffix_field])) {
-      // Check if the suffix field has a value.
-      if ($node->{$suffix_field}->value) {
-        // Set the suffix field to be non-editable.
-        $form[$suffix_field]['#disabled'] = TRUE;
+      // Check if the node is new.
+      if (!$node->isNew()) {
+        // Check if the suffix field has a value.
+        if ($node->{$suffix_field}->value) {
+          // Set the suffix field to be non-editable.
+          $form[$suffix_field]['#disabled'] = TRUE;
+          $form[$handle_field]['#disabled'] = TRUE;
+        }
       }
     }
   }
@@ -142,4 +149,22 @@ function dgi_actions_handle_form_node_form_alter(array &$form, FormStateInterfac
     Drupal::logger('dgi_actions_handle')->error($e->getMessage());
   }
 
+}
+
+/**
+ * Function to get the handle field.
+ *
+ * @return string|null
+ *   The handle field if it is set, NULL otherwise.
+ *
+ * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+ * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+ */
+function _dgi_actions_handle_get_handle_field(): ?string {
+  /** @var \Drupal\dgi_actions\Entity\IdentifierInterface $handle_identifier_entity */
+  $handle_identifier_entity = Drupal::entityTypeManager()->getStorage('dgiactions_identifier')->load('handles');
+  if ($handle_identifier_entity) {
+    $handle_field = $handle_identifier_entity->getField();
+    return $handle_field ?? NULL;
+  }
 }
