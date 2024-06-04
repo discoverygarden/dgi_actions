@@ -49,3 +49,4 @@ function dgi_actions_entity_delete(EntityInterface $entity) {
   $utils = \Drupal::service('dgi_actions.dgiutils');
   $utils->executeEntityReactions(EntityDeleteReaction::class, $entity);
 }
+
