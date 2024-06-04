@@ -94,7 +94,7 @@ function dgi_actions_handle_node_presave(NodeInterface $node): void {
     $suffix_field = _dgi_actions_handle_get_suffix_field();
 
     // Check if the node has the suffix field.
-    if ($suffix_field && $node->hasField($suffix_field)) {
+    if (!$node->isNew() && $suffix_field && $node->hasField($suffix_field)) {
       // Load the original node from the database.
       $original_node = Drupal::entityTypeManager()->getStorage('node')->loadUnchanged($node->id());
 
@@ -102,7 +102,7 @@ function dgi_actions_handle_node_presave(NodeInterface $node): void {
       if ($node->{$suffix_field}->value != $original_node->{$suffix_field}->value) {
         // If the field value has been changed, revert it to the original value.
         $node->{$suffix_field}->value = $original_node->{$suffix_field}->value;
-        Drupal::messenger()->addMessage('The suffix field cannot be changed.');
+        Drupal::messenger()->addWarning('The suffix field cannot be changed.');
       }
     }
   }
