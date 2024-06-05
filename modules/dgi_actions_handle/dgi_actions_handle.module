@@ -59,6 +59,7 @@ function _dgi_actions_handle_get_suffix_field(): string|null {
     $data = $handle_service_data->getData();
     return $data['suffix_field'] ?? NULL;
   }
+  return NULL;
 }
 
 /**
@@ -167,4 +168,5 @@ function _dgi_actions_handle_get_handle_field(): ?string {
     $handle_field = $handle_identifier_entity->getField();
     return $handle_field ?? NULL;
   }
+  return NULL;
 }
