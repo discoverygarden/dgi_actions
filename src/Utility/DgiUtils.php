@@ -66,6 +66,14 @@ class DgiUtils {
    */
   public function getActiveReactionsForEntity(string $reaction_type, ContentEntityInterface $entity) {
     $this->provider->setEntity($entity);
+
+    // XXX: Need to force context re-evaluation to ensure that the entity being
+    // set by the provider in a single threaded scenario is evaluated once
+    // it has been changed.
+    $context_manager = new \ReflectionClass($this->contextManager);
+    $reset_context = $context_manager->getMethod('resetContextEvaluation');
+    $reset_context->setAccessible(TRUE);
+    $reset_context->invoke($this->contextManager);
     $this->contextManager->evaluateContexts();
     return $this->contextManager->getActiveReactions($reaction_type);
   }
