@@ -20,7 +20,8 @@ function _dgi_actions_handle_constraints_suffix_validation_add_constraint(array 
   try {
     $config = \Drupal::config('dgi_actions_handle_constraints.settings');
     $constraint_settings = $config->get('constraint_settings');
-    // Constraint settings is an array of values for each field that should be modified.
+    // Constraint settings is an array of values
+    // for each field that should be modified.
     foreach ($constraint_settings as $constraintSetting) {
       if (!isset($fields[$constraintSetting['field_name']]) || $constraintSetting['entity_type'] !== $entity_type->id()) {
         continue;
@@ -67,7 +68,8 @@ function dgi_actions_handle_constraints_entity_presave(EntityInterface $entity):
   try {
     $config = \Drupal::config('dgi_actions_handle_constraints.settings');
     $constraint_settings = $config->get('constraint_settings');
-    // Constraint settings is an array of values for each field that should be modified.
+    // Constraint settings is an array of values
+    // for each field that should be modified.
     foreach ($constraint_settings as $constraintSetting) {
       // Only revert the suffix field if it is changed.
       if ($constraintSetting['field_usage'] !== 'suffix'
@@ -101,9 +103,11 @@ function dgi_actions_handle_constraints_form_alter(array &$form, FormStateInterf
   try {
     $config = \Drupal::config('dgi_actions_handle_constraints.settings');
     $constraint_settings = $config->get('constraint_settings');
-    // Constraint settings is an array of values for each field that should be modified.
+    // Constraint settings is an array
+    // of values for each field that should be modified.
     foreach ($constraint_settings as $constraintSetting) {
-      // If the form id is not of the content form or the content edit form, return.
+      // If the form id is not of the content
+      // form or the content edit form, return.
       if (!($form_id === $constraintSetting['entity_type'] . '_' . $constraintSetting['entity_bundle'] . '_form'
       || $form_id === $constraintSetting['entity_type'] . '_' . $constraintSetting['entity_bundle'] . '_edit_form')) {
         return;
@@ -124,7 +128,8 @@ function dgi_actions_handle_constraints_form_alter(array &$form, FormStateInterf
         }
       }
 
-      // If the field is an identifier field and the entity is not new, disable it.
+      // If the field is an identifier
+      // field and the entity is not new, disable it.
       if ($constraintSetting['field_usage'] === 'identifier' && !$entity->isNew()) {
         $form[$constraintSetting['field_name']]['#disabled'] = TRUE;
       }
