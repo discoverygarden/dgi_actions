@@ -31,7 +31,7 @@ further information.
 ## Usage
 
 This module is used as part of the DGI Actions Handle package.
-It is used to ensure that the fields that are used as suffixes for the handle are unique and required. The module also ensures that the suffix field is not changed during entity save operations.
+It is used to ensure that the fields that are used as suffixes for the Handle are unique and required. The module also ensures that the suffix field is not changed during entity save operations.
 Once the configuration is set up, the module will handle the rest.
 
 ## Configuration
