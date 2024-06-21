@@ -25,7 +25,7 @@ further information.
 ## Usage
 - See DGI Actions readme for general usage.
 - Create a new service data type with the type `handle`.
-- There is no UI for configuring the handle suffix field. It must be set in the
+- There is no UI for configuring the Handle's suffix field. It must be set in the
   configuration file. The default suffix field is `uuid`.
 
 ## User Notes
