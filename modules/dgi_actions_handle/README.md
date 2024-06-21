@@ -20,7 +20,7 @@ further information.
 
 - Provides Action Plugins for minting and deleting Handle.net Handles.
 - Provides a service data type plugin for Handle.net Handles.
-- Uses uuid by default as handle suffix. Also supports custom suffixes.
+- Uses uuid by default as the Handle's suffix. Also supports custom suffixes.
 
 ## Usage
 - See DGI Actions readme for general usage.
