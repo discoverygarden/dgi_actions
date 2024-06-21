@@ -30,7 +30,7 @@ further information.
 
 ## User Notes
 
-- The field that is to be used for handle suffix must be made unique and required
+- The field that is to be used for the Handle's suffix must be made unique and required
   in the content type configuration so that the value does not change. If the field is not unique,
   handle generation will fail for the duplicate value.
 - The handle also must be unique and should be non-editable.
