@@ -32,7 +32,7 @@ further information.
 
 - The field that is to be used for the Handle's suffix must be made unique and required
   in the content type configuration so that the value does not change. If the field is not unique,
-  handle generation will fail for the duplicate value.
+  Handle generation will fail for the duplicate value.
 - The handle also must be unique and should be non-editable.
 - To make the suffix and handle fields non-editable and required, an additional module is provided
   `dgi_actions_handle_constraints`. This module should be enabled and configured to make the necessary field validation changes.
