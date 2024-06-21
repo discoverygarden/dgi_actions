@@ -36,7 +36,7 @@ further information.
 - The Handle also must be unique and should be non-editable.
 - To make the suffix and Handle fields non-editable and required, an additional module is provided
   `dgi_actions_handle_constraints`. This module should be enabled and configured to make the necessary field validation changes.
-- See dgi_actions_handle_constraints README for more information.
+- See dgi_actions_handle_constraints' [README](/modules/dgi_actions_handle_constraints/README.md) for more information.
 
 ## Troubleshooting/Issues
 
