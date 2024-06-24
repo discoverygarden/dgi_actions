@@ -125,7 +125,7 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
    * @throws \Drupal\Core\Entity\Exception\UndefinedLinkTemplateException
    */
   public function getExternalUrl(): string {
-    return $this->entity->toUrl()->setAbsolute()->toString(TRUE)->getGeneratedUrl();
+    return $this->entity->toUrl()->setAbsolute()->setOption('alias', TRUE)->toString(TRUE)->getGeneratedUrl();
   }
 
   /**
