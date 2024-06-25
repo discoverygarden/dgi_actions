@@ -1,0 +1,27 @@
+---
+dgi_action_handle_constraints.settings:
+  type: config_object
+  label: 'DGI Actions constraint settings'
+  mapping:
+    constraint_settings:
+      type: mapping
+      label: 'Constraint data'
+      mapping:
+        entity_type:
+          type: string
+          label: 'Entity type'
+          description: 'The entity type to add the constraint to.'
+        entity_bundle:
+          type: string
+          label: 'Entity bundle'
+          description: 'The entity bundle to add the constraint to.'
+        field_name:
+            type: string
+            label: 'Field name'
+            description: 'The field name to add the constraint to.'
+        field_usage:
+            type: string
+            label: 'Field usage'
+            description: 'Either identifier or suffix.'
+            constraints:
+              Regex: '/^(identifier|suffix)$/'
