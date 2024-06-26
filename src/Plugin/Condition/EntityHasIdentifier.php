@@ -110,11 +110,13 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
     $entity = $this->getContextValue('entity');
     if ($entity instanceof FieldableEntityInterface) {
       $identifier = $this->entityTypeManager->getStorage('dgiactions_identifier')->load($this->configuration['identifier']);
-      $field = $identifier->get('field');
-      $entity_type = $identifier->get('entity');
-      $bundle = $identifier->get('bundle');
-      if (!empty($field) && $entity->hasField($field) && $entity->getEntityTypeId() == $entity_type && $entity->bundle() == $bundle) {
-        return !$entity->get($field)->isEmpty();
+      if ($identifier) {
+        $field = $identifier->get('field');
+        $entity_type = $identifier->get('entity');
+        $bundle = $identifier->get('bundle');
+        if (!empty($field) && $entity->hasField($field) && $entity->getEntityTypeId() == $entity_type && $entity->bundle() == $bundle) {
+          return !$entity->get($field)->isEmpty();
+        }
       }
     }
     return FALSE;
