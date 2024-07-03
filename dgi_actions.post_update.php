@@ -18,8 +18,11 @@ function dgi_actions_post_update_ddst_322_dependencies() : void {
     yield from $entity_type_manager->getStorage('dgiactions_servicedata')->loadMultiple();
     yield from $entity_type_manager->getStorage('dgiactions_identifier')->loadMultiple();
 
+    /**
+     * @var \Drupal\system\ActionConfigEntityInterface $action
+     */
     foreach ($entity_type_manager->getStorage('action')->loadByProperties(['type' => 'entity']) as $id => $action) {
-      if ($action instanceof IdentifierAction) {
+      if ($action->getPlugin() instanceof IdentifierAction) {
         yield $id => $action;
       }
     }
