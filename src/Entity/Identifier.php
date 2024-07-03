@@ -3,6 +3,8 @@
 namespace Drupal\dgi_actions\Entity;
 
 use Drupal\Core\Config\Entity\ConfigEntityBase;
+use Drupal\Core\Field\FieldConfigInterface;
+use Drupal\Core\Field\FieldDefinitionInterface;
 
 /**
  * Defines the Identifier setting entity.
@@ -122,14 +124,30 @@ class Identifier extends ConfigEntityBase implements IdentifierInterface {
    * {@inheritdoc}
    */
   public function getServiceData(): ?ServiceDataInterface {
-    return \Drupal::service('entity_type.manager')->getStorage('dgiactions_servicedata')->load($this->service_data);
+    return $this->service_data ?
+      \Drupal::service('entity_type.manager')->getStorage('dgiactions_servicedata')->load($this->service_data) :
+      NULL;
   }
 
   /**
    * {@inheritdoc}
    */
   public function getDataProfile(): ?DataProfileInterface {
-    return \Drupal::service('entity_type.manager')->getStorage('dgiactions_dataprofile')->load($this->data_profile);
+    return $this->data_profile ?
+      \Drupal::service('entity_type.manager')->getStorage('dgiactions_dataprofile')->load($this->data_profile) :
+      NULL;
+  }
+
+  /**
+   * Helper; get the entity representing the field of the entity.
+   *
+   * @return \Drupal\Core\Field\FieldDefinitionInterface|null
+   *   The entity representing the field if it could be found; otherwise, NULL.
+   */
+  protected function getFieldEntity() : ?FieldDefinitionInterface {
+    /** @var \Drupal\Core\Entity\EntityFieldManagerInterface $entity_field_manager */
+    $entity_field_manager = \Drupal::service('entity_field.manager');
+    return $entity_field_manager->getFieldDefinitions($this->getEntity(), $this->getBundle())[$this->getField()] ?? NULL;
   }
 
   /**
@@ -140,14 +158,16 @@ class Identifier extends ConfigEntityBase implements IdentifierInterface {
 
     // Add the dependency on the data profile and service data entities if
     // they are here.
-    if ($this->data_profile) {
-      $profile_entity = $this->getDataProfile();
-      $this->addDependency('config', $profile_entity->getConfigDependencyName());
+    if ($profile_entity = $this->getDataProfile()) {
+      $this->addDependency($profile_entity->getConfigDependencyKey(), $profile_entity->getConfigDependencyName());
     }
 
-    if ($this->service_data) {
-      $service_entity = $this->getServiceData();
-      $this->addDependency('config', $service_entity->getConfigDependencyName());
+    if ($service_entity = $this->getServiceData()) {
+      $this->addDependency($service_entity->getConfigDependencyKey(), $service_entity->getConfigDependencyName());
+    }
+
+    if (($field_entity = $this->getFieldEntity()) && $field_entity instanceof FieldConfigInterface) {
+      $this->addDependency($field_entity->getConfigDependencyKey(), $field_entity->getConfigDependencyName());
     }
 
     return $this;
