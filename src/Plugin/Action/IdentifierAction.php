@@ -211,13 +211,11 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
    * {@inheritDoc}
    */
   public function calculateDependencies() : array {
+    $this->addDependencies(parent::calculateDependencies());
     if ($this->identifier) {
       $this->addDependency($this->identifier->getConfigDependencyKey(), $this->identifier->getConfigDependencyName());
     }
-    return array_merge_recursive(
-      parent::calculateDependencies(),
-      $this->dependencies,
-    );
+    return $this->dependencies;
   }
 
 }

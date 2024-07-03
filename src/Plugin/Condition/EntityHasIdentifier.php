@@ -247,15 +247,13 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
   /**
    * {@inheritDoc}
    */
-  public function calculateDependencies() {
+  public function calculateDependencies() : array {
+    $this->addDependencies(parent::calculateDependencies());
     if ($identifier = $this->getIdentifier()) {
       $this->addDependency($identifier->getConfigDependencyKey(), $identifier->getConfigDependencyName());
     }
 
-    return array_merge_recursive(
-      parent::calculateDependencies(),
-      $this->dependencies,
-    );
+    return $this->dependencies;
   }
 
 }
