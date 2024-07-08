@@ -19,7 +19,7 @@ use Drupal\Core\Form\FormStateInterface;
 function _dgi_actions_handle_constraints_suffix_validation_add_constraint(array &$fields, EntityTypeInterface $entity_type): void {
   try {
     $config = \Drupal::config('dgi_actions_handle_constraints.settings');
-    $constraint_settings = $config->get('constraint_settings');
+    $constraint_settings = $config->get('constraint_settings') ?? [];
     // Constraint settings is an array of values
     // for each field that should be modified.
     foreach ($constraint_settings as $constraintSetting) {
@@ -118,8 +118,7 @@ function dgi_actions_handle_constraints_form_alter(array &$form, FormStateInterf
       }
       // For the suffix field, set the description and access.
       if ($constraintSetting['field_usage'] === 'suffix') {
-        $form[$constraintSetting['field_name']]['widget'][0]['value']['#description'] = t('This field is used as the handle suffix.
-                                                    The suffix field, once set, cannot be changed.');
+        $form[$constraintSetting['field_name']]['widget'][0]['value']['#description'] = t('This field is used as the handle suffix. The suffix field, once set, cannot be changed.');
         $form[$constraintSetting['field_name']]['#access'] = TRUE;
 
         // Disable the suffix field if it has a value.

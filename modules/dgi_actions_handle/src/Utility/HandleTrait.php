@@ -62,7 +62,7 @@ trait HandleTrait {
    * Gets the suffix for the entity.
    */
   public function getSuffix(): ?string {
-    $suffix_field = $this->getIdentifier()->getServiceData()->getData()['suffix_field'];
+    $suffix_field = $this->getIdentifier()->getServiceData()->getData()['suffix_field'] ?? FALSE;
 
     // If a field is configured, use that.
     if ($suffix_field && $this->getEntity()->hasField($suffix_field)) {
