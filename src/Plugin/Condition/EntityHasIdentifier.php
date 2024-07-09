@@ -4,11 +4,13 @@ namespace Drupal\dgi_actions\Plugin\Condition;
 
 use Drupal\Component\Render\MarkupInterface;
 use Drupal\Core\Condition\ConditionPluginBase;
+use Drupal\Core\Entity\DependencyTrait;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
+use Drupal\dgi_actions\Entity\IdentifierInterface;
 use Drupal\dgi_actions\Utility\IdentifierUtils;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -26,6 +28,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactoryPluginInterface {
 
+  use DependencyTrait;
   use StringTranslationTrait;
 
   /**
@@ -108,8 +111,7 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
     }
 
     $entity = $this->getContextValue('entity');
-    if ($entity instanceof FieldableEntityInterface) {
-      $identifier = $this->entityTypeManager->getStorage('dgiactions_identifier')->load($this->configuration['identifier']);
+    if ($entity instanceof FieldableEntityInterface && ($identifier = $this->getIdentifier())) {
       $field = $identifier->get('field');
       $entity_type = $identifier->get('entity');
       $bundle = $identifier->get('bundle');
@@ -118,6 +120,18 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
       }
     }
     return FALSE;
+  }
+
+  /**
+   * Helper; get the target identifier entity.
+   *
+   * @return \Drupal\dgi_actions\Entity\IdentifierInterface|null
+   *   The loaded entity, or NULL.
+   */
+  protected function getIdentifier() : ?IdentifierInterface {
+    return $this->configuration['identifier'] ?
+      $this->entityTypeManager->getStorage('dgiactions_identifier')->load($this->configuration['identifier']) :
+      NULL;
   }
 
   /**
@@ -228,6 +242,18 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
       ['identifier' => NULL],
       parent::defaultConfiguration()
     );
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  public function calculateDependencies() : array {
+    $this->addDependencies(parent::calculateDependencies());
+    if ($identifier = $this->getIdentifier()) {
+      $this->addDependency($identifier->getConfigDependencyKey(), $identifier->getConfigDependencyName());
+    }
+
+    return $this->dependencies;
   }
 
 }
