@@ -4,6 +4,11 @@
 
 This module is part of the DGI Actions Handle package. It provides functionality to add unique constraints to certain fields of an entity and handles the preservation of these fields during entity save operations.
 
+## Notes
+
+* This module should only be installed when a field is being used as a suffix field.
+* The developer or site administrator should note that this module would make the suffix field always required and unique.
+
 ## Requirements
 
 This module requires the following modules/libraries:
@@ -37,8 +42,8 @@ Once the configuration is set up, the module will handle the rest.
 ## Configuration
 
 The module uses the `dgi_actions_handle_constraints.settings` configuration, which should be set up with the appropriate constraint settings.
-For each field that is used as a suffix or identifier, a new value should be added to the constraint_settings array. An example configuration file which
-uses the field_pid as suffix and field_handle as identifier is provided with the module.
+For each field that is used as a suffix or identifier, a new value should be added to the constraint_settings array. A default configuration file which
+uses the field_pid as suffix and field_handle as identifier is provided with the module. This can be updated with the appropriate field names.
 
 ## Troubleshooting/Issues
 
