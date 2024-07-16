@@ -19,7 +19,7 @@ use Psr\Log\LoggerInterface;
 /**
  * Drush commands for generating identifiers for existing objects.
  */
-class Generate extends DrushCommands {
+class UpdateIdentifierLocations extends DrushCommands {
 
   use DependencySerializationTrait;
 
@@ -98,6 +98,7 @@ class Generate extends DrushCommands {
     return new static(
       $container->get('http_client'),
       $container->get('entity_type.manager'),
+      $container->get('dgi_actions.identifier_utils'),
       $container->get('dgi_actions.utils'),
       $container->get('islandora.utils'),
       $container->get('logger.channel.dgi_actions')
@@ -118,7 +119,7 @@ class Generate extends DrushCommands {
    *   -ids: Comma separated list of IDs to be targeted or all entities if not
    *   specified.
    *
-   * @command dgi_actions:generate
+   * @command dgi_actions:update_identifier_locations
    *
    * @option identifier_id
    *   A string pointing to the DGI Actions Identifier ID to be used for the
@@ -127,12 +128,12 @@ class Generate extends DrushCommands {
    *   A comma separated list of IDs to be targeted or all entities if not
    *   specified.
    *
-   * @aliases da:generate
+   * @aliases da:update_identifier_locations
    *
-   * @usage dgi_actions:generate --identifier_id=handle
+   * @usage dgi_actions:update_identifier_locations --identifier_id=handle
    *   Generates missing identifiers by searching all entities for the "handle"
    *   DGI Actions Identifier entity.
-   * @usage dgi_actions:generate --identifier_id=handle --ids=1,2,3
+   * @usage dgi_actions:update_identifier_locations --identifier_id=handle --ids=1,2,3
    *   Generates missing identifiers for the entities with IDs of 1, 2, or 3 for
    *   the "handle" DGI Actions Identifier entity.
    */
@@ -147,9 +148,9 @@ class Generate extends DrushCommands {
       'operations' => [
         [
           [$this, 'generateBatch'], [
-            $identifier,
-            $ids,
-          ],
+          $identifier,
+          $ids,
+        ],
         ],
       ],
     ];
@@ -193,9 +194,13 @@ class Generate extends DrushCommands {
     $entity_storage = $this->entityTypeManager->getStorage($entity_type);
     $query = $entity_storage->getQuery()
       ->accessCheck(FALSE);
+
+    $query->condition('field_handle', '', '<>');
+
     if ($ids) {
       $query->condition($entity_id_key, explode(',', $ids), 'IN');
     }
+
     if (!isset($sandbox['total'])) {
       $count_query = clone $query;
       $sandbox['total'] = $count_query->count()->execute();
@@ -213,15 +218,10 @@ class Generate extends DrushCommands {
     }
     $query->sort($entity_id_key);
     $query->range(0, 10);
+
     foreach ($query->execute() as $result) {
       try {
         $sandbox['last_id'] = $result;
-
-        // todo: Query against the external server directly (Handle/Ark/whatever) to get what the
-        // location is set as and compare it to what it should be set as or short circuit the actual
-        // request to the server and see if the minted identifier being resolved is equal to what we expect.
-
-
 
         $entity = $this->entityTypeManager->getStorage($entity_type)->load($result);
         $this->ourLogger->debug('Attempting to generate an identifier for {entity} {entity_id}.', [
@@ -239,19 +239,6 @@ class Generate extends DrushCommands {
         }
 
         $reactions = $this->utils->getActiveReactionsForEntity(EntityMintReaction::class, $entity);
-        if (empty($reactions)) {
-          $this->ourLogger->debug('No active reactions for {entity} {entity_id}, skipping.', [
-            'entity' => $entity_type,
-            'entity_id' => $result,
-          ]);
-        }
-        else {
-          $original_entity = clone $entity;
-          $this->utils->executeEntityReactions(EntityMintReaction::class, $entity);
-          if ($this->islandoraUtils->haveFieldsChanged($entity, $original_entity)) {
-            $entity->save();
-          }
-        }
       }
       catch (\Exception $e) {
         $this->ourLogger->error(

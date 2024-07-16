@@ -19,3 +19,15 @@ services:
     ]
     tags:
       - { name: drush.command }
+  dgi_actions.update_identifier_locations:
+    class: \Drupal\dgi_actions\Drush\Commands\UpdateIdentifierLocations
+    arguments: [
+      '@http_client',
+      '@entity_type.manager',
+      '@dgi_actions.utils',
+      '@dgi_actions.dgiutils',
+      '@islandora.utils',
+      '@logger.channel.dgi_actions'
+    ]
+    tags:
+      - { name: drush.command }
