@@ -1,0 +1,141 @@
+<?php
+
+/**
+ * @file
+ * Contains the dgi_actions_handle_constraints module.
+ */
+
+use Drupal\Core\Entity\ContentEntityInterface;
+use Drupal\Core\Entity\ContentEntityTypeInterface;
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Form\FormStateInterface;
+
+/**
+ * Implements hook_entity_base_field_info_alter().
+ *
+ * Adds the UniqueField, Required constraint to the suffix and identifer fields.
+ */
+function _dgi_actions_handle_constraints_suffix_validation_add_constraint(array &$fields, EntityTypeInterface $entity_type): void {
+  try {
+    $config = \Drupal::config('dgi_actions_handle_constraints.settings');
+    $constraint_settings = $config->get('constraint_settings') ?? [];
+    // Constraint settings is an array of values
+    // for each field that should be modified.
+    foreach ($constraint_settings as $constraintSetting) {
+      if (!isset($fields[$constraintSetting['field_name']]) || $constraintSetting['entity_type'] !== $entity_type->id()) {
+        continue;
+      }
+      // Both identifier and suffix fields should be unique.
+      $fields[$constraintSetting['field_name']]->addConstraint('UniqueField');
+
+      // If the field is a suffix field, set it as required.
+      if ($constraintSetting['field_usage'] === 'suffix') {
+        $fields[$constraintSetting['field_name']]->setRequired(TRUE);
+      }
+    }
+  }
+  catch (\Exception $e) {
+    Drupal::logger('dgi_actions_handle_constraints')->error($e->getMessage());
+  }
+}
+
+/**
+ * Implements hook_entity_base_field_info_alter().
+ */
+function dgi_actions_handle_constraints_entity_base_field_info_alter(&$fields, EntityTypeInterface $entity_type): void {
+  if ($entity_type instanceof ContentEntityTypeInterface) {
+    _dgi_actions_handle_constraints_suffix_validation_add_constraint($fields, $entity_type);
+  }
+}
+
+/**
+ * Implements hook_entity_bundle_field_info_alter().
+ */
+function dgi_actions_handle_constraints_entity_bundle_field_info_alter(&$fields, EntityTypeInterface $entity_type): void {
+  if ($entity_type instanceof ContentEntityTypeInterface) {
+    _dgi_actions_handle_constraints_suffix_validation_add_constraint($fields, $entity_type);
+  }
+}
+
+/**
+ * Implements hook_entity_presave().
+ *
+ * Reverts the value of the suffix field if it is changed.
+ * This is needed for spreadsheet ingest.
+ */
+function dgi_actions_handle_constraints_entity_presave(EntityInterface $entity): void {
+  try {
+    $config = \Drupal::config('dgi_actions_handle_constraints.settings');
+    $constraint_settings = $config->get('constraint_settings');
+    // Constraint settings is an array of values
+    // for each field that should be modified.
+    foreach ($constraint_settings as $constraintSetting) {
+      // Only revert the suffix field if it is changed.
+      if ($constraintSetting['field_usage'] !== 'suffix'
+        || $entity->getEntityTypeId() !== $constraintSetting['entity_type']
+        || $entity->isNew() || !$entity->hasField($constraintSetting['field_name'])) {
+        continue;
+      }
+      $original_entity = Drupal::entityTypeManager()
+        ->getStorage($entity->getEntityTypeId())
+        ->loadUnchanged($entity->id());
+      if (!$original_entity) {
+        return;
+      }
+      if ($entity->{$constraintSetting['field_name']}->value !== $original_entity->{$constraintSetting['field_name']}->value) {
+        $entity->{$constraintSetting['field_name']}->value = $original_entity->{$constraintSetting['field_name']}->value;
+        Drupal::messenger()->addWarning('The suffix field cannot be changed.');
+      }
+    }
+  }
+  catch (\Exception $e) {
+    Drupal::logger('dgi_actions_handle_constraints')->error($e->getMessage());
+  }
+}
+
+/**
+ * Implements hook_form_alter().
+ *
+ * Disables the suffix/identifier fields that are not allowed to be changed.
+ */
+function dgi_actions_handle_constraints_form_alter(array &$form, FormStateInterface $form_state, $form_id): void {
+  try {
+    $config = \Drupal::config('dgi_actions_handle_constraints.settings');
+    $constraint_settings = $config->get('constraint_settings');
+    // Constraint settings is an array
+    // of values for each field that should be modified.
+    foreach ($constraint_settings as $constraintSetting) {
+      // If the form id is not of the content
+      // form or the content edit form, return.
+      if (!($form_id === $constraintSetting['entity_type'] . '_' . $constraintSetting['entity_bundle'] . '_form'
+      || $form_id === $constraintSetting['entity_type'] . '_' . $constraintSetting['entity_bundle'] . '_edit_form')) {
+        return;
+      }
+      $entity = $form_state->getFormObject()->getEntity();
+      if (!$entity instanceof ContentEntityInterface || !isset($form[$constraintSetting['field_name']])) {
+        continue;
+      }
+      // For the suffix field, set the description and access.
+      if ($constraintSetting['field_usage'] === 'suffix') {
+        $form[$constraintSetting['field_name']]['widget'][0]['value']['#description'] = t('This field is used as the handle suffix. The suffix field, once set, cannot be changed.');
+        $form[$constraintSetting['field_name']]['#access'] = TRUE;
+
+        // Disable the suffix field if it has a value.
+        if ($entity->{$constraintSetting['field_name']}->value && !$entity->isNew()) {
+          $form[$constraintSetting['field_name']]['#disabled'] = TRUE;
+        }
+      }
+
+      // If the field is an identifier
+      // field and the entity is not new, disable it.
+      if ($constraintSetting['field_usage'] === 'identifier' && !$entity->isNew()) {
+        $form[$constraintSetting['field_name']]['#disabled'] = TRUE;
+      }
+
+    }
+  }
+  catch (\Exception $e) {
+    Drupal::logger('dgi_actions_handle_constraints')->error($e->getMessage());
+  }
+}

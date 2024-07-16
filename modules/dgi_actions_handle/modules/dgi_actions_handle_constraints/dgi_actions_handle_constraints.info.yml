@@ -1,0 +1,7 @@
+name: 'DGI Actions Handle Constraints'
+description: "Add constraints to handle fields."
+type: module
+package: DGI Actions
+core_version_requirement: ^10
+dependencies:
+  - dgi_actions_handle:dgi_actions_handle
