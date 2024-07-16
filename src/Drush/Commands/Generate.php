@@ -216,13 +216,6 @@ class Generate extends DrushCommands {
     foreach ($query->execute() as $result) {
       try {
         $sandbox['last_id'] = $result;
-
-        // todo: Query against the external server directly (Handle/Ark/whatever) to get what the
-        // location is set as and compare it to what it should be set as or short circuit the actual
-        // request to the server and see if the minted identifier being resolved is equal to what we expect.
-
-
-
         $entity = $this->entityTypeManager->getStorage($entity_type)->load($result);
         $this->ourLogger->debug('Attempting to generate an identifier for {entity} {entity_id}.', [
           'entity' => $entity_type,

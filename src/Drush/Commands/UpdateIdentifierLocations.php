@@ -224,21 +224,16 @@ class UpdateIdentifierLocations extends DrushCommands {
         $sandbox['last_id'] = $result;
 
         $entity = $this->entityTypeManager->getStorage($entity_type)->load($result);
-        $this->ourLogger->debug('Attempting to generate an identifier for {entity} {entity_id}.', [
+        $this->ourLogger->debug('Attempting to generate/validate location for {entity} {entity_id}.', [
           'entity' => $entity_type,
           'entity_id' => $result,
         ]);
         if (!$entity) {
-          $this->ourLogger->debug(
-            'Failed to load {entity} {entity_id}; skipping.', [
-              'entity' => $entity_type,
-              'entity_id' => $result,
-            ]
-          );
-          continue;
+          // $identifier = $node->get($identifier_field)->getString();
+          // $response = \Drupal::service('http_client')->request('GET', $identifier);
+          // Parse the response to get the actual location.
+          // Does the location from the response = what we expect generated with the new change?
         }
-
-        $reactions = $this->utils->getActiveReactionsForEntity(EntityMintReaction::class, $entity);
       }
       catch (\Exception $e) {
         $this->ourLogger->error(
