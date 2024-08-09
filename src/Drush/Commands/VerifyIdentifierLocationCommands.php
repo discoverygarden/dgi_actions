@@ -128,6 +128,7 @@ class VerifyIdentifierLocationCommands extends DrushCommands {
         $identifier_location = $entity->get($identifier->getField())->getString();
         $response = $this->httpClient->request('HEAD', $identifier_location, [
           'allow_redirects' => FALSE,
+          'http_errors' => FALSE,
         ]);
         $location = $response->getHeaderLine('Location');
         $expected_location = FALSE;
