@@ -134,11 +134,13 @@ class HandleCommands extends DrushCommands {
    * @usage dgi_actions_handle:update --handle=123/abc --target_location=http://google.ca --identifier_id=handle
    *   Updates a Handle.
    */
-  public function update(array $options = [
-    'handle' => self::REQ,
-    'target_location' => self::REQ,
-    'identifier_id' => self::OPT,
-  ]): void {
+  public function update(
+    array $options = [
+      'handle' => self::REQ,
+      'target_location' => self::REQ,
+      'identifier_id' => self::OPT,
+    ],
+  ): void {
     // If an identifier ID wasn't passed and validation didn't fail go grab
     // the default.
     if (!$options['identifier_id']) {

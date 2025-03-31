@@ -74,9 +74,11 @@ class PrintMissingEntityIds extends DrushCommands {
    *   Prints entity IDs by searching all entities for the "handle"
    *   DGI Actions Identifier entity.
    */
-  public function printIds(array $options = [
-    'identifier_id' => self::REQ,
-  ]) {
+  public function printIds(
+    array $options = [
+      'identifier_id' => self::REQ,
+    ],
+  ) {
     $identifier = $this->entityTypeManager->getStorage('dgiactions_identifier')->load($options['identifier_id']);
 
     $entity_type = $identifier->get('entity');

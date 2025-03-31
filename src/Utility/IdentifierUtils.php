@@ -34,7 +34,7 @@ class IdentifierUtils {
    */
   public function __construct(
     EntityTypeManagerInterface $entity_type_manager,
-    LoggerInterface $logger
+    LoggerInterface $logger,
   ) {
     $this->entityTypeManager = $entity_type_manager;
     $this->logger = $logger;
