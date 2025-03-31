@@ -72,12 +72,13 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
    */
-  public function __construct(array $configuration,
+  public function __construct(
+    array $configuration,
     $plugin_id,
     $plugin_definition,
     LoggerInterface $logger,
     IdentifierUtils $utils,
-    EntityTypeManagerInterface $entity_type_manager
+    EntityTypeManagerInterface $entity_type_manager,
   ) {
 
     parent::__construct($configuration, $plugin_id, $plugin_definition);
@@ -104,7 +105,7 @@ abstract class IdentifierAction extends ConfigurableActionBase implements Contai
   /**
    * {@inheritdoc}
    */
-  public function access($object, AccountInterface $account = NULL, $return_as_object = FALSE) {
+  public function access($object, ?AccountInterface $account = NULL, $return_as_object = FALSE) {
     return $object->access('read', $account, $return_as_object);
   }
 
