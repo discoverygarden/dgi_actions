@@ -77,7 +77,7 @@ class EntityHasIdentifier extends ConditionPluginBase implements ContainerFactor
     $plugin_definition,
     LoggerInterface $logger,
     EntityTypeManagerInterface $entity_type_manager,
-    IdentifierUtils $utils
+    IdentifierUtils $utils,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->logger = $logger;

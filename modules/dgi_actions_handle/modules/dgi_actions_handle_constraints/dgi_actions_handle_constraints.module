@@ -71,16 +71,17 @@ function dgi_actions_handle_constraints_entity_presave(EntityInterface $entity):
     // Constraint settings is an array of values
     // for each field that should be modified.
     foreach ($constraint_settings as $constraintSetting) {
-      // Only revert the suffix field if it is changed.
+      // Only revert the suffix field if it is updated.
       if ($constraintSetting['field_usage'] !== 'suffix'
         || $entity->getEntityTypeId() !== $constraintSetting['entity_type']
-        || $entity->isNew() || !$entity->hasField($constraintSetting['field_name'])) {
+        || $entity->isNew() || !$entity->hasField($constraintSetting['field_name'])
+        || $entity->get($constraintSetting['field_name'])->isEmpty()) {
         continue;
       }
       $original_entity = Drupal::entityTypeManager()
         ->getStorage($entity->getEntityTypeId())
         ->loadUnchanged($entity->id());
-      if (!$original_entity) {
+      if (!$original_entity || $original_entity->get($constraintSetting['field_name'])->isEmpty()) {
         return;
       }
       if ($entity->{$constraintSetting['field_name']}->value !== $original_entity->{$constraintSetting['field_name']}->value) {
@@ -128,8 +129,9 @@ function dgi_actions_handle_constraints_form_alter(array &$form, FormStateInterf
       }
 
       // If the field is an identifier
-      // field and the entity is not new, disable it.
-      if ($constraintSetting['field_usage'] === 'identifier' && !$entity->isNew()) {
+      // field and the entity is not new and it has a value
+      // disable it.
+      if ($constraintSetting['field_usage'] === 'identifier' && !($entity->isNew() || $entity->get($constraintSetting['field_name'])->isEmpty())) {
         $form[$constraintSetting['field_name']]['#disabled'] = TRUE;
       }
 

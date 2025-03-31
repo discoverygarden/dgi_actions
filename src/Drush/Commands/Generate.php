@@ -136,10 +136,12 @@ class Generate extends DrushCommands {
    *   Generates missing identifiers for the entities with IDs of 1, 2, or 3 for
    *   the "handle" DGI Actions Identifier entity.
    */
-  public function generate(array $options = [
-    'identifier_id' => self::REQ,
-    'ids' => self::OPT,
-  ]): void {
+  public function generate(
+    array $options = [
+      'identifier_id' => self::REQ,
+      'ids' => self::OPT,
+    ],
+  ): void {
     $identifier = $this->entityTypeManager->getStorage('dgiactions_identifier')->load($options['identifier_id']);
     $ids = $options['ids'];
     $batch = [
