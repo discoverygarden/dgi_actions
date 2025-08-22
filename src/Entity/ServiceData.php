@@ -115,6 +115,8 @@ class ServiceData extends ConfigEntityBase implements ServiceDataInterface {
 
   /**
    * {@inheritdoc}
+   *
+   * @throws \JsonException
    */
   public function getData(): array {
     // XXX: Return any values that are stored in state as part of the entity's
@@ -124,6 +126,12 @@ class ServiceData extends ConfigEntityBase implements ServiceDataInterface {
     $state_keys = $plugin->getStateKeys();
     if (!empty($state_keys)) {
       $state = \Drupal::service('state')->get("dgi_actions.service_data.{$this->id()}");
+
+      // If there is no value in state, check if it's set in an environment variable.
+      if (empty($state)) {
+        $state = $this->readStateFromExternal();
+      }
+
       if (!empty($state)) {
         foreach ($state_keys as $key) {
           NestedArray::setValue($stated_data, (array) $key, NestedArray::getValue($state, (array) $key));
@@ -131,6 +139,29 @@ class ServiceData extends ConfigEntityBase implements ServiceDataInterface {
       }
     }
     return $stated_data;
+  }
+
+  /**
+   * Read state overrides from environment variables.
+   */
+  protected function readStateFromExternal(): array {
+    $envKey = strtoupper("DGI_ACTIONS_SERVICE_DATA_{$this->id()}");
+    $raw = getenv($envKey);
+    if ($raw === FALSE || $raw === '') {
+      return [];
+    }
+    try {
+      $decoded = json_decode($raw, TRUE, 3, JSON_THROW_ON_ERROR);
+      return is_array($decoded) ? $decoded : [];
+    }
+    catch (\JsonException $e) {
+      \Drupal::logger('dgi_actions')->error('Invalid JSON in env %key for %ent: %msg', [
+        '%key' => $envKey,
+        '%ent' => $this->id(),
+        '%msg' => $e->getMessage(),
+      ]);
+      return [];
+    }
   }
 
   /**
