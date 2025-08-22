@@ -127,7 +127,8 @@ class ServiceData extends ConfigEntityBase implements ServiceDataInterface {
     if (!empty($state_keys)) {
       $state = \Drupal::service('state')->get("dgi_actions.service_data.{$this->id()}");
 
-      // If there is no value in state, check if it's set in an environment variable.
+      // If there is no value in state,
+      // check if it's set in an environment variable.
       if (empty($state)) {
         $state = $this->readStateFromExternal();
       }
