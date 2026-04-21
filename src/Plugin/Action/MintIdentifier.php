@@ -95,7 +95,7 @@ abstract class MintIdentifier extends IdentifierAction {
         }
       }
       catch (UndefinedLinkTemplateException $ulte) {
-        $this->logger->warning('Minting failed for @type/@id: Error retrieving Entity URL: @errorMessage', [
+        $this->logger->error('Minting failed for @type/@id: Error retrieving Entity URL: @errorMessage', [
           '@type' => $this->getEntity()->getEntityTypeId(),
           '@id' => $this->getEntity()->id(),
           '@errorMessage' => $ulte->getMessage(),
