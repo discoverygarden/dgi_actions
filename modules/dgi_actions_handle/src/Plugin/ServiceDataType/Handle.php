@@ -77,6 +77,12 @@ class Handle extends ServiceDataTypeBase {
       '#default_value' => $this->configuration['prefix'],
       '#required' => TRUE,
     ];
+    $form['overwrite'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Overwrite Handles?'),
+      '#description' => $this->t('If new handles are saved in Drupal, should the old values on the handle server be overwritten?'),
+      '#default_value' => $this->configuration['overwrite'] ?? FALSE,
+    ];
     $form['suffix_field'] = [
       '#type' => 'hidden',
       '#default_value' => $this->configuration['suffix_field'],

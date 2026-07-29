@@ -23,6 +23,10 @@ dgi_actions.service_data_type.handle:
       label: 'Suffix'
       type: string
       description: 'Field to use as handle suffix.'
+    overwrite:
+      label: 'Overwrite handles?'
+      type: boolean
+      description: 'Selecting this will cause items to delete old handles and mint new ones on the handle server when changing the handle in Drupal.'
 
 action.configuration.dgi_actions_delete_handle:
   type: dgi_actions_action_delete_base
