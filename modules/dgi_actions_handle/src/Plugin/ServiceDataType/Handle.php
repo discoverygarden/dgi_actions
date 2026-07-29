@@ -41,6 +41,7 @@ class Handle extends ServiceDataTypeBase {
       'password' => NULL,
       'prefix' => NULL,
       'suffix_field' => NULL,
+      'overwrite' => FALSE,
     ];
   }
 
@@ -108,6 +109,7 @@ class Handle extends ServiceDataTypeBase {
     $this->configuration['prefix'] = $form_state->getValue('prefix');
     $this->configuration['username'] = $form_state->getValue('username');
     $this->configuration['suffix_field'] = $form_state->getValue('suffix_field');
+    $this->configuration['overwrite'] = $form_state->getValue('overwrite');
     $this->configuration['password'] = !empty($form_state->getValue('password')) ? $form_state->getValue('password') : $this->configuration['password'];
     // Handle the scenario where the user did not modify the password as this
     // gets stored on the entity.
