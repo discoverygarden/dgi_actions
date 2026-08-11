@@ -88,7 +88,7 @@ class MintHandle extends MintIdentifier {
         ],
       ],
       'query' => [
-        'overwrite' => $this->getIdentifier()->getServiceData()->getData()['overwrite'] ? 'true' : 'false',
+        'overwrite' => ($this->getIdentifier()->getServiceData()->getData()['overwrite'] ?? FALSE) ? 'true' : 'false',
       ],
     ];
   }
