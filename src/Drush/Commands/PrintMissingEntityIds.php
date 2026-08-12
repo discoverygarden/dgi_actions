@@ -93,10 +93,13 @@ class PrintMissingEntityIds extends DrushCommands {
 
     // If no IDs are returned, we log a message.
     if (empty($ids)) {
-      return $this->logger()->log('notice', dt('No IDs found.'));
+      $this->logger()->log('notice', dt('No IDs found.'));
+      return '';
     }
 
-    return $this->logger()->log('success', dt(implode(',', $ids)));
+    $to_return = dt(implode(',', $ids));
+    $this->logger()->log('success', $to_return);
+    return $to_return;
   }
 
   /**
