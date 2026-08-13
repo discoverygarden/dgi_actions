@@ -262,7 +262,7 @@ class BatchGenerateAndUpdateCommand extends DrushCommands {
                     '!existing_handle' => $handle,
                   ]
                 ));
-                // Update the handle to make sure it's resolving to the right location.
+                // Update handle to make sure it's resolving to the right location.
                 /** @var \Drupal\dgi_actions\Plugin\Action\MintIdentifier $action_entity */
                 $action_entity = $this->entityTypeManager->getStorage('action')->load('mint_a_handle')->getPlugin();
                 // Ensure this action corresponds to this identifier before
