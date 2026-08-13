@@ -261,7 +261,8 @@ class BatchGenerateAndUpdateCommand extends DrushCommands {
                       '!existing_handle' => $handle,
                     ]
                   ));
-                  // Update handle to make sure it's resolving to the right location.
+                  // Update handle to make sure it's resolving to the right
+                  // location.
                   /** @var \Drupal\dgi_actions\Plugin\Action\MintIdentifier $action_entity */
                   $action_entity = $this->entityTypeManager->getStorage('action')->load('mint_a_handle')->getPlugin();
                   // Ensure this action corresponds to this identifier before
@@ -290,7 +291,8 @@ class BatchGenerateAndUpdateCommand extends DrushCommands {
                 }
               }
             }
-          } else {
+          }
+          else {
             $original_entity = clone $entity;
             $this->utils->executeEntityReactions(EntityMintReaction::class, $entity);
             if ($this->islandoraUtils->haveFieldsChanged($entity, $original_entity)) {
@@ -302,7 +304,8 @@ class BatchGenerateAndUpdateCommand extends DrushCommands {
                   '!entity_id' => $result,
                   '!new_handle' => $new_handle,
                 ]));
-              } else {
+              }
+              else {
                 $this->ourLogger->error(dt('Failed to mint and save new handle for {entity} !entity_id.', [
                   'entity' => $entity_type,
                   '!entity_id' => $result,
