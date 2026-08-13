@@ -281,6 +281,8 @@ class BatchGenerateAndUpdateCommand extends DrushCommands {
                       '!identifier_location' => $identifier_location,
                       '!location' => $expected_location,
                     ]));
+                    // TODO: include a section to set the handle field value to
+                    // start with https if it starts with http.
                   }
                 }
                 else {
