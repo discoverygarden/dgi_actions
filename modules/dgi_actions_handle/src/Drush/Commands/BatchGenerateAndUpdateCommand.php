@@ -122,6 +122,10 @@ class BatchGenerateAndUpdateCommand extends DrushCommands {
     name: 'ids',
     description: 'A comma separated list of IDs to be targeted or all entities if not specified.',
   )]
+  #[CLI\Option(
+    name: 'batch_size',
+    description: 'The number of nodes to include in each batch. Defaults to 10.',
+  )]
   #[CLI\Usage(
     name: 'dgi_actions_handle:generate_and_update --identifier_id=handle',
     description: 'Generates missing handles and updates existing handles by searching all entities for the "handle" DGI Actions Identifier entity.'
@@ -130,10 +134,12 @@ class BatchGenerateAndUpdateCommand extends DrushCommands {
     array $options = [
       'identifier_id' => self::REQ,
       'ids' => self::OPT,
+      'batch_size' => self::OPT,
     ],
   ): void {
     $identifier = $this->entityTypeManager->getStorage('dgiactions_identifier')->load($options['identifier_id']);
     $ids = $options['ids'];
+    $batch_size = $options['batch_size'];
     $batch = [
       'title' => dt('Generating and Updating handles...'),
       'operations' => [
@@ -141,6 +147,7 @@ class BatchGenerateAndUpdateCommand extends DrushCommands {
           [$this, 'generateAndUpdateBatch'], [
             $identifier,
             $ids,
+            $batch_size,
           ],
         ],
       ],
@@ -180,10 +187,12 @@ class BatchGenerateAndUpdateCommand extends DrushCommands {
    *   The DGI Actions Identifier ID to be used for the generation.
    * @param string|null $ids
    *   The IDs to go generate identifiers for or NULL if the entire repository.
+   * @param int|null $batch_size
+   *   The number of nodes to include in each batch. Defaults to 10.
    * @param array|\DrushBatchContext $context
    *   Batch context.
    */
-  public function generateAndUpdateBatch(IdentifierInterface $identifier, ?string $ids, &$context): void {
+  public function generateAndUpdateBatch(IdentifierInterface $identifier, ?string $ids, ?int $batch_size, &$context): void {
     $sandbox =& $context['sandbox'];
 
     $entity_type = $identifier->get('entity');
@@ -211,14 +220,14 @@ class BatchGenerateAndUpdateCommand extends DrushCommands {
       $query->condition($entity_id_key, $sandbox['last_id'], '>');
     }
     $query->sort($entity_id_key);
-    $query->range(0, 10);
+    $query->range(0, $batch_size ?? 10);
     foreach ($query->execute() as $result) {
       try {
         $sandbox['last_id'] = $result;
         $entity = $this->entityTypeManager->getStorage($entity_type)->load($result);
-        $this->ourLogger->debug(dt('Attempting to generate or update an identifier for {entity} {entity_id}.', [
+        $this->ourLogger->debug(dt('Attempting to generate or update an identifier for {entity} !entity_id.', [
           'entity' => $entity_type,
-          'entity_id' => $result,
+          '!entity_id' => $result,
         ]));
         if (!$entity) {
           $this->ourLogger->notice(dt('Failed to load {entity} {entity_id}; skipping.', [
@@ -230,41 +239,50 @@ class BatchGenerateAndUpdateCommand extends DrushCommands {
 
         $reactions = $this->utils->getActiveReactionsForEntity(EntityMintReaction::class, $entity);
         if (empty($reactions)) {
-          $this->ourLogger->debug(dt('No active reactions for {entity} {entity_id}.', [
+          $this->ourLogger->debug(dt('No active reactions for {entity} !entity_id.', [
             'entity' => $entity_type,
-            'entity_id' => $result,
+            '!entity_id' => $result,
           ]));
           if ($entity->hasField($identifier->getField())) {
             $identifier_location = $entity->get($identifier->getField())?->getString() ?? FALSE;
-            $landmark_for_handle_substring = 'hdl.handle.net/';
-            if ($identifier_location && (($handle_pos = strpos($identifier_location, $landmark_for_handle_substring)) !== FALSE)) {
-              $handle = substr($identifier_location, $handle_pos+strlen($landmark_for_handle_substring)); // Use substring filtering to get the handle
-              $this->ourLogger->debug(dt('Updating handle for {entity} {entity_id} using {existing_handle}.', [
-                'entity' => $entity_type,
-                'entity_id' => $result,
-                'existing_handle' => $handle,
-              ]));
-              // Update the handle to make sure it's resolving to the right location.
-              /** @var \Drupal\dgi_actions\Plugin\Action\MintIdentifier $action_entity */
-              $action_entity = $this->entityTypeManager->getStorage('action')->load('mint_a_handle')->getPlugin();
-              // Ensure this action corresponds to this identifier before
-              // anything else.
-              if ($action_entity->getIdentifier()->id() !== $identifier->id()) {
-                continue;
-              }
-              $action_entity->setEntity($entity);
-              $expected_location = $action_entity->getExternalUrl();
+            $prefix = $identifier->getServiceData()->getData()['prefix'];
+            $landmark_for_handle_substring = 'hdl.handle.net/' . $prefix;
+            if ($identifier_location) {
+              if (($handle_pos = strpos($identifier_location, $landmark_for_handle_substring)) !== FALSE) {
+                $handle = $prefix . substr($identifier_location, $handle_pos + strlen($landmark_for_handle_substring)); // Use substring filtering to get the handle
+                $this->ourLogger->debug(dt('Updating handle for {entity} !entity_id using !existing_handle.', [
+                  'entity' => $entity_type,
+                  '!entity_id' => $result,
+                  '!existing_handle' => $handle,
+                ]));
+                // Update the handle to make sure it's resolving to the right location.
+                /** @var \Drupal\dgi_actions\Plugin\Action\MintIdentifier $action_entity */
+                $action_entity = $this->entityTypeManager->getStorage('action')->load('mint_a_handle')->getPlugin();
+                // Ensure this action corresponds to this identifier before
+                // anything else.
+                if ($action_entity->getIdentifier()->id() !== $identifier->id()) {
+                  continue;
+                }
+                $action_entity->setEntity($entity);
+                $expected_location = $action_entity->getExternalUrl();
 
-              $params = [
-                'handle' => $handle,
-                'target_location' => $expected_location,
-              ];
-              $updater = new Update($identifier, $this->client, $params);
-              $updater->updateHandle();
-              $this->ourLogger->notice(dt('Updated !identifier_location to resolve to !location.', [
-                '!identifier_location' => $identifier_location,
-                '!location' => $expected_location,
-              ]));
+                $params = [
+                  'handle' => $handle,
+                  'target_location' => $expected_location,
+                ];
+                $updater = new Update($identifier, $this->client, $params);
+                $updater->updateHandle();
+                $this->ourLogger->notice(dt('Updated !identifier_location to resolve to !location.', [
+                  '!identifier_location' => $identifier_location,
+                  '!location' => $expected_location,
+                ]));
+              }
+              else {
+                $this->ourLogger->error(dt('The existing handle is using the wrong prefix in {entity} !entity_id.', [
+                  'entity' => $entity_type,
+                  '!entity_id' => $result,
+                ]));
+              }
             }
           }
         }
@@ -275,16 +293,16 @@ class BatchGenerateAndUpdateCommand extends DrushCommands {
             $entity->save();
             $new_handle = $entity->get($identifier->getField())?->getString() ?? FALSE;
             if ($new_handle) {
-              $this->ourLogger->notice(dt('New handle minted for {entity} {entity_id}: !new_handle', [
+              $this->ourLogger->notice(dt('New handle minted for {entity} !entity_id: !new_handle', [
                 'entity' => $entity_type,
-                'entity_id' => $result,
+                '!entity_id' => $result,
                 '!new_handle' => $new_handle,
               ]));
             }
             else {
-              $this->ourLogger->error(dt('Failed to mint and save new handle for {entity} {entity_id}.', [
+              $this->ourLogger->error(dt('Failed to mint and save new handle for {entity} !entity_id.', [
                 'entity' => $entity_type,
-                'entity_id' => $result,
+                '!entity_id' => $result,
               ]));
             }
           }
