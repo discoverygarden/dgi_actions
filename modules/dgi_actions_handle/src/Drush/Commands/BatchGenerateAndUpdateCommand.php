@@ -236,81 +236,78 @@ class BatchGenerateAndUpdateCommand extends DrushCommands {
             'entity' => $entity_type,
             'entity_id' => $result,
           ]));
-          continue;
         }
+        else {
+          $reactions = $this->utils->getActiveReactionsForEntity(EntityMintReaction::class, $entity);
+          if (empty($reactions)) {
+            $this->ourLogger->debug(dt('No active reactions for {entity} !entity_id.', [
+              'entity' => $entity_type,
+              '!entity_id' => $result,
+            ]));
+            if ($entity->hasField($identifier->getField())) {
+              $identifier_location = $entity->get($identifier->getField())?->getString() ?? FALSE;
+              $prefix = $identifier->getServiceData()->getData()['prefix'];
+              $landmark_for_handle_substring = 'hdl.handle.net/' . $prefix;
+              if ($identifier_location) {
+                if (($handle_pos = strpos($identifier_location, $landmark_for_handle_substring)) !== FALSE) {
+                  $handle = $prefix . substr(
+                      $identifier_location,
+                      $handle_pos + strlen($landmark_for_handle_substring)
+                    );
+                  $this->ourLogger->debug(dt(
+                    'Updating handle for {entity} !entity_id using !existing_handle.', [
+                      'entity' => $entity_type,
+                      '!entity_id' => $result,
+                      '!existing_handle' => $handle,
+                    ]
+                  ));
+                  // Update handle to make sure it's resolving to the right location.
+                  /** @var \Drupal\dgi_actions\Plugin\Action\MintIdentifier $action_entity */
+                  $action_entity = $this->entityTypeManager->getStorage('action')->load('mint_a_handle')->getPlugin();
+                  // Ensure this action corresponds to this identifier before
+                  // anything else.
+                  if ($action_entity->getIdentifier()->id() === $identifier->id()) {
+                    $action_entity->setEntity($entity);
+                    $expected_location = $action_entity->getExternalUrl();
 
-        $reactions = $this->utils->getActiveReactionsForEntity(EntityMintReaction::class, $entity);
-        if (empty($reactions)) {
-          $this->ourLogger->debug(dt('No active reactions for {entity} !entity_id.', [
-            'entity' => $entity_type,
-            '!entity_id' => $result,
-          ]));
-          if ($entity->hasField($identifier->getField())) {
-            $identifier_location = $entity->get($identifier->getField())?->getString() ?? FALSE;
-            $prefix = $identifier->getServiceData()->getData()['prefix'];
-            $landmark_for_handle_substring = 'hdl.handle.net/' . $prefix;
-            if ($identifier_location) {
-              if (($handle_pos = strpos($identifier_location, $landmark_for_handle_substring)) !== FALSE) {
-                $handle = $prefix . substr(
-                  $identifier_location,
-                  $handle_pos + strlen($landmark_for_handle_substring)
-                );
-                $this->ourLogger->debug(dt(
-                  'Updating handle for {entity} !entity_id using !existing_handle.', [
+                    $params = [
+                      'handle' => $handle,
+                      'target_location' => $expected_location,
+                    ];
+                    $updater = new Update($identifier, $this->client, $params);
+                    $updater->updateHandle();
+                    $this->ourLogger->notice(dt('Updated !identifier_location to resolve to !location.', [
+                      '!identifier_location' => $identifier_location,
+                      '!location' => $expected_location,
+                    ]));
+                  }
+                }
+                else {
+                  $this->ourLogger->error(dt('The existing handle is using the wrong prefix in {entity} !entity_id.', [
                     'entity' => $entity_type,
                     '!entity_id' => $result,
-                    '!existing_handle' => $handle,
-                  ]
-                ));
-                // Update handle to make sure it's resolving to the right location.
-                /** @var \Drupal\dgi_actions\Plugin\Action\MintIdentifier $action_entity */
-                $action_entity = $this->entityTypeManager->getStorage('action')->load('mint_a_handle')->getPlugin();
-                // Ensure this action corresponds to this identifier before
-                // anything else.
-                if ($action_entity->getIdentifier()->id() !== $identifier->id()) {
-                  continue;
+                  ]));
                 }
-                $action_entity->setEntity($entity);
-                $expected_location = $action_entity->getExternalUrl();
-
-                $params = [
-                  'handle' => $handle,
-                  'target_location' => $expected_location,
-                ];
-                $updater = new Update($identifier, $this->client, $params);
-                $updater->updateHandle();
-                $this->ourLogger->notice(dt('Updated !identifier_location to resolve to !location.', [
-                  '!identifier_location' => $identifier_location,
-                  '!location' => $expected_location,
-                ]));
               }
-              else {
-                $this->ourLogger->error(dt('The existing handle is using the wrong prefix in {entity} !entity_id.', [
+            }
+          } else {
+            $original_entity = clone $entity;
+            $this->utils->executeEntityReactions(EntityMintReaction::class, $entity);
+            if ($this->islandoraUtils->haveFieldsChanged($entity, $original_entity)) {
+              $entity->save();
+              $new_handle = $entity->get($identifier->getField())?->getString() ?? FALSE;
+              if ($new_handle) {
+                $this->ourLogger->notice(dt('New handle minted for {entity} !entity_id: !new_handle', [
+                  'entity' => $entity_type,
+                  '!entity_id' => $result,
+                  '!new_handle' => $new_handle,
+                ]));
+              } else {
+                $this->ourLogger->error(dt('Failed to mint and save new handle for {entity} !entity_id.', [
                   'entity' => $entity_type,
                   '!entity_id' => $result,
                 ]));
               }
-            }
-          }
-        }
-        else {
-          $original_entity = clone $entity;
-          $this->utils->executeEntityReactions(EntityMintReaction::class, $entity);
-          if ($this->islandoraUtils->haveFieldsChanged($entity, $original_entity)) {
-            $entity->save();
-            $new_handle = $entity->get($identifier->getField())?->getString() ?? FALSE;
-            if ($new_handle) {
-              $this->ourLogger->notice(dt('New handle minted for {entity} !entity_id: !new_handle', [
-                'entity' => $entity_type,
-                '!entity_id' => $result,
-                '!new_handle' => $new_handle,
-              ]));
-            }
-            else {
-              $this->ourLogger->error(dt('Failed to mint and save new handle for {entity} !entity_id.', [
-                'entity' => $entity_type,
-                '!entity_id' => $result,
-              ]));
             }
           }
         }
