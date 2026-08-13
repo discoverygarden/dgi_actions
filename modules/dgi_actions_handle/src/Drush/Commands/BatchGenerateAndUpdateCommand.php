@@ -17,6 +17,9 @@ use GuzzleHttp\ClientInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 
+/**
+ * Drush command to generate and update Handles.
+ */
 class BatchGenerateAndUpdateCommand extends DrushCommands {
   use DependencySerializationTrait;
 
@@ -62,7 +65,6 @@ class BatchGenerateAndUpdateCommand extends DrushCommands {
    */
   protected LoggerInterface $ourLogger;
 
-
   /**
    * Handle Drush commands.
    *
@@ -77,7 +79,7 @@ class BatchGenerateAndUpdateCommand extends DrushCommands {
    * @param \Drupal\islandora\IslandoraUtils $islandora_utils
    *   Islandora utils.
    * @param \Psr\Log\LoggerInterface $logger
-   *    A logger to which to log.
+   *   A logger to which to log.
    */
   public function __construct(ClientInterface $client, EntityTypeManagerInterface $entity_type_manager, IdentifierUtils $identifier_utils, DgiUtils $utils, IslandoraUtils $islandora_utils, LoggerInterface $logger) {
     parent::__construct();
@@ -171,7 +173,7 @@ class BatchGenerateAndUpdateCommand extends DrushCommands {
     $identifiers = $this->identifierUtils->getIdentifiers();
     if (!isset($identifiers[$options['options']['identifier_id']])) {
       $errors[] = dt('The DGI Actions identifier entity (!id) does not exist.', [
-        '!id' => $options['options']['identifier_id']
+        '!id' => $options['options']['identifier_id'],
       ]);
     }
 
@@ -249,12 +251,17 @@ class BatchGenerateAndUpdateCommand extends DrushCommands {
             $landmark_for_handle_substring = 'hdl.handle.net/' . $prefix;
             if ($identifier_location) {
               if (($handle_pos = strpos($identifier_location, $landmark_for_handle_substring)) !== FALSE) {
-                $handle = $prefix . substr($identifier_location, $handle_pos + strlen($landmark_for_handle_substring)); // Use substring filtering to get the handle
-                $this->ourLogger->debug(dt('Updating handle for {entity} !entity_id using !existing_handle.', [
-                  'entity' => $entity_type,
-                  '!entity_id' => $result,
-                  '!existing_handle' => $handle,
-                ]));
+                $handle = $prefix . substr(
+                  $identifier_location,
+                  $handle_pos + strlen($landmark_for_handle_substring)
+                );
+                $this->ourLogger->debug(dt(
+                  'Updating handle for {entity} !entity_id using !existing_handle.', [
+                    'entity' => $entity_type,
+                    '!entity_id' => $result,
+                    '!existing_handle' => $handle,
+                  ]
+                ));
                 // Update the handle to make sure it's resolving to the right location.
                 /** @var \Drupal\dgi_actions\Plugin\Action\MintIdentifier $action_entity */
                 $action_entity = $this->entityTypeManager->getStorage('action')->load('mint_a_handle')->getPlugin();
@@ -318,4 +325,5 @@ class BatchGenerateAndUpdateCommand extends DrushCommands {
       $context['message'] = 'Command has processed ' . $sandbox['completed'] . '/' . $sandbox['total'] . ' entities: ' . $context['finished'] * 100 . '%';
     }
   }
+
 }
