@@ -37,6 +37,10 @@ class BatchGenerateAndUpdateCommand extends Generate {
     name: 'batch_size',
     description: 'The number of nodes to include in each batch. Defaults to 10.',
   )]
+  #[CLI\Option(
+    name: 'start_from_id',
+    description: 'The ID to start from. If using the "ids" option alongside this, ensure this ID is within that set of IDs. If the batch execution is interrupted, the command can be run setting this option with the relevant node ID to pick up where it left off.',
+  )]
   #[CLI\Usage(
     name: 'dgi_actions_handle:generate_and_update --identifier_id=handle',
     description: 'Generates missing handles and updates existing handles by searching all entities for the "handle" DGI Actions Identifier entity.'
@@ -46,6 +50,7 @@ class BatchGenerateAndUpdateCommand extends Generate {
       'identifier_id' => self::REQ,
       'ids' => self::OPT,
       'batch_size' => self::OPT,
+      'start_from_id' => self::OPT,
     ],
   ): void {
     $identifier = $this->entityTypeManager->getStorage('dgiactions_identifier')->load($options['identifier_id']);
@@ -55,10 +60,12 @@ class BatchGenerateAndUpdateCommand extends Generate {
       'title' => dt('Generating and Updating handles...'),
       'operations' => [
         [
-          [$this, 'generateAndUpdateBatch'], [
+          [$this, 'generateAndUpdateBatch'],
+          [
             $identifier,
-            $ids,
-            $batch_size,
+            $options['ids'],
+            $options['batch_size'],
+            $options['start_from_id'],
           ],
         ],
       ],
@@ -100,10 +107,12 @@ class BatchGenerateAndUpdateCommand extends Generate {
    *   The IDs to go generate identifiers for or NULL if the entire repository.
    * @param int|null $batch_size
    *   The number of nodes to include in each batch. Defaults to 10.
+   * @param int|null $start_from_id
+   *   The ID to start from.
    * @param array|\DrushBatchContext $context
    *   Batch context.
    */
-  public function generateAndUpdateBatch(IdentifierInterface $identifier, ?string $ids, ?int $batch_size, &$context): void {
+  public function generateAndUpdateBatch(IdentifierInterface $identifier, ?string $ids, ?int $batch_size, ?int $start_from_id, &$context): void {
     $sandbox =& $context['sandbox'];
 
     $entity_type = $identifier->get('entity');
@@ -114,6 +123,9 @@ class BatchGenerateAndUpdateCommand extends Generate {
       ->accessCheck(FALSE);
     if ($ids) {
       $query->condition($entity_id_key, explode(',', $ids), 'IN');
+    }
+    if ($start_from_id) {
+      $query->condition($entity_id_key, $start_from_id, '>');
     }
     if (!isset($sandbox['total'])) {
       $count_query = clone $query;
@@ -170,10 +182,12 @@ class BatchGenerateAndUpdateCommand extends Generate {
                       '!existing_handle' => $handle,
                     ]
                   ));
+                  // Get the expected target location of the handle, which is
+                  // the node's unaliased path.
+                  $expected_location = $entity->toUrl('canonical', ['absolute' => TRUE, 'path_processing' => FALSE])->toString();
+
                   // Update handle to make sure it's resolving to the right
                   // location.
-                  $expected_location = $entity->toUrl()->setOptions(['absolute' => TRUE])->toString();
-
                   $params = [
                     'handle' => $handle,
                     'target_location' => $expected_location,
