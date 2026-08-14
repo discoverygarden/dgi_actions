@@ -172,37 +172,30 @@ class BatchGenerateAndUpdateCommand extends Generate {
                   ));
                   // Update handle to make sure it's resolving to the right
                   // location.
-                  /** @var \Drupal\dgi_actions\Plugin\Action\MintIdentifier $action_entity */
-                  $action_entity = $this->entityTypeManager->getStorage('action')->load('mint_a_handle')->getPlugin();
-                  // Ensure this action corresponds to this identifier before
-                  // anything else.
-                  if ($action_entity->getIdentifier()->id() === $identifier->id()) {
-                    $action_entity->setEntity($entity);
-                    $expected_location = $action_entity->getExternalUrl();
+                  $expected_location = $entity->toUrl()->setOptions(['absolute' => TRUE])->toString();
 
-                    $params = [
-                      'handle' => $handle,
-                      'target_location' => $expected_location,
-                    ];
-                    $updater = new Update($identifier, $this->client, $params);
-                    $updater->updateHandle();
-                    $this->ourLogger->notice(dt('Updated !identifier_location to resolve to !location.', [
-                      '!identifier_location' => $identifier_location,
-                      '!location' => $expected_location,
-                    ]));
-                    // Set the handle field value to start with https if it
-                    // starts with http.
-                    if (str_starts_with($identifier_location, 'http://')) {
-                      $this->ourLogger->notice(dt(
-                        'Handle for {entity} !entity_id starts with http, changing to https', [
-                          'entity' => $entity_type,
-                          '!entity_id' => $result,
-                        ]
-                      ));
-                      $new_handle_url = 'https://hdl.handle.net/' . $handle;
-                      $entity->set($identifier->getField(), $new_handle_url);
-                      $entity->save();
-                    }
+                  $params = [
+                    'handle' => $handle,
+                    'target_location' => $expected_location,
+                  ];
+                  $updater = new Update($identifier, $this->client, $params);
+                  $updater->updateHandle();
+                  $this->ourLogger->notice(dt('Updated !identifier_location to resolve to !location.', [
+                    '!identifier_location' => $identifier_location,
+                    '!location' => $expected_location,
+                  ]));
+                  // Set the handle field value to start with https if it
+                  // starts with http.
+                  if (str_starts_with($identifier_location, 'http://')) {
+                    $this->ourLogger->notice(dt(
+                      'Handle for {entity} !entity_id starts with http, changing to https', [
+                        'entity' => $entity_type,
+                        '!entity_id' => $result,
+                      ]
+                    ));
+                    $new_handle_url = 'https://hdl.handle.net/' . $handle;
+                    $entity->set($identifier->getField(), $new_handle_url);
+                    $entity->save();
                   }
                 }
                 else {
