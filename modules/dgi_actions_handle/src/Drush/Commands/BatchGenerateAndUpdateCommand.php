@@ -4,106 +4,15 @@ namespace Drupal\dgi_actions_handle\Drush\Commands;
 
 use Consolidation\AnnotatedCommand\CommandData;
 use Consolidation\AnnotatedCommand\CommandError;
-use Drupal\Core\DependencyInjection\DependencySerializationTrait;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\dgi_actions\Drush\Commands\Generate;
 use Drupal\dgi_actions\Entity\IdentifierInterface;
 use Drupal\dgi_actions\Plugin\ContextReaction\EntityMintReaction;
-use Drupal\dgi_actions\Utility\DgiUtils;
-use Drupal\dgi_actions\Utility\IdentifierUtils;
-use Drupal\islandora\IslandoraUtils;
 use Drush\Attributes as CLI;
-use Drush\Commands\DrushCommands;
-use GuzzleHttp\ClientInterface;
-use Psr\Container\ContainerInterface;
-use Psr\Log\LoggerInterface;
 
 /**
  * Drush command to generate and update Handles.
  */
-class BatchGenerateAndUpdateCommand extends DrushCommands {
-  use DependencySerializationTrait;
-
-  /**
-   * The HTTP client to be used to make requests.
-   *
-   * @var \GuzzleHttp\ClientInterface
-   */
-  protected ClientInterface $client;
-
-  /**
-   * The Drupal entity type manager.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected EntityTypeManagerInterface $entityTypeManager;
-
-  /**
-   * Identifier utils service.
-   *
-   * @var \Drupal\dgi_actions\Utility\IdentifierUtils
-   */
-  protected IdentifierUtils $identifierUtils;
-
-  /**
-   * Utilities used for executing reactions.
-   *
-   * @var \Drupal\dgi_actions\Utility\DgiUtils
-   */
-  protected DgiUtils $utils;
-
-  /**
-   * Islandora utilities.
-   *
-   * @var \Drupal\islandora\IslandoraUtils
-   */
-  protected IslandoraUtils $islandoraUtils;
-
-  /**
-   * Logger.
-   *
-   * @var \Psr\Log\LoggerInterface
-   */
-  protected LoggerInterface $ourLogger;
-
-  /**
-   * Handle Drush commands.
-   *
-   * @param \GuzzleHttp\ClientInterface $client
-   *   The HTTP client to be used to make requests.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   *   The Drupal entity type manager.
-   * @param \Drupal\dgi_actions\Utility\IdentifierUtils $identifier_utils
-   *   The identifier utils used to retrieve a DGI Actions Identifier.
-   * @param \Drupal\dgi_actions\Utility\DgiUtils $utils
-   *   The utils used to execute identifier reactions.
-   * @param \Drupal\islandora\IslandoraUtils $islandora_utils
-   *   Islandora utils.
-   * @param \Psr\Log\LoggerInterface $logger
-   *   A logger to which to log.
-   */
-  public function __construct(ClientInterface $client, EntityTypeManagerInterface $entity_type_manager, IdentifierUtils $identifier_utils, DgiUtils $utils, IslandoraUtils $islandora_utils, LoggerInterface $logger) {
-    parent::__construct();
-    $this->client = $client;
-    $this->entityTypeManager = $entity_type_manager;
-    $this->identifierUtils = $identifier_utils;
-    $this->utils = $utils;
-    $this->islandoraUtils = $islandora_utils;
-    $this->ourLogger = $logger;
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  public static function create(ContainerInterface $container) : self {
-    return new static(
-      $container->get('http_client'),
-      $container->get('entity_type.manager'),
-      $container->get('dgi_actions.utils'),
-      $container->get('dgi_actions.dgiutils'),
-      $container->get('islandora.utils'),
-      $container->get('logger.channel.dgi_actions')
-    );
-  }
+class BatchGenerateAndUpdateCommand extends Generate {
 
   /**
    * Generates missing handles and update existing handles for entities.
@@ -281,8 +190,19 @@ class BatchGenerateAndUpdateCommand extends DrushCommands {
                       '!identifier_location' => $identifier_location,
                       '!location' => $expected_location,
                     ]));
-                    // TODO: include a section to set the handle field value to
-                    // start with https if it starts with http.
+                    // Set the handle field value to start with https if it
+                    // starts with http.
+                    if (str_starts_with($identifier_location, 'http://')) {
+                      $this->ourLogger->notice(dt(
+                        'Handle for {entity} !entity_id starts with http, changing to https', [
+                          'entity' => $entity_type,
+                          '!entity_id' => $result,
+                        ]
+                      ));
+                      $new_handle_url = 'https://hdl.handle.net/' . $handle;
+                      $entity->set($identifier->getField(), $new_handle_url);
+                      $entity->save();
+                    }
                   }
                 }
                 else {
