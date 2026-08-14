@@ -99,6 +99,7 @@ class Generate extends DrushCommands {
       $container->get('http_client'),
       $container->get('entity_type.manager'),
       $container->get('dgi_actions.utils'),
+      $container->get('dgi_actions.dgiutils'),
       $container->get('islandora.utils'),
       $container->get('logger.channel.dgi_actions')
     );
